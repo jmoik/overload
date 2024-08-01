@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Share } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { RootStackParamList, SettingsScreenNavigationProp } from "../types/navigation";
+import { SettingsScreenNavigationProp } from "../types/navigation";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 
 type SettingItem = {
@@ -52,8 +52,13 @@ const SettingsScreen = () => {
             title: "One Rep Max Formula",
             action: () => navigation.navigate("OneRepMaxFormula"),
         },
-        { id: "2", title: "Rest Timer", action: () => navigation.navigate("RestTimer") },
-        { id: "3", title: "Export Data", action: shareExportData },
+        { id: "2", title: "Export Data", action: shareExportData },
+        { id: "3", title: "Rest Timer", action: () => navigation.navigate("RestTimer") },
+        {
+            id: "4",
+            title: "Training Interval",
+            action: () => navigation.navigate("TrainingInterval"),
+        },
     ];
 
     const renderItem = ({ item }: { item: SettingItem }) => (

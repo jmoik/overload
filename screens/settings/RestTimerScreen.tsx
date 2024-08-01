@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
-import { useExerciseContext } from "../contexts/ExerciseContext";
+import { useExerciseContext } from "../../contexts/ExerciseContext";
 
 const RestTimerScreen = () => {
     const navigation = useNavigation();

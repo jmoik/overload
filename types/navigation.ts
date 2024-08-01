@@ -9,6 +9,7 @@ export type RootStackParamList = {
     ExerciseHistory: { exerciseId: string };
     OneRepMaxFormula: undefined;
     RestTimer: undefined;
+    TrainingInterval: undefined;
 };
 
 export type AddExerciseScreenNavigationProp = StackNavigationProp<

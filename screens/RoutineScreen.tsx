@@ -10,7 +10,7 @@ import { Exercise } from "../models/Exercise";
 import { subDays, isAfter } from "date-fns";
 
 const RoutineScreen = () => {
-    const { exercises, deleteExercise, exerciseHistory } = useExerciseContext();
+    const { exercises, deleteExercise, exerciseHistory, trainingInterval } = useExerciseContext();
     const navigation = useNavigation<RoutineScreenNavigationProp>();
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
     const isFocused = useIsFocused();
@@ -92,20 +92,20 @@ const RoutineScreen = () => {
     const calculateRemainingSets = useCallback(
         (exercise: Exercise) => {
             const today = new Date();
-            const sevenDaysAgo = subDays(today, 7);
+            const intervalStart = subDays(today, trainingInterval);
 
             const history = exerciseHistory[exercise.id] || [];
-            const setsDoneLastWeek = history.reduce((total, entry) => {
-                if (isAfter(new Date(entry.date), sevenDaysAgo)) {
+            const setsDoneInInterval = history.reduce((total, entry) => {
+                if (isAfter(new Date(entry.date), intervalStart)) {
                     return total + entry.sets;
                 }
                 return total;
             }, 0);
 
-            const remainingSets = Math.max(0, exercise.setsPerWeek - setsDoneLastWeek);
+            const remainingSets = Math.max(0, exercise.setsPerWeek - setsDoneInInterval);
             return remainingSets;
         },
-        [exerciseHistory]
+        [exerciseHistory, trainingInterval]
     );
 
     const renderExerciseItem = useCallback(
@@ -128,7 +128,7 @@ const RoutineScreen = () => {
                         <Text>{item.description}</Text>
                         <Text>{item.setsPerWeek} sets per week</Text>
                         <Text style={styles.remainingSets}>
-                            Remaining sets this week: {remainingSets}
+                            Remaining sets in interval: {remainingSets}
                         </Text>
                     </TouchableOpacity>
                 </Swipeable>

@@ -10,9 +10,9 @@ import ExerciseHistoryScreen from "./screens/ExerciseHistoryScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import { ExerciseProvider } from "./contexts/ExerciseContext";
 import { RootStackParamList } from "./types/navigation";
-import OneRepMaxFormulaScreen from "./screens/OneRepMaxFormulaScreen";
-import RestTimerScreen from "./screens/RestTimerScreen";
-import { shareExportData } from "./utils/exportData";
+import OneRepMaxFormulaScreen from "./screens/settings/OneRepMaxFormulaScreen";
+import RestTimerScreen from "./screens/settings/RestTimerScreen";
+import TrainingIntervalScreen from "./screens/settings/TrainingIntervalScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -71,6 +71,11 @@ const App = () => {
                         name="RestTimer"
                         component={RestTimerScreen}
                         options={{ title: "Rest Timer" }}
+                    />
+                    <Stack.Screen
+                        name="TrainingInterval"
+                        component={TrainingIntervalScreen}
+                        options={{ title: "Training Interval" }}
                     />
                 </Stack.Navigator>
             </NavigationContainer>

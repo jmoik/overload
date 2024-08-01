@@ -1,7 +1,7 @@
 // screens/OneRepMaxFormulaScreen.tsx
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useExerciseContext } from "../contexts/ExerciseContext";
+import { useExerciseContext } from "../../contexts/ExerciseContext";
 
 const OneRepMaxFormulaScreen = () => {
     const { oneRepMaxFormula, setOneRepMaxFormula } = useExerciseContext();

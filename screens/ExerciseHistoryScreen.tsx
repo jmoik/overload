@@ -34,6 +34,7 @@ const ExerciseHistoryScreen = () => {
 
     const [sets, setSets] = useState("");
     const [reps, setReps] = useState("");
+    const [rpe, setRpe] = useState("");
     const [weight, setWeight] = useState("");
     const { oneRepMaxFormula } = useExerciseContext();
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -70,6 +71,7 @@ const ExerciseHistoryScreen = () => {
             setSets(lastWorkout.sets.toString());
             setReps(lastWorkout.reps.toString());
             setWeight((lastWorkout.weight + 2.5).toString());
+            setRpe(lastWorkout.rpe.toString());
         }
     }, [history]);
 
@@ -84,6 +86,7 @@ const ExerciseHistoryScreen = () => {
             sets: parseInt(sets, 10),
             reps: parseInt(reps, 10),
             weight: parseFloat(weight),
+            rpe: parseInt(rpe, 10),
         };
 
         if (editingIndex !== null) {
@@ -96,6 +99,7 @@ const ExerciseHistoryScreen = () => {
         setSets("");
         setReps("");
         setWeight("");
+        setRpe(""); // Clear RPE input
     };
 
     const handleEditEntry = (entry: ExerciseHistoryEntry, index: number) => {
@@ -129,13 +133,31 @@ const ExerciseHistoryScreen = () => {
         [deleteExerciseHistoryEntry, exerciseId, editingIndex]
     );
 
-    const renderRightActions = useCallback((index: number) => {
-        return (
-            <View style={styles.deleteButton}>
-                <Icon name="trash-outline" size={24} color="#FFFFFF" />
-            </View>
-        );
-    }, []);
+    const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => (
+        <Swipeable
+            ref={(el) => (swipeableRefs.current[index] = el)}
+            renderRightActions={() => (
+                <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleDeleteEntry(index)}
+                >
+                    <Icon name="trash-outline" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+            )}
+            rightThreshold={40}
+        >
+            <TouchableOpacity
+                style={styles.historyItem}
+                onPress={() => handleEditEntry(item, index)}
+            >
+                <Text>{new Date(item.date).toLocaleDateString()}</Text>
+                <Text>
+                    {item.sets} sets x {item.reps} reps @ {item.weight} kg{" "}
+                    {item.rpe ? ` (RPE ${item.rpe})` : ""}
+                </Text>
+            </TouchableOpacity>
+        </Swipeable>
+    );
 
     if (!exercise) {
         return <Text>Exercise not found</Text>;
@@ -144,7 +166,7 @@ const ExerciseHistoryScreen = () => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>{exercise?.name} History</Text>
+                <Text style={styles.title}>{exercise?.name}</Text>
                 <View style={styles.headerButtons}>
                     <TouchableOpacity onPress={fillFromLastWorkout} style={styles.fillButton}>
                         <Icon name="arrow-up" size={25} color="#007AFF" />
@@ -184,6 +206,13 @@ const ExerciseHistoryScreen = () => {
                     onChangeText={setWeight}
                     keyboardType="numeric"
                 />
+                <TextInput
+                    style={styles.input}
+                    placeholder="RPE"
+                    value={rpe}
+                    onChangeText={setRpe}
+                    keyboardType="numeric"
+                />
             </View>
             <Button
                 title={editingIndex !== null ? "Update Entry" : "Add to History"}
@@ -191,32 +220,8 @@ const ExerciseHistoryScreen = () => {
             />
             <FlatList
                 data={[...history].reverse()}
+                renderItem={renderHistoryItem}
                 keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => (
-                    <Swipeable
-                        ref={(el) => (swipeableRefs.current[index] = el)}
-                        renderRightActions={() => renderRightActions(index)}
-                        onSwipeableRightOpen={() => handleDeleteEntry(history.length - 1 - index)}
-                        rightThreshold={40}
-                    >
-                        <View
-                            style={styles.historyItem}
-                            onTouchEnd={() => handleEditEntry(item, history.length - 1 - index)}
-                        >
-                            <View style={styles.historyItemContent}>
-                                <View>
-                                    <Text>{new Date(item.date).toLocaleDateString()}</Text>
-                                    <Text>
-                                        {item.sets} sets x {item.reps} reps @ {item.weight} kg
-                                    </Text>
-                                </View>
-                                <Text style={styles.oneRepMax}>
-                                    1RM: {calculateOneRepMax(item.weight, item.reps)} kg
-                                </Text>
-                            </View>
-                        </View>
-                    </Swipeable>
-                )}
             />
         </View>
     );
@@ -286,7 +291,6 @@ const styles = StyleSheet.create({
     fillButton: {
         backgroundColor: "#f0f0f0",
         marginRight: 20,
-        marginBottom: 20,
     },
 });
 

@@ -11,4 +11,5 @@ export interface ExerciseHistoryEntry {
     sets: number;
     reps: number;
     weight: number;
+    rpe: number;
 }
