@@ -11,6 +11,7 @@ import SettingsScreen from "./screens/SettingsScreen";
 import { ExerciseProvider } from "./contexts/ExerciseContext";
 import { RootStackParamList } from "./types/navigation";
 import OneRepMaxFormulaScreen from "./screens/OneRepMaxFormulaScreen";
+import RestTimerScreen from "./screens/RestTimerScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -64,6 +65,11 @@ const App = () => {
                         name="OneRepMaxFormula"
                         component={OneRepMaxFormulaScreen}
                         options={{ title: "One Rep Max Formula" }}
+                    />
+                    <Stack.Screen
+                        name="RestTimer"
+                        component={RestTimerScreen}
+                        options={{ title: "Rest Timer" }}
                     />
                 </Stack.Navigator>
             </NavigationContainer>

@@ -7,7 +7,7 @@ const OneRepMaxFormulaScreen = () => {
     const { oneRepMaxFormula, setOneRepMaxFormula } = useExerciseContext();
 
     const formulas = [
-        { name: "Matt Brzycki", value: "brzycki" },
+        { name: "Brzycki", value: "brzycki" },
         { name: "Epley", value: "epley" },
         { name: "Lander", value: "lander" },
     ] as const;

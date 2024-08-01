@@ -3,17 +3,23 @@ import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { SettingsScreenNavigationProp } from "../types/navigation";
+import { RootStackParamList, SettingsScreenNavigationProp } from "../types/navigation";
 
-const settingsOptions = [
+type SettingItem = {
+    id: string;
+    title: string;
+    screen: keyof RootStackParamList;
+};
+
+const settingsOptions: SettingItem[] = [
     { id: "1", title: "One Rep Max Formula", screen: "OneRepMaxFormula" },
-    // Add more settings options here as needed
+    { id: "2", title: "Rest Timer", screen: "RestTimer" },
 ];
 
 const SettingsScreen = () => {
     const navigation = useNavigation<SettingsScreenNavigationProp>();
 
-    const renderItem = ({ item }: { item: (typeof settingsOptions)[0] }) => (
+    const renderItem = ({ item }: { item: SettingItem }) => (
         <TouchableOpacity
             style={styles.settingItem}
             onPress={() => navigation.navigate(item.screen)}

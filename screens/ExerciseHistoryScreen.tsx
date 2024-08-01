@@ -1,6 +1,15 @@
-// screens/ExerciseHistoryScreen.tsx
-import React, { useState, useRef, useCallback } from "react";
-import { View, Text, FlatList, Button, TextInput, StyleSheet, Alert } from "react-native";
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import {
+    View,
+    Text,
+    FlatList,
+    Button,
+    TextInput,
+    StyleSheet,
+    Alert,
+    Vibration,
+    TouchableOpacity,
+} from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -17,13 +26,27 @@ const ExerciseHistoryScreen = () => {
         addExerciseToHistory,
         updateExerciseHistoryEntry,
         deleteExerciseHistoryEntry,
+        timerRunning,
+        timeLeft,
+        startTimer,
+        stopTimer,
     } = useExerciseContext();
+
     const [sets, setSets] = useState("");
     const [reps, setReps] = useState("");
     const [weight, setWeight] = useState("");
     const { oneRepMaxFormula } = useExerciseContext();
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+            }
+        };
+    }, []);
 
     const exercise = exercises.find((e) => e.id === exerciseId);
     const history = exerciseHistory[exerciseId] || [];
@@ -40,6 +63,15 @@ const ExerciseHistoryScreen = () => {
                 return 0;
         }
     };
+
+    const fillFromLastWorkout = useCallback(() => {
+        if (history.length > 0) {
+            const lastWorkout = history[history.length - 1];
+            setSets(lastWorkout.sets.toString());
+            setReps(lastWorkout.reps.toString());
+            setWeight((lastWorkout.weight + 2.5).toString());
+        }
+    }, [history]);
 
     const handleAddOrUpdateEntry = () => {
         if (!sets.trim() || !reps.trim() || !weight.trim()) {
@@ -111,7 +143,25 @@ const ExerciseHistoryScreen = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>{exercise.name} History</Text>
+            <View style={styles.header}>
+                <Text style={styles.title}>{exercise?.name} History</Text>
+                <View style={styles.headerButtons}>
+                    <TouchableOpacity onPress={fillFromLastWorkout} style={styles.fillButton}>
+                        <Icon name="arrow-up" size={25} color="#007AFF" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={timerRunning ? stopTimer : startTimer}>
+                        <View style={styles.timerContainer}>
+                            <Text style={styles.timerText}>{timeLeft}</Text>
+                            <Icon
+                                name={timerRunning ? "pause" : "play"}
+                                size={20}
+                                color="#007AFF"
+                            />
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.input}
@@ -215,6 +265,28 @@ const styles = StyleSheet.create({
     oneRepMax: {
         color: "#666",
         fontWeight: "bold",
+    },
+    timerContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    timerText: { fontSize: 20, fontWeight: "bold" },
+    header: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 10,
+    },
+    headerButtons: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    fillButton: {
+        backgroundColor: "#f0f0f0",
+        marginRight: 20,
+        marginBottom: 20,
     },
 });
 
