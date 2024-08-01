@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+// screens/ExerciseHistoryScreen.tsx
+import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
     View,
     Text,
@@ -7,15 +8,18 @@ import {
     TextInput,
     StyleSheet,
     Alert,
-    Vibration,
     TouchableOpacity,
+    Dimensions,
+    Platform,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
+import { LineChart } from "react-native-chart-kit";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { ExerciseHistoryScreenRouteProp } from "../types/navigation";
 import { ExerciseHistoryEntry } from "../models/Exercise";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const ExerciseHistoryScreen = () => {
     const route = useRoute<ExerciseHistoryScreenRouteProp>();
@@ -36,8 +40,10 @@ const ExerciseHistoryScreen = () => {
     const [reps, setReps] = useState("");
     const [rpe, setRpe] = useState("");
     const [weight, setWeight] = useState("");
+    const [date, setDate] = useState(new Date());
     const { oneRepMaxFormula } = useExerciseContext();
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [editingEntry, setEditingEntry] = useState<ExerciseHistoryEntry | null>(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -65,6 +71,24 @@ const ExerciseHistoryScreen = () => {
         }
     };
 
+    const oneRepMaxData = useMemo(() => {
+        return history
+            .map((entry) => ({
+                date: new Date(entry.date),
+                oneRepMax: calculateOneRepMax(entry.weight, entry.reps),
+            }))
+            .sort((a, b) => a.date.getTime() - b.date.getTime());
+    }, [history, calculateOneRepMax]);
+
+    const chartData = {
+        labels: oneRepMaxData.map((data) => data.date.toLocaleDateString()),
+        datasets: [
+            {
+                data: oneRepMaxData.map((data) => data.oneRepMax),
+            },
+        ],
+    };
+
     const fillFromLastWorkout = useCallback(() => {
         if (history.length > 0) {
             const lastWorkout = history[history.length - 1];
@@ -75,6 +99,15 @@ const ExerciseHistoryScreen = () => {
         }
     }, [history]);
 
+    const resetForm = () => {
+        setSets("");
+        setReps("");
+        setWeight("");
+        setRpe("");
+        setDate(new Date());
+        setEditingEntry(null);
+    };
+
     const handleAddOrUpdateEntry = () => {
         if (!sets.trim() || !reps.trim() || !weight.trim()) {
             Alert.alert("Error", "Please fill in all fields");
@@ -82,55 +115,61 @@ const ExerciseHistoryScreen = () => {
         }
 
         const entry: ExerciseHistoryEntry = {
-            date: editingIndex !== null ? history[editingIndex].date : new Date(),
+            date: editingEntry ? date : new Date(),
             sets: parseInt(sets, 10),
             reps: parseInt(reps, 10),
             weight: parseFloat(weight),
-            rpe: parseInt(rpe, 10),
+            rpe: parseInt(rpe, 10) || 0,
         };
 
-        if (editingIndex !== null) {
-            updateExerciseHistoryEntry(exerciseId, editingIndex, entry);
-            setEditingIndex(null);
+        if (editingEntry) {
+            const index = history.findIndex((item) => item === editingEntry);
+            if (index !== -1) {
+                updateExerciseHistoryEntry(exerciseId, index, entry);
+            }
         } else {
             addExerciseToHistory(exerciseId, entry);
         }
 
-        setSets("");
-        setReps("");
-        setWeight("");
-        setRpe(""); // Clear RPE input
+        resetForm();
     };
 
-    const handleEditEntry = (entry: ExerciseHistoryEntry, index: number) => {
-        setEditingIndex(index);
+    const handleEditEntry = (entry: ExerciseHistoryEntry) => {
+        setEditingEntry(entry);
         setSets(entry.sets.toString());
         setReps(entry.reps.toString());
         setWeight(entry.weight.toString());
+        setRpe(entry.rpe.toString());
+        setDate(new Date(entry.date));
+    };
+
+    const onDateChange = (event: any, selectedDate?: Date) => {
+        const currentDate = selectedDate || date;
+        setShowDatePicker(Platform.OS === "ios");
+        setDate(currentDate);
     };
 
     const handleDeleteEntry = useCallback(
-        (index: number) => {
+        (entryToDelete: ExerciseHistoryEntry) => {
             Alert.alert("Delete Entry", "Are you sure you want to delete this entry?", [
                 { text: "Cancel", style: "cancel" },
                 {
                     text: "Delete",
                     onPress: () => {
-                        // Clear editing state if we're deleting the entry being edited
-                        if (editingIndex === index) {
-                            setEditingIndex(null);
-                            setSets("");
-                            setReps("");
-                            setWeight("");
+                        const index = history.findIndex((item) => item === entryToDelete);
+                        if (index !== -1) {
+                            deleteExerciseHistoryEntry(exerciseId, index);
+                            if (editingEntry === entryToDelete) {
+                                resetForm();
+                            }
                         }
-                        deleteExerciseHistoryEntry(exerciseId, index);
                         swipeableRefs.current.forEach((ref) => ref?.close());
                     },
                     style: "destructive",
                 },
             ]);
         },
-        [deleteExerciseHistoryEntry, exerciseId, editingIndex]
+        [deleteExerciseHistoryEntry, exerciseId, editingEntry, history]
     );
 
     const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => (
@@ -139,21 +178,22 @@ const ExerciseHistoryScreen = () => {
             renderRightActions={() => (
                 <TouchableOpacity
                     style={styles.deleteButton}
-                    onPress={() => handleDeleteEntry(index)}
+                    onPress={() => handleDeleteEntry(item)}
                 >
                     <Icon name="trash-outline" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
             )}
             rightThreshold={40}
         >
-            <TouchableOpacity
-                style={styles.historyItem}
-                onPress={() => handleEditEntry(item, index)}
-            >
-                <Text>{new Date(item.date).toLocaleDateString()}</Text>
+            <TouchableOpacity style={styles.historyItem} onPress={() => handleEditEntry(item)}>
                 <Text>
+                    {new Date(item.date).toLocaleDateString()}
+                    {"\n"}
                     {item.sets} sets x {item.reps} reps @ {item.weight} kg{" "}
                     {item.rpe ? ` (RPE ${item.rpe})` : ""}
+                </Text>
+                <Text style={styles.oneRepMax}>
+                    1RM: {calculateOneRepMax(item.weight, item.reps)} kg
                 </Text>
             </TouchableOpacity>
         </Swipeable>
@@ -214,15 +254,65 @@ const ExerciseHistoryScreen = () => {
                     keyboardType="numeric"
                 />
             </View>
+            {editingEntry && (
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+                    <Text>Change Date: {date.toLocaleDateString()}</Text>
+                </TouchableOpacity>
+            )}
+
+            {showDatePicker && (
+                <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                />
+            )}
+
             <Button
-                title={editingIndex !== null ? "Update Entry" : "Add to History"}
+                title={editingEntry ? "Update Entry" : "Add to History"}
                 onPress={handleAddOrUpdateEntry}
             />
             <FlatList
-                data={[...history].reverse()}
+                data={history.sort((a: ExerciseHistoryEntry, b: ExerciseHistoryEntry) => {
+                    return new Date(b.date).getTime() - new Date(a.date).getTime();
+                })}
                 renderItem={renderHistoryItem}
                 keyExtractor={(item, index) => index.toString()}
             />
+            <Text style={styles.sectionTitle}>1RM Evolution</Text>
+            {oneRepMaxData.length > 1 ? (
+                <LineChart
+                    data={chartData}
+                    width={Dimensions.get("window").width - 30} // minus padding
+                    height={220}
+                    yAxisLabel=""
+                    yAxisSuffix=" kg"
+                    chartConfig={{
+                        backgroundColor: "#e26a00",
+                        backgroundGradientFrom: "#fb8c00",
+                        backgroundGradientTo: "#ffa726",
+                        decimalPlaces: 0,
+                        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                        style: {
+                            borderRadius: 16,
+                        },
+                        propsForDots: {
+                            r: "4",
+                            strokeWidth: "2",
+                            stroke: "#ffa726",
+                        },
+                    }}
+                    bezier
+                    style={{
+                        marginVertical: 5,
+                        borderRadius: 16,
+                    }}
+                />
+            ) : (
+                <Text>Not enough data to show 1RM evolution</Text>
+            )}
         </View>
     );
 };
@@ -230,7 +320,7 @@ const ExerciseHistoryScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
+        padding: 15,
     },
     title: {
         fontSize: 24,
@@ -254,6 +344,9 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: "#ccc",
         marginBottom: 10,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
     },
     deleteButton: {
         backgroundColor: "#FF3B30",
@@ -262,14 +355,10 @@ const styles = StyleSheet.create({
         width: 80,
         height: "100%",
     },
-    historyItemContent: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
     oneRepMax: {
         color: "#666",
         fontWeight: "bold",
+        textAlign: "right",
     },
     timerContainer: {
         flexDirection: "row",
@@ -291,7 +380,15 @@ const styles = StyleSheet.create({
     fillButton: {
         backgroundColor: "#f0f0f0",
         marginRight: 20,
+        marginBottom: 20,
     },
+    dateButton: {
+        backgroundColor: "#f0f0f0",
+        padding: 10,
+        borderRadius: 5,
+        marginBottom: 20,
+    },
+    sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 10 },
 });
 
 export default ExerciseHistoryScreen;

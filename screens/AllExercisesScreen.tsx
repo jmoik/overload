@@ -9,7 +9,7 @@ import { RoutineScreenNavigationProp } from "../types/navigation";
 import { Exercise } from "../models/Exercise";
 import { subDays, isAfter } from "date-fns";
 
-const RoutineScreen = () => {
+const AllExercisesScreen = () => {
     const { exercises, deleteExercise, exerciseHistory, trainingInterval } = useExerciseContext();
     const navigation = useNavigation<RoutineScreenNavigationProp>();
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
@@ -213,4 +213,4 @@ const styles = StyleSheet.create({
     remainingSets: { marginTop: 5, fontWeight: "bold", color: "#007AFF" },
 });
 
-export default RoutineScreen;
+export default AllExercisesScreen;

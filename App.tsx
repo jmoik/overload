@@ -4,7 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/Ionicons";
-import RoutineScreen from "./screens/RoutineScreen";
+import AllExercisesScreen from "./screens/AllExercisesScreen";
 import AddExerciseScreen from "./screens/AddExerciseScreen";
 import ExerciseHistoryScreen from "./screens/ExerciseHistoryScreen";
 import SettingsScreen from "./screens/SettingsScreen";
@@ -17,13 +17,13 @@ import TrainingIntervalScreen from "./screens/settings/TrainingIntervalScreen";
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
-const MainTabs = () => (
+const Home = () => (
     <Tab.Navigator>
         <Tab.Screen
-            name="RoutineTab"
-            component={RoutineScreen}
+            name="AllExercises"
+            component={AllExercisesScreen}
             options={{
-                title: "My Routine",
+                title: "All Exercises",
                 tabBarIcon: ({ color, size }) => <Icon name="list" color={color} size={size} />,
             }}
         />
@@ -44,11 +44,7 @@ const App = () => {
         <ExerciseProvider>
             <NavigationContainer>
                 <Stack.Navigator>
-                    <Stack.Screen
-                        name="MainTabs"
-                        component={MainTabs}
-                        options={{ headerShown: false }}
-                    />
+                    <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
                     <Stack.Screen
                         name="AddExercise"
                         component={AddExerciseScreen}

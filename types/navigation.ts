@@ -3,7 +3,7 @@ import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 export type RootStackParamList = {
-    MainTabs: undefined;
+    Home: undefined;
     RoutineList: undefined;
     AddExercise: { exerciseId?: string } | undefined;
     ExerciseHistory: { exerciseId: string };
@@ -23,7 +23,6 @@ export type ExerciseHistoryScreenNavigationProp = StackNavigationProp<
 >;
 
 export type RoutineScreenNavigationProp = StackNavigationProp<RootStackParamList, "RoutineList">;
-
 export type AddExerciseScreenRouteProp = RouteProp<RootStackParamList, "AddExercise">;
 export type ExerciseHistoryScreenRouteProp = RouteProp<RootStackParamList, "ExerciseHistory">;
 export type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList>;
