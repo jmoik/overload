@@ -1,6 +1,6 @@
 // screens/RoutineScreen.tsx
 import React, { useLayoutEffect, useCallback, useRef, useEffect } from "react";
-import { View, Text, SectionList, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, SectionList, TouchableOpacity, Alert } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Swipeable } from "react-native-gesture-handler";
@@ -8,8 +8,13 @@ import { useExerciseContext } from "../contexts/ExerciseContext";
 import { RoutineScreenNavigationProp } from "../types/navigation";
 import { Exercise } from "../models/Exercise";
 import { subDays, isAfter } from "date-fns";
+import { useTheme } from "../contexts/ThemeContext";
+import { lightTheme, darkTheme, createAllExercisesStyles } from "../styles/globalStyles";
 
 const AllExercisesScreen = () => {
+    const { theme } = useTheme();
+    const currentTheme = theme === "light" ? lightTheme : darkTheme;
+    const styles = createAllExercisesStyles(currentTheme);
     const { exercises, deleteExercise, exerciseHistory, trainingInterval } = useExerciseContext();
     const navigation = useNavigation<RoutineScreenNavigationProp>();
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
@@ -171,46 +176,5 @@ const AllExercisesScreen = () => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    addButton: {
-        marginRight: 15,
-    },
-    exerciseItem: {
-        backgroundColor: "white",
-        padding: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: "#ccc",
-    },
-    exerciseName: {
-        fontSize: 18,
-        fontWeight: "bold",
-    },
-    deleteButton: {
-        backgroundColor: "#FF3B30",
-        justifyContent: "center",
-        alignItems: "center",
-        width: 80,
-        height: "100%",
-    },
-    sectionHeader: {
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-        fontSize: 14,
-        fontWeight: "bold",
-        backgroundColor: "#f0f0f0",
-    },
-    editButton: {
-        backgroundColor: "#007AFF",
-        justifyContent: "center",
-        alignItems: "center",
-        width: 80,
-        height: "100%",
-    },
-    remainingSets: { marginTop: 5, fontWeight: "bold", color: "#007AFF" },
-});
 
 export default AllExercisesScreen;

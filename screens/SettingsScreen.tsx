@@ -1,18 +1,24 @@
 // screens/SettingsScreen.tsx
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Share } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Share, Switch } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { SettingsScreenNavigationProp } from "../types/navigation";
 import { useExerciseContext } from "../contexts/ExerciseContext";
+import { useTheme } from "../contexts/ThemeContext";
+import { lightTheme, darkTheme, createSettingsStyles } from "../styles/globalStyles";
 
 type SettingItem = {
     id: string;
     title: string;
     action: () => void;
+    isSwitch?: boolean;
 };
 
 const SettingsScreen = () => {
+    const { theme, toggleTheme } = useTheme();
+    const currentTheme = theme === "light" ? lightTheme : darkTheme;
+    const styles = createSettingsStyles(currentTheme);
     const navigation = useNavigation<SettingsScreenNavigationProp>();
     const { exercises, exerciseHistory } = useExerciseContext();
 
@@ -59,12 +65,30 @@ const SettingsScreen = () => {
             title: "Training Interval",
             action: () => navigation.navigate("TrainingInterval"),
         },
+        {
+            id: "5",
+            title: "Dark Mode",
+            action: () => {}, // This will be handled by the Switch component
+            isSwitch: true,
+        },
     ];
-
     const renderItem = ({ item }: { item: SettingItem }) => (
         <TouchableOpacity style={styles.settingItem} onPress={item.action}>
             <Text style={styles.settingTitle}>{item.title}</Text>
-            <Icon name="chevron-forward-outline" size={24} color="#007AFF" />
+            {item.isSwitch ? (
+                <Switch
+                    value={theme === "dark"}
+                    onValueChange={toggleTheme}
+                    trackColor={{ false: "#767577", true: currentTheme.colors.primary }}
+                    thumbColor={theme === "dark" ? currentTheme.colors.background : "#f4f3f4"}
+                />
+            ) : (
+                <Icon
+                    name="chevron-forward-outline"
+                    size={24}
+                    color={currentTheme.colors.primary}
+                />
+            )}
         </TouchableOpacity>
     );
 
@@ -78,24 +102,5 @@ const SettingsScreen = () => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#f0f0f0",
-    },
-    settingItem: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: 15,
-        backgroundColor: "white",
-        borderBottomWidth: 1,
-        borderBottomColor: "#e0e0e0",
-    },
-    settingTitle: {
-        fontSize: 16,
-    },
-});
 
 export default SettingsScreen;

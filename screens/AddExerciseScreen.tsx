@@ -1,12 +1,17 @@
 // screens/AddExerciseScreen.tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, Button, Alert } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { AddExerciseScreenNavigationProp, AddExerciseScreenRouteProp } from "../types/navigation";
 import { Exercise } from "../models/Exercise";
+import { lightTheme, darkTheme, createAddExerciseStyles } from "../styles/globalStyles";
+import { useTheme } from "../contexts/ThemeContext";
 
 const AddExerciseScreen = () => {
+    const { theme } = useTheme();
+    const currentTheme = theme === "light" ? lightTheme : darkTheme;
+    const styles = createAddExerciseStyles(currentTheme);
     const { addExercise, updateExercise, exercises } = useExerciseContext();
     const navigation = useNavigation<AddExerciseScreenNavigationProp>();
     const route = useRoute<AddExerciseScreenRouteProp>();
@@ -85,19 +90,5 @@ const AddExerciseScreen = () => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: "#ccc",
-        padding: 10,
-        marginBottom: 10,
-        borderRadius: 5,
-    },
-});
 
 export default AddExerciseScreen;

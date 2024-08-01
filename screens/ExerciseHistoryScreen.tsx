@@ -20,8 +20,13 @@ import { useExerciseContext } from "../contexts/ExerciseContext";
 import { ExerciseHistoryScreenRouteProp } from "../types/navigation";
 import { ExerciseHistoryEntry } from "../models/Exercise";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useTheme } from "../contexts/ThemeContext";
+import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../styles/globalStyles";
 
 const ExerciseHistoryScreen = () => {
+    const { theme } = useTheme();
+    const currentTheme = theme === "light" ? lightTheme : darkTheme;
+    const styles = createExerciseHistoryStyles(currentTheme);
     const route = useRoute<ExerciseHistoryScreenRouteProp>();
     const { exerciseId } = route.params;
     const {
@@ -316,79 +321,5 @@ const ExerciseHistoryScreen = () => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 15,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 20,
-    },
-    inputContainer: {
-        flexDirection: "row",
-        marginBottom: 20,
-    },
-    input: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        padding: 10,
-        marginRight: 10,
-        borderRadius: 5,
-    },
-    historyItem: {
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: "#ccc",
-        marginBottom: 10,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
-    deleteButton: {
-        backgroundColor: "#FF3B30",
-        justifyContent: "center",
-        alignItems: "center",
-        width: 80,
-        height: "100%",
-    },
-    oneRepMax: {
-        color: "#666",
-        fontWeight: "bold",
-        textAlign: "right",
-    },
-    timerContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 20,
-    },
-    timerText: { fontSize: 20, fontWeight: "bold" },
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 10,
-    },
-    headerButtons: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    fillButton: {
-        backgroundColor: "#f0f0f0",
-        marginRight: 20,
-        marginBottom: 20,
-    },
-    dateButton: {
-        backgroundColor: "#f0f0f0",
-        padding: 10,
-        borderRadius: 5,
-        marginBottom: 20,
-    },
-    sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 10 },
-});
 
 export default ExerciseHistoryScreen;
