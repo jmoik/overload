@@ -12,6 +12,7 @@ import { ExerciseProvider } from "./contexts/ExerciseContext";
 import { RootStackParamList } from "./types/navigation";
 import OneRepMaxFormulaScreen from "./screens/OneRepMaxFormulaScreen";
 import RestTimerScreen from "./screens/RestTimerScreen";
+import { shareExportData } from "./utils/exportData";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
