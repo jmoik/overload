@@ -1,20 +1,42 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+// App.tsx
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import RoutineScreen from "./screens/RoutineScreen";
+import AddExerciseScreen from "./screens/AddExerciseScreen";
+import ExerciseHistoryScreen from "./screens/ExerciseHistoryScreen";
+import { ExerciseProvider } from "./contexts/ExerciseContext";
+import { RootStackParamList } from "./types/navigation";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+const Stack = createStackNavigator<RootStackParamList>();
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const App = () => {
+    return (
+        <ExerciseProvider>
+            <NavigationContainer>
+                <Stack.Navigator>
+                    <Stack.Screen
+                        name="Routine"
+                        component={RoutineScreen}
+                        options={{ title: "My Routine" }}
+                    />
+                    <Stack.Screen
+                        name="AddExercise"
+                        component={AddExerciseScreen}
+                        options={{
+                            presentation: "modal",
+                            title: "Add Exercise",
+                        }}
+                    />
+                    <Stack.Screen
+                        name="ExerciseHistory"
+                        component={ExerciseHistoryScreen}
+                        options={{ title: "Exercise History" }}
+                    />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </ExerciseProvider>
+    );
+};
+
+export default App;
