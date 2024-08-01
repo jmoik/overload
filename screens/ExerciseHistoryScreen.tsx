@@ -21,11 +21,25 @@ const ExerciseHistoryScreen = () => {
     const [sets, setSets] = useState("");
     const [reps, setReps] = useState("");
     const [weight, setWeight] = useState("");
+    const { oneRepMaxFormula } = useExerciseContext();
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
 
     const exercise = exercises.find((e) => e.id === exerciseId);
     const history = exerciseHistory[exerciseId] || [];
+
+    const calculateOneRepMax = (weight: number, reps: number): number => {
+        switch (oneRepMaxFormula) {
+            case "brzycki":
+                return Math.floor(weight / (1.0278 - 0.0278 * reps));
+            case "epley":
+                return Math.floor(weight * (1 + 0.0333 * reps));
+            case "lander":
+                return Math.floor((100 * weight) / (101.3 - 2.67123 * reps));
+            default:
+                return 0;
+        }
+    };
 
     const handleAddOrUpdateEntry = () => {
         if (!sets.trim() || !reps.trim() || !weight.trim()) {
@@ -139,10 +153,17 @@ const ExerciseHistoryScreen = () => {
                             style={styles.historyItem}
                             onTouchEnd={() => handleEditEntry(item, history.length - 1 - index)}
                         >
-                            <Text>{new Date(item.date).toLocaleDateString()}</Text>
-                            <Text>
-                                {item.sets} sets x {item.reps} reps @ {item.weight} kg
-                            </Text>
+                            <View style={styles.historyItemContent}>
+                                <View>
+                                    <Text>{new Date(item.date).toLocaleDateString()}</Text>
+                                    <Text>
+                                        {item.sets} sets x {item.reps} reps @ {item.weight} kg
+                                    </Text>
+                                </View>
+                                <Text style={styles.oneRepMax}>
+                                    1RM: {calculateOneRepMax(item.weight, item.reps)} kg
+                                </Text>
+                            </View>
                         </View>
                     </Swipeable>
                 )}
@@ -185,6 +206,15 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: 80,
         height: "100%",
+    },
+    historyItemContent: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    oneRepMax: {
+        color: "#666",
+        fontWeight: "bold",
     },
 });
 

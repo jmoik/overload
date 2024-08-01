@@ -10,6 +10,8 @@ import React, {
 import { Exercise, ExerciseHistoryEntry } from "../models/Exercise";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+type OneRepMaxFormula = "brzycki" | "epley" | "lander";
+
 interface ExerciseContextType {
     exercises: Exercise[];
     addExercise: (exercise: Exercise) => void;
@@ -23,6 +25,8 @@ interface ExerciseContextType {
     ) => void;
     deleteExerciseHistoryEntry: (exerciseId: string, entryIndex: number) => void;
     updateExercise: (id: string, updatedExercise: Omit<Exercise, "id">) => void;
+    oneRepMaxFormula: OneRepMaxFormula;
+    setOneRepMaxFormula: (formula: OneRepMaxFormula) => void;
 }
 
 const ExerciseContext = createContext<ExerciseContextType | undefined>(undefined);
@@ -32,6 +36,7 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [exerciseHistory, setExerciseHistory] = useState<Record<string, ExerciseHistoryEntry[]>>(
         {}
     );
+    const [oneRepMaxFormula, setOneRepMaxFormula] = useState<OneRepMaxFormula>("brzycki");
 
     useEffect(() => {
         loadData();
@@ -39,17 +44,27 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     useEffect(() => {
         saveData();
-    }, [exercises, exerciseHistory]);
+    }, [exercises, exerciseHistory, oneRepMaxFormula]);
 
     const loadData = async () => {
         try {
             const storedExercises = await AsyncStorage.getItem("exercises");
             const storedHistory = await AsyncStorage.getItem("exerciseHistory");
+            const storedFormula = await AsyncStorage.getItem("oneRepMaxFormula");
+
             if (storedExercises) {
                 setExercises(JSON.parse(storedExercises));
             }
             if (storedHistory) {
                 setExerciseHistory(JSON.parse(storedHistory));
+            }
+            if (
+                storedFormula &&
+                (storedFormula === "brzycki" ||
+                    storedFormula === "epley" ||
+                    storedFormula === "lander")
+            ) {
+                setOneRepMaxFormula(storedFormula);
             }
         } catch (error) {
             console.error("Error loading data:", error);
@@ -60,10 +75,11 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
         try {
             await AsyncStorage.setItem("exercises", JSON.stringify(exercises));
             await AsyncStorage.setItem("exerciseHistory", JSON.stringify(exerciseHistory));
+            await AsyncStorage.setItem("oneRepMaxFormula", oneRepMaxFormula);
         } catch (error) {
             console.error("Error saving data:", error);
         }
-    }, [exercises, exerciseHistory]);
+    }, [exercises, exerciseHistory, oneRepMaxFormula]);
 
     const addExercise = useCallback((exercise: Exercise) => {
         setExercises((prevExercises) => [...prevExercises, exercise]);
@@ -118,6 +134,8 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
                 updateExerciseHistoryEntry,
                 deleteExerciseHistoryEntry,
                 updateExercise,
+                oneRepMaxFormula,
+                setOneRepMaxFormula,
             }}
         >
             {children}

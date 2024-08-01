@@ -3,12 +3,12 @@ import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 export type RootStackParamList = {
-    Routine: undefined;
+    MainTabs: undefined;
     AddExercise: { exerciseId?: string } | undefined;
     ExerciseHistory: { exerciseId: string };
+    OneRepMaxFormula: undefined;
 };
 
-export type RoutineScreenNavigationProp = StackNavigationProp<RootStackParamList, "Routine">;
 export type AddExerciseScreenNavigationProp = StackNavigationProp<
     RootStackParamList,
     "AddExercise"
@@ -20,3 +20,4 @@ export type ExerciseHistoryScreenNavigationProp = StackNavigationProp<
 
 export type AddExerciseScreenRouteProp = RouteProp<RootStackParamList, "AddExercise">;
 export type ExerciseHistoryScreenRouteProp = RouteProp<RootStackParamList, "ExerciseHistory">;
+export type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, "MainTabs">;
