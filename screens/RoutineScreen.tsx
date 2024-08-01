@@ -7,9 +7,10 @@ import { Swipeable } from "react-native-gesture-handler";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { RoutineScreenNavigationProp } from "../types/navigation";
 import { Exercise } from "../models/Exercise";
+import { subDays, isAfter } from "date-fns";
 
 const RoutineScreen = () => {
-    const { exercises, deleteExercise } = useExerciseContext();
+    const { exercises, deleteExercise, exerciseHistory } = useExerciseContext();
     const navigation = useNavigation<RoutineScreenNavigationProp>();
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
     const isFocused = useIsFocused();
@@ -88,28 +89,60 @@ const RoutineScreen = () => {
         );
     }, []);
 
-    const renderExerciseItem = useCallback(
-        ({ item, index }: { item: Exercise; index: number }) => (
-            <Swipeable
-                ref={(el) => (swipeableRefs.current[index] = el)}
-                renderRightActions={() => renderRightActions(item.id, item.name)}
-                renderLeftActions={renderLeftActions}
-                onSwipeableLeftOpen={() => handleEditExercise(item.id, index)}
-                rightThreshold={40}
-                leftThreshold={40}
-            >
-                <TouchableOpacity
-                    style={styles.exerciseItem}
-                    onPress={() => handleExercisePress(item.id)}
-                >
-                    <Text style={styles.exerciseName}>{item.name}</Text>
-                    <Text>{item.description}</Text>
-                    <Text>{item.setsPerWeek} sets per week</Text>
-                </TouchableOpacity>
-            </Swipeable>
-        ),
-        [handleExercisePress, renderRightActions, renderLeftActions, handleEditExercise]
+    const calculateRemainingSets = useCallback(
+        (exercise: Exercise) => {
+            const today = new Date();
+            const sevenDaysAgo = subDays(today, 7);
+
+            const history = exerciseHistory[exercise.id] || [];
+            const setsDoneLastWeek = history.reduce((total, entry) => {
+                if (isAfter(new Date(entry.date), sevenDaysAgo)) {
+                    return total + entry.sets;
+                }
+                return total;
+            }, 0);
+
+            const remainingSets = Math.max(0, exercise.setsPerWeek - setsDoneLastWeek);
+            return remainingSets;
+        },
+        [exerciseHistory]
     );
+
+    const renderExerciseItem = useCallback(
+        ({ item, index }: { item: Exercise; index: number }) => {
+            const remainingSets = calculateRemainingSets(item);
+            return (
+                <Swipeable
+                    ref={(el) => (swipeableRefs.current[index] = el)}
+                    renderRightActions={() => renderRightActions(item.id, item.name)}
+                    renderLeftActions={renderLeftActions}
+                    onSwipeableLeftOpen={() => handleEditExercise(item.id, index)}
+                    rightThreshold={40}
+                    leftThreshold={40}
+                >
+                    <TouchableOpacity
+                        style={styles.exerciseItem}
+                        onPress={() => handleExercisePress(item.id)}
+                    >
+                        <Text style={styles.exerciseName}>{item.name}</Text>
+                        <Text>{item.description}</Text>
+                        <Text>{item.setsPerWeek} sets per week</Text>
+                        <Text style={styles.remainingSets}>
+                            Remaining sets this week: {remainingSets}
+                        </Text>
+                    </TouchableOpacity>
+                </Swipeable>
+            );
+        },
+        [
+            handleExercisePress,
+            renderRightActions,
+            renderLeftActions,
+            handleEditExercise,
+            calculateRemainingSets,
+        ]
+    );
+
     // Group exercises by category
     const groupedExercises = exercises.reduce((acc, exercise) => {
         const category = exercise.category || "Uncategorized";
@@ -177,6 +210,7 @@ const styles = StyleSheet.create({
         width: 80,
         height: "100%",
     },
+    remainingSets: { marginTop: 5, fontWeight: "bold", color: "#007AFF" },
 });
 
 export default RoutineScreen;
