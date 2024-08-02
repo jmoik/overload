@@ -38,7 +38,7 @@ export const darkTheme = {
         surface: "#121212",
         onSurface: "#E1E1E1",
         disabled: "#666666",
-        placeholder: "#9E9E9E",
+        placeholder: "#AAAAAA",
         elevation: {
             1: "#1E1E1E",
             2: "#222222",
@@ -77,7 +77,7 @@ export const navigationTheme: { light: Theme; dark: Theme } = {
 };
 
 // Global styles
-const createGlobalStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+export const createGlobalStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     StyleSheet.create({
         container: {
             flex: 1,
@@ -123,15 +123,34 @@ const createAllExercisesScreenStyles = (theme: typeof lightTheme | typeof darkTh
             marginRight: 15,
         },
         exerciseItem: {
-            backgroundColor: theme.colors.card,
+            backgroundColor: "white",
             padding: 20,
             borderBottomWidth: 1,
-            borderBottomColor: theme.colors.border,
+            borderBottomColor: "#ccc",
+            flexDirection: "row",
+            justifyContent: "space-between",
+        },
+        exerciseItemLeft: {
+            flex: 1,
+        },
+        exerciseItemRight: {
+            justifyContent: "center",
+            alignItems: "flex-end",
         },
         exerciseName: {
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: "bold",
             color: theme.colors.text,
+        },
+        exerciseDescription: {
+            fontSize: 14,
+            color: theme.colors.text,
+            marginTop: 5,
+        },
+        exerciseSetsPerWeek: {
+            fontSize: 14,
+            color: theme.colors.text,
+            marginTop: 5,
         },
         deleteButton: {
             backgroundColor: theme.colors.notification,
@@ -159,7 +178,10 @@ const createAllExercisesScreenStyles = (theme: typeof lightTheme | typeof darkTh
             marginTop: 5,
             fontWeight: "bold",
             color: theme.colors.primary,
+            fontSize: 16,
         },
+        headerButtons: { flexDirection: "row", alignItems: "center" },
+        headerButton: { marginLeft: 0, marginRight: 20 },
     });
 
 // AddExerciseScreen specific styles
@@ -179,7 +201,6 @@ const createAddExerciseScreenStyles = (theme: typeof lightTheme | typeof darkThe
             marginBottom: 10,
             borderRadius: 5,
         },
-        // ... add more styles as needed
     });
 
 // ExerciseHistoryScreen specific styles
@@ -277,6 +298,74 @@ const createSettingsStylesScreenStyles = (theme: typeof lightTheme | typeof dark
             fontSize: 16,
             color: theme.colors.text,
         },
+        dangerousSettingItem: {
+            backgroundColor: "#FF3B30",
+        },
+        dangeroussettingtitle: { color: "white", fontWeight: "bold" },
+    });
+
+// WelcomeScreen specific styles
+const createWelcomeStylesScreenStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+        },
+        header: {
+            height: 60,
+            justifyContent: "center",
+            alignItems: "center",
+            borderBottomWidth: 1,
+            borderBottomColor: "#ccc",
+        },
+        headerText: {
+            fontSize: 20,
+            fontWeight: "bold",
+        },
+        contentContainer: {
+            flexGrow: 1,
+            padding: 20,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        title: {
+            fontSize: 28,
+            fontWeight: "bold",
+            marginBottom: 20,
+            textAlign: "center",
+        },
+        subtitle: {
+            fontSize: 18,
+            marginBottom: 30,
+            textAlign: "center",
+        },
+        option: {
+            flexDirection: "row",
+            alignItems: "center",
+            borderWidth: 2,
+            borderRadius: 10,
+            padding: 15,
+            marginBottom: 20,
+            width: "80%",
+        },
+        selectedOption: {
+            backgroundColor: "rgba(0, 122, 255, 0.1)",
+        },
+        optionText: {
+            fontSize: 18,
+            fontWeight: "500",
+        },
+        button: {
+            padding: 15,
+            borderRadius: 10,
+            alignItems: "center",
+            justifyContent: "center",
+            marginTop: 30,
+            width: "80%",
+        },
+        buttonText: {
+            fontSize: 18,
+            fontWeight: "bold",
+        },
     });
 
 export const createAllExercisesStyles = (theme: typeof lightTheme | typeof darkTheme) => ({
@@ -299,8 +388,14 @@ export const createSettingsStyles = (theme: typeof lightTheme | typeof darkTheme
     ...createSettingsStylesScreenStyles(theme),
 });
 
+export const createWelcomeStyles = (theme: typeof lightTheme | typeof darkTheme) => ({
+    ...createGlobalStyles(theme),
+    ...createWelcomeStylesScreenStyles(theme),
+});
+
 export type GlobalStyles = ReturnType<typeof createGlobalStyles>;
 export type AllExercisesStyles = ReturnType<typeof createAllExercisesStyles>;
 export type AddExerciseStyles = ReturnType<typeof createAddExerciseStyles>;
 export type ExerciseHistoryStyles = ReturnType<typeof createExerciseHistoryStyles>;
 export type SettingsStyles = ReturnType<typeof createSettingsStyles>;
+export type WelcomStyles = ReturnType<typeof createWelcomeStyles>;

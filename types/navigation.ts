@@ -1,6 +1,7 @@
 // types/navigation.ts
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { Exercise } from "../models/Exercise";
 
 export type RootStackParamList = {
     Home: undefined;
@@ -10,6 +11,8 @@ export type RootStackParamList = {
     OneRepMaxFormula: undefined;
     RestTimer: undefined;
     TrainingInterval: undefined;
+    Welcome: undefined;
+    PlanPreview: { plans: Array<{ name: string; exercises: Exercise[] }> };
 };
 
 export type AddExerciseScreenNavigationProp = StackNavigationProp<

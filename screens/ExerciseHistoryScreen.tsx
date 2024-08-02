@@ -191,7 +191,7 @@ const ExerciseHistoryScreen = () => {
             rightThreshold={40}
         >
             <TouchableOpacity style={styles.historyItem} onPress={() => handleEditEntry(item)}>
-                <Text>
+                <Text style={styles.text}>
                     {new Date(item.date).toLocaleDateString()}
                     {"\n"}
                     {item.sets} sets x {item.reps} reps @ {item.weight} kg{" "}
@@ -233,6 +233,7 @@ const ExerciseHistoryScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder="Sets"
+                    placeholderTextColor={currentTheme.colors.placeholder}
                     value={sets}
                     onChangeText={setSets}
                     keyboardType="numeric"
@@ -240,6 +241,7 @@ const ExerciseHistoryScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder="Reps"
+                    placeholderTextColor={currentTheme.colors.placeholder}
                     value={reps}
                     onChangeText={setReps}
                     keyboardType="numeric"
@@ -247,6 +249,7 @@ const ExerciseHistoryScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder="Weight"
+                    placeholderTextColor={currentTheme.colors.placeholder}
                     value={weight}
                     onChangeText={setWeight}
                     keyboardType="numeric"
@@ -254,6 +257,7 @@ const ExerciseHistoryScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder="RPE"
+                    placeholderTextColor={currentTheme.colors.placeholder}
                     value={rpe}
                     onChangeText={setRpe}
                     keyboardType="numeric"

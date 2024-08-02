@@ -1,5 +1,5 @@
 // screens/RoutineScreen.tsx
-import React, { useLayoutEffect, useCallback, useRef, useEffect } from "react";
+import React, { useLayoutEffect, useCallback, useRef, useEffect, useState } from "react";
 import { View, Text, SectionList, TouchableOpacity, Alert } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -19,25 +19,39 @@ const AllExercisesScreen = () => {
     const navigation = useNavigation<RoutineScreenNavigationProp>();
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
     const isFocused = useIsFocused();
+    const [sortBySetsLeft, setSortBySetsLeft] = useState(false);
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <View style={styles.headerButtons}>
+                    <TouchableOpacity
+                        onPress={() => setSortBySetsLeft(!sortBySetsLeft)}
+                        style={styles.headerButton}
+                    >
+                        <Icon
+                            name={sortBySetsLeft ? "time-outline" : "list-outline"}
+                            size={24}
+                            color={currentTheme.colors.primary}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate("AddExercise")}
+                        style={styles.headerButton}
+                    >
+                        <Icon name="add-circle" size={24} color={currentTheme.colors.primary} />
+                    </TouchableOpacity>
+                </View>
+            ),
+        });
+    }, [navigation, sortBySetsLeft, currentTheme.colors.primary]);
+
     useEffect(() => {
         if (isFocused) {
             // Close all open Swipeable components when the screen comes into focus
             swipeableRefs.current.forEach((ref) => ref?.close());
         }
     }, [isFocused]);
-
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <TouchableOpacity
-                    onPress={() => navigation.navigate("AddExercise")}
-                    style={styles.addButton}
-                >
-                    <Icon name="add-circle" size={24} color="#007AFF" />
-                </TouchableOpacity>
-            ),
-        });
-    }, [navigation]);
 
     const handleExercisePress = (exerciseId: string) => {
         navigation.navigate("ExerciseHistory", { exerciseId });
@@ -102,20 +116,56 @@ const AllExercisesScreen = () => {
             const history = exerciseHistory[exercise.id] || [];
             const setsDoneInInterval = history.reduce((total, entry) => {
                 if (isAfter(new Date(entry.date), intervalStart)) {
-                    return total + entry.sets;
+                    return total + entry.sets * entry.rpe;
                 }
                 return total;
             }, 0);
 
-            const remainingSets = Math.max(0, exercise.setsPerWeek - setsDoneInInterval);
+            const remainingSets = exercise.weeklySets * exercise.targetRPE - setsDoneInInterval;
             return remainingSets;
         },
         [exerciseHistory, trainingInterval]
     );
 
+    const groupedAndSortedExercises = React.useMemo(() => {
+        const grouped = exercises.reduce((acc, exercise) => {
+            const category = exercise.category || "Uncategorized";
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(exercise);
+            return acc;
+        }, {} as Record<string, Exercise[]>);
+
+        Object.keys(grouped).forEach((category) => {
+            grouped[category].sort((a, b) => {
+                if (sortBySetsLeft) {
+                    return calculateRemainingSets(a) - calculateRemainingSets(b);
+                } else {
+                    return a.name.localeCompare(b.name);
+                }
+            });
+        });
+
+        const sortedCategories = Object.keys(grouped).sort();
+
+        return sortedCategories.map((category) => ({
+            title: category,
+            data: grouped[category],
+        }));
+    }, [exercises, sortBySetsLeft, calculateRemainingSets]);
+
     const renderExerciseItem = useCallback(
-        ({ item, index }: { item: Exercise; index: number }) => {
-            const remainingSets = calculateRemainingSets(item);
+        ({
+            item,
+            index,
+            section,
+        }: {
+            item: Exercise;
+            index: number;
+            section: { title: string };
+        }) => {
+            const remainingTrainingLoad = calculateRemainingSets(item);
             return (
                 <Swipeable
                     ref={(el) => (swipeableRefs.current[index] = el)}
@@ -129,12 +179,16 @@ const AllExercisesScreen = () => {
                         style={styles.exerciseItem}
                         onPress={() => handleExercisePress(item.id)}
                     >
-                        <Text style={styles.exerciseName}>{item.name}</Text>
-                        <Text>{item.description}</Text>
-                        <Text>{item.setsPerWeek} sets per week</Text>
-                        <Text style={styles.remainingSets}>
-                            Remaining sets in interval: {remainingSets}
-                        </Text>
+                        <View style={styles.exerciseItemLeft}>
+                            <Text style={styles.exerciseName}>{item.name}</Text>
+                            <Text style={styles.exerciseDescription}>{item.description}</Text>
+                            <Text style={styles.exerciseSetsPerWeek}>
+                                {item.weeklySets * item.targetRPE} training load per week
+                            </Text>
+                        </View>
+                        <View style={styles.exerciseItemRight}>
+                            <Text style={styles.remainingSets}>Load: {remainingTrainingLoad}</Text>
+                        </View>
                     </TouchableOpacity>
                 </Swipeable>
             );
@@ -166,8 +220,8 @@ const AllExercisesScreen = () => {
     return (
         <View style={styles.container}>
             <SectionList
-                sections={sections}
-                keyExtractor={(item) => item.id}
+                sections={groupedAndSortedExercises}
+                keyExtractor={(item, index) => `${item.id}-${index}`}
                 renderItem={renderExerciseItem}
                 renderSectionHeader={({ section: { title } }) => (
                     <Text style={styles.sectionHeader}>{title}</Text>

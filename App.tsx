@@ -1,8 +1,8 @@
 // App.tsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"; // Corrected import
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/Ionicons";
 import AllExercisesScreen from "./screens/AllExercisesScreen";
 import AddExerciseScreen from "./screens/AddExerciseScreen";
@@ -11,10 +11,13 @@ import SettingsScreen from "./screens/SettingsScreen";
 import { ExerciseProvider } from "./contexts/ExerciseContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { RootStackParamList } from "./types/navigation";
+import { navigationTheme } from "./styles/globalStyles";
 import OneRepMaxFormulaScreen from "./screens/settings/OneRepMaxFormulaScreen";
 import RestTimerScreen from "./screens/settings/RestTimerScreen";
 import TrainingIntervalScreen from "./screens/settings/TrainingIntervalScreen";
-import { navigationTheme } from "./styles/globalStyles";
+import WelcomeScreen from "./screens/WelcomeScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import PlanPreviewScreen from "./screens/PlanPreviewScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -43,10 +46,46 @@ const Home = () => (
 
 const AppContent = () => {
     const { theme } = useTheme();
+    const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        checkIfFirstLaunch();
+    }, []);
+
+    const checkIfFirstLaunch = async () => {
+        try {
+            const alreadySetup = await AsyncStorage.getItem("alreadySetup");
+            if (alreadySetup === null || alreadySetup === "false") {
+                setIsFirstLaunch(true);
+            } else {
+                setIsFirstLaunch(false);
+            }
+        } catch (error) {
+            console.error("Error checking if first launch:", error);
+        }
+    };
+
+    if (isFirstLaunch === null) {
+        return null;
+    }
 
     return (
         <NavigationContainer theme={navigationTheme[theme]}>
             <Stack.Navigator>
+                {isFirstLaunch ? (
+                    <>
+                        <Stack.Screen
+                            name="Welcome"
+                            component={WelcomeScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="PlanPreview"
+                            component={PlanPreviewScreen}
+                            options={{ title: "Preview Plan" }}
+                        />
+                    </>
+                ) : null}
                 <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
                 <Stack.Screen
                     name="AddExercise"

@@ -16,9 +16,13 @@ export type OneRepMaxFormula = "brzycki" | "epley" | "lander";
 
 interface ExerciseContextType {
     exercises: Exercise[];
+    setExercises: React.Dispatch<React.SetStateAction<Exercise[]>>;
     addExercise: (exercise: Exercise) => void;
     deleteExercise: (exerciseId: string) => void;
     exerciseHistory: Record<string, ExerciseHistoryEntry[]>;
+    setExerciseHistory: React.Dispatch<
+        React.SetStateAction<Record<string, ExerciseHistoryEntry[]>>
+    >;
     addExerciseToHistory: (exerciseId: string, entry: ExerciseHistoryEntry) => void;
     updateExerciseHistoryEntry: (
         exerciseId: string,
@@ -189,6 +193,8 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
         <ExerciseContext.Provider
             value={{
                 exercises,
+                setExercises,
+                setExerciseHistory,
                 addExercise,
                 deleteExercise,
                 exerciseHistory,

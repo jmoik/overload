@@ -3,7 +3,8 @@ export interface Exercise {
     id: string;
     name: string;
     description: string;
-    setsPerWeek: number;
+    weeklySets: number;
+    targetRPE: number;
     category: string;
 }
 export interface ExerciseHistoryEntry {
