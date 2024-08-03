@@ -6,7 +6,6 @@ import {
     FlatList,
     Button,
     TextInput,
-    StyleSheet,
     Alert,
     TouchableOpacity,
     Dimensions,
@@ -114,6 +113,10 @@ const ExerciseHistoryScreen = () => {
     };
 
     const handleAddOrUpdateEntry = () => {
+        if (!exercise) {
+            Alert.alert("Error", "Exercise not found");
+            return;
+        }
         if (!sets.trim() || !reps.trim() || !weight.trim()) {
             Alert.alert("Error", "Please fill in all fields");
             return;
@@ -124,7 +127,7 @@ const ExerciseHistoryScreen = () => {
             sets: parseInt(sets, 10),
             reps: parseInt(reps, 10),
             weight: parseFloat(weight),
-            rpe: parseInt(rpe, 10) || 0,
+            rpe: parseInt(rpe, 10) || exercise.targetRPE,
         };
 
         if (editingEntry) {

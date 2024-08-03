@@ -15,14 +15,40 @@ const AllExercisesScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createAllExercisesStyles(currentTheme);
-    const { exercises, deleteExercise, exerciseHistory, trainingInterval } = useExerciseContext();
+    const { exercises, deleteExercise, exerciseHistory, trainingInterval, meanRpe } =
+        useExerciseContext();
     const navigation = useNavigation<RoutineScreenNavigationProp>();
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
     const isFocused = useIsFocused();
     const [sortBySetsLeft, setSortBySetsLeft] = useState(false);
+    const [groupBy, setGroupBy] = useState<"category" | "muscleGroup" | "none">("category");
 
     useLayoutEffect(() => {
         navigation.setOptions({
+            headerLeft: () => (
+                <TouchableOpacity
+                    onPress={() =>
+                        setGroupBy((prev) => {
+                            if (prev === "category") return "muscleGroup";
+                            if (prev === "muscleGroup") return "none";
+                            return "category";
+                        })
+                    }
+                    style={styles.headerButton}
+                >
+                    <Icon
+                        name={
+                            groupBy === "category"
+                                ? "pricetag"
+                                : groupBy === "muscleGroup"
+                                ? "body"
+                                : "layers"
+                        }
+                        size={styles.icon.fontSize}
+                        color={currentTheme.colors.primary}
+                    />
+                </TouchableOpacity>
+            ),
             headerRight: () => (
                 <View style={styles.headerButtons}>
                     <TouchableOpacity
@@ -30,8 +56,8 @@ const AllExercisesScreen = () => {
                         style={styles.headerButton}
                     >
                         <Icon
-                            name={sortBySetsLeft ? "time-outline" : "list-outline"}
-                            size={24}
+                            name={sortBySetsLeft ? "arrow-up" : "list"}
+                            size={styles.icon.fontSize}
                             color={currentTheme.colors.primary}
                         />
                     </TouchableOpacity>
@@ -39,12 +65,16 @@ const AllExercisesScreen = () => {
                         onPress={() => navigation.navigate("AddExercise")}
                         style={styles.headerButton}
                     >
-                        <Icon name="add-circle" size={24} color={currentTheme.colors.primary} />
+                        <Icon
+                            name="add-circle"
+                            size={styles.icon.fontSize}
+                            color={currentTheme.colors.primary}
+                        />
                     </TouchableOpacity>
                 </View>
             ),
         });
-    }, [navigation, sortBySetsLeft, currentTheme.colors.primary]);
+    }, [navigation, sortBySetsLeft, groupBy, currentTheme.colors.primary]);
 
     useEffect(() => {
         if (isFocused) {
@@ -128,17 +158,28 @@ const AllExercisesScreen = () => {
     );
 
     const groupedAndSortedExercises = React.useMemo(() => {
+        if (groupBy === "none") {
+            const sortedExercises = [...exercises].sort((a, b) => {
+                if (sortBySetsLeft) {
+                    return calculateRemainingSets(b) - calculateRemainingSets(a);
+                } else {
+                    return a.name.localeCompare(b.name);
+                }
+            });
+            return [{ title: "", data: sortedExercises }];
+        }
+
         const grouped = exercises.reduce((acc, exercise) => {
-            const category = exercise.category || "Uncategorized";
-            if (!acc[category]) {
-                acc[category] = [];
+            const key = groupBy === "category" ? exercise.category : exercise.muscleGroup;
+            if (!acc[key]) {
+                acc[key] = [];
             }
-            acc[category].push(exercise);
+            acc[key].push(exercise);
             return acc;
         }, {} as Record<string, Exercise[]>);
 
-        Object.keys(grouped).forEach((category) => {
-            grouped[category].sort((a, b) => {
+        Object.keys(grouped).forEach((key) => {
+            grouped[key].sort((a, b) => {
                 if (sortBySetsLeft) {
                     return calculateRemainingSets(a) - calculateRemainingSets(b);
                 } else {
@@ -147,25 +188,20 @@ const AllExercisesScreen = () => {
             });
         });
 
-        const sortedCategories = Object.keys(grouped).sort();
+        const sortedKeys = Object.keys(grouped).sort();
 
-        return sortedCategories.map((category) => ({
-            title: category,
-            data: grouped[category],
+        return sortedKeys.map((key) => ({
+            title: key,
+            data: grouped[key],
         }));
-    }, [exercises, sortBySetsLeft, calculateRemainingSets]);
+    }, [exercises, groupBy, sortBySetsLeft, calculateRemainingSets]);
 
     const renderExerciseItem = useCallback(
-        ({
-            item,
-            index,
-            section,
-        }: {
-            item: Exercise;
-            index: number;
-            section: { title: string };
-        }) => {
+        ({ item, index }: { item: Exercise; index: number; section: { title: string } }) => {
             const remainingTrainingLoad = calculateRemainingSets(item);
+            const setsLeft = Math.floor(remainingTrainingLoad / item.targetRPE);
+            const setsLeftColor = setsLeft <= 0 ? "green" : "red";
+
             return (
                 <Swipeable
                     ref={(el) => (swipeableRefs.current[index] = el)}
@@ -183,11 +219,13 @@ const AllExercisesScreen = () => {
                             <Text style={styles.exerciseName}>{item.name}</Text>
                             <Text style={styles.exerciseDescription}>{item.description}</Text>
                             <Text style={styles.exerciseSetsPerWeek}>
-                                {item.weeklySets * item.targetRPE} training load per week
+                                {item.weeklySets} total weekly Sets
                             </Text>
                         </View>
                         <View style={styles.exerciseItemRight}>
-                            <Text style={styles.remainingSets}>Load: {remainingTrainingLoad}</Text>
+                            <Text style={[styles.remainingSets, { color: setsLeftColor }]}>
+                                Sets left: {setsLeft}
+                            </Text>
                         </View>
                     </TouchableOpacity>
                 </Swipeable>
@@ -202,30 +240,15 @@ const AllExercisesScreen = () => {
         ]
     );
 
-    // Group exercises by category
-    const groupedExercises = exercises.reduce((acc, exercise) => {
-        const category = exercise.category || "Uncategorized";
-        if (!acc[category]) {
-            acc[category] = [];
-        }
-        acc[category].push(exercise);
-        return acc;
-    }, {} as Record<string, Exercise[]>);
-
-    const sections = Object.entries(groupedExercises).map(([category, data]) => ({
-        title: category,
-        data,
-    }));
-
     return (
         <View style={styles.container}>
             <SectionList
                 sections={groupedAndSortedExercises}
-                keyExtractor={(item, index) => `${item.id}-${index}`}
+                keyExtractor={(item) => item.id}
                 renderItem={renderExerciseItem}
-                renderSectionHeader={({ section: { title } }) => (
-                    <Text style={styles.sectionHeader}>{title}</Text>
-                )}
+                renderSectionHeader={({ section: { title } }) =>
+                    groupBy !== "none" ? <Text style={styles.sectionHeader}>{title}</Text> : null
+                }
             />
         </View>
     );

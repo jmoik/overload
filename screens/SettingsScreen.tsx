@@ -1,16 +1,7 @@
 // screens/SettingsScreen.tsx
 import React from "react";
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import {
-    View,
-    Text,
-    StyleSheet,
-    FlatList,
-    TouchableOpacity,
-    Share,
-    Switch,
-    Alert,
-} from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Share, Switch, Alert } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { SettingsScreenNavigationProp } from "../types/navigation";
 import { useExerciseContext } from "../contexts/ExerciseContext";
@@ -85,7 +76,7 @@ const SettingsScreen = () => {
                             setExercises([]);
                             setExerciseHistory({});
 
-                            // Reset the app to the welcome screen
+                            // Reset the app to the initial state
                             navigation.dispatch(
                                 CommonActions.reset({
                                     index: 0,
@@ -132,17 +123,22 @@ const SettingsScreen = () => {
         },
         {
             id: "5",
+            title: "Default RPE",
+            action: () => navigation.navigate("DefaultRpe"),
+        },
+        {
+            id: "6",
             title: "Dark Mode",
             action: () => {}, // This will be handled by the Switch component
             isSwitch: true,
         },
         {
-            id: "6",
+            id: "7",
             title: "Reset Welcome Screen",
             action: resetWelcomeScreen,
         },
         {
-            id: "7",
+            id: "8",
             title: "Delete All Data",
             action: handleDeleteAllData,
             isDangerous: true,

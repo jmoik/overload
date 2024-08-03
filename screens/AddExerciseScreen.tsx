@@ -1,6 +1,6 @@
 // screens/AddExerciseScreen.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, TextInput, Button, Alert } from "react-native";
+import { View, TextInput, Button, Alert } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { AddExerciseScreenNavigationProp, AddExerciseScreenRouteProp } from "../types/navigation";
@@ -12,7 +12,7 @@ const AddExerciseScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createAddExerciseStyles(currentTheme);
-    const { addExercise, updateExercise, exercises } = useExerciseContext();
+    const { addExercise, updateExercise, exercises, meanRpe } = useExerciseContext();
     const navigation = useNavigation<AddExerciseScreenNavigationProp>();
     const route = useRoute<AddExerciseScreenRouteProp>();
     const exerciseId = route.params?.exerciseId;
@@ -22,12 +22,7 @@ const AddExerciseScreen = () => {
     const [targetRPE, setTargetRPE] = useState("");
     const [category, setCategory] = useState("");
     const [description, setDescription] = useState("");
-
-    const calculateTrainingLoad = useCallback(() => {
-        const sets = parseInt(weeklySets, 10) || 0;
-        const rpe = parseFloat(targetRPE) || 0;
-        return (sets * rpe).toFixed(1);
-    }, [weeklySets, targetRPE]);
+    const [muscleGroup, setMuscleGroup] = useState("");
 
     useEffect(() => {
         if (exerciseId) {
@@ -36,6 +31,7 @@ const AddExerciseScreen = () => {
                 setName(exercise.name);
                 setCategory(exercise.category);
                 setDescription(exercise.description);
+                setMuscleGroup(exercise.muscleGroup);
                 setWeeklySets(exercise.weeklySets.toString());
                 setTargetRPE(exercise.targetRPE.toString());
             }
@@ -51,9 +47,10 @@ const AddExerciseScreen = () => {
         const exerciseData: Omit<Exercise, "id"> = {
             name,
             weeklySets: parseInt(weeklySets, 10),
-            targetRPE: parseInt(targetRPE, 10),
+            targetRPE: parseInt(targetRPE, 10) || meanRpe,
             category,
             description,
+            muscleGroup,
         };
 
         if (exerciseId) {
@@ -96,6 +93,13 @@ const AddExerciseScreen = () => {
                 placeholderTextColor={currentTheme.colors.placeholder}
                 value={category}
                 onChangeText={setCategory}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Muscle Group"
+                placeholderTextColor={currentTheme.colors.placeholder}
+                value={muscleGroup}
+                onChangeText={setMuscleGroup}
             />
             <TextInput
                 style={styles.input}

@@ -18,6 +18,8 @@ import TrainingIntervalScreen from "./screens/settings/TrainingIntervalScreen";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PlanPreviewScreen from "./screens/PlanPreviewScreen";
+import StatsScreen from "./screens/StatsScreen";
+import DefaultRpeScreen from "./screens/settings/DefaultRpeScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -30,6 +32,16 @@ const Home = () => (
             options={{
                 title: "All Exercises",
                 tabBarIcon: ({ color, size }) => <Icon name="list" color={color} size={size} />,
+            }}
+        />
+        <Tab.Screen
+            name="Stats"
+            component={StatsScreen}
+            options={{
+                title: "Stats",
+                tabBarIcon: ({ color, size }) => (
+                    <Icon name="stats-chart" color={color} size={size} />
+                ),
             }}
         />
         <Tab.Screen
@@ -114,6 +126,11 @@ const AppContent = () => {
                     name="TrainingInterval"
                     component={TrainingIntervalScreen}
                     options={{ title: "Training Interval" }}
+                />
+                <Stack.Screen
+                    name="DefaultRpe"
+                    component={DefaultRpeScreen}
+                    options={{ title: "Default RPE" }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

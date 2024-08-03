@@ -11,6 +11,7 @@ export type RootStackParamList = {
     OneRepMaxFormula: undefined;
     RestTimer: undefined;
     TrainingInterval: undefined;
+    DefaultRpe: undefined;
     Welcome: undefined;
     PlanPreview: { plans: Array<{ name: string; exercises: Exercise[] }> };
 };

@@ -1,7 +1,8 @@
 // styles/globalStyles.ts
 
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 import { Theme } from "@react-navigation/native";
+import { Icon } from "react-native-elements/dist/icons/Icon";
 
 export const lightTheme = {
     colors: {
@@ -113,6 +114,9 @@ export const createGlobalStyles = (theme: typeof lightTheme | typeof darkTheme) 
             fontSize: 16,
             fontWeight: "bold",
         },
+        icon: {
+            fontSize: 24,
+        },
         // ... add more global styles as needed
     });
 
@@ -181,7 +185,7 @@ const createAllExercisesScreenStyles = (theme: typeof lightTheme | typeof darkTh
             fontSize: 16,
         },
         headerButtons: { flexDirection: "row", alignItems: "center" },
-        headerButton: { marginLeft: 0, marginRight: 20 },
+        headerButton: { marginLeft: 20, marginRight: 20 },
     });
 
 // AddExerciseScreen specific styles
@@ -399,3 +403,41 @@ export type AddExerciseStyles = ReturnType<typeof createAddExerciseStyles>;
 export type ExerciseHistoryStyles = ReturnType<typeof createExerciseHistoryStyles>;
 export type SettingsStyles = ReturnType<typeof createSettingsStyles>;
 export type WelcomStyles = ReturnType<typeof createWelcomeStyles>;
+
+export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.colors.background,
+            padding: 16,
+        },
+        title: {
+            fontSize: 24,
+            fontWeight: "bold",
+            color: theme.colors.text,
+            marginBottom: 16,
+            textAlign: "center",
+        },
+        chart: {
+            marginVertical: 8,
+            borderRadius: 16,
+            width: Dimensions.get("window").width - 32, // Full width minus padding
+        },
+        statsContainer: {
+            marginTop: 16,
+            padding: 16,
+            backgroundColor: theme.colors.card,
+            borderRadius: 8,
+        },
+        statsText: {
+            fontSize: 16,
+            color: theme.colors.text,
+            marginBottom: 8,
+        },
+        noDataText: {
+            fontSize: 16,
+            color: theme.colors.text,
+            textAlign: "center",
+            marginTop: 20,
+        },
+    });

@@ -6,6 +6,7 @@ export interface Exercise {
     weeklySets: number;
     targetRPE: number;
     category: string;
+    muscleGroup: string;
 }
 export interface ExerciseHistoryEntry {
     date: Date;
