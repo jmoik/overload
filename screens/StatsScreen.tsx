@@ -13,7 +13,13 @@ const StatsScreen = () => {
     const styles = createStatsStyles(currentTheme);
     const { exercises, exerciseHistory, trainingInterval } = useExerciseContext();
 
-    const { trainingLoadData, targetTrainingLoad, totalWeeklyLoad } = useMemo(() => {
+    const {
+        trainingLoadData,
+        targetTrainingLoad,
+        totalWeeklyLoad,
+        totalWeeklySets,
+        totalWeeklyEnduranceSets,
+    } = useMemo(() => {
         const today = new Date();
         const intervalStart = subDays(today, trainingInterval);
 
@@ -40,15 +46,32 @@ const StatsScreen = () => {
         );
         const targetDailyLoad = totalWeeklyLoad / trainingInterval;
 
+        const totalWeeklySets = exercises.reduce(
+            (total, exercise) =>
+                exercise.category != "Endurance" ? total + exercise.weeklySets : total,
+            0
+        );
+
+        const totalWeeklyEnduranceSets = exercises.reduce(
+            (total, exercise) =>
+                exercise.category == "Endurance" ? total + exercise.weeklySets : total,
+            0
+        );
+
         return {
             trainingLoadData: loadByDay.map((load) => Math.max(load, 0)), // Ensure no negative values
             targetTrainingLoad: Math.max(targetDailyLoad, 0), // Ensure no negative values
             totalWeeklyLoad,
+            totalWeeklySets,
+            totalWeeklyEnduranceSets,
         };
     }, [exercises, exerciseHistory, trainingInterval]);
 
     const chartData = {
-        labels: Array.from({ length: trainingInterval }, (_, i) => `Day ${i + 1}`),
+        labels: Array.from(
+            { length: trainingInterval },
+            (_, i) => `${i == trainingInterval - 1 ? "Today" : -trainingInterval + i + 1}`
+        ),
         datasets: [
             {
                 data: trainingLoadData,
@@ -98,7 +121,11 @@ const StatsScreen = () => {
                 </Text>
             )}
             <View style={styles.statsContainer}>
-                <Text style={styles.statsText}>Total Load: {totalWeeklyLoad}</Text>
+                <Text style={styles.statsText}>Total Load (Sets x RPE): {totalWeeklyLoad}</Text>
+                <Text style={styles.statsText}>Total Sets: {totalWeeklySets}</Text>
+                <Text style={styles.statsText}>
+                    Total Endurance Workouts: {totalWeeklyEnduranceSets}
+                </Text>
                 <Text style={styles.statsText}>
                     Target Daily Training Load: {targetTrainingLoad.toFixed(1)}
                 </Text>

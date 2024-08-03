@@ -271,6 +271,43 @@ export const suggestedPlans: { [key: string]: Plan } = {
             }),
         ],
     },
+    endurance: {
+        name: "Endurance",
+        exercises: [
+            createExercise({
+                name: "Easy Run",
+                description: "6k",
+                weeklySets: 4,
+                targetRPE: 4,
+                category: "Endurance",
+                muscleGroup: "Legs",
+            }),
+            createExercise({
+                name: "Long Run",
+                description: "8k",
+                weeklySets: 2,
+                targetRPE: 5,
+                category: "Endurance",
+                muscleGroup: "Legs",
+            }),
+            createExercise({
+                name: "Intervals",
+                description: "2x2k",
+                weeklySets: 1,
+                targetRPE: 8,
+                category: "Endurance",
+                muscleGroup: "Legs",
+            }),
+            createExercise({
+                name: "Stair Master",
+                description: "8",
+                weeklySets: 1,
+                targetRPE: 4,
+                category: "Endurance",
+                muscleGroup: "Legs",
+            }),
+        ],
+    },
     booty: {
         name: "Booty",
         exercises: [
