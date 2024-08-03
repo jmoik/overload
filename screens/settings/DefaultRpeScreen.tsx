@@ -1,14 +1,29 @@
-// screens/TrainingIntervalScreen.tsx
-import React, { useState } from "react";
+// screens/DefaultRpeScreen.tsx
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, CommonActions } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { RootStackParamList } from "../../types/navigation";
+
+type DefaultRpeScreenNavigationProp = StackNavigationProp<RootStackParamList, "DefaultRpe">;
 
 const DefaultRpeScreen = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<DefaultRpeScreenNavigationProp>();
     const { meanRpe, setMeanRpe } = useExerciseContext();
     const [selectedRPE, setSelectedRPE] = useState(meanRpe);
+    const [isSetup, setIsSetup] = useState(false);
+
+    useEffect(() => {
+        checkIfSetup();
+    }, []);
+
+    const checkIfSetup = async () => {
+        const alreadySetup = await AsyncStorage.getItem("alreadySetup");
+        setIsSetup(alreadySetup !== "true");
+    };
 
     const generatePickerItems = () => {
         const items = [];
@@ -18,9 +33,19 @@ const DefaultRpeScreen = () => {
         return items;
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setMeanRpe(selectedRPE);
-        navigation.goBack();
+        if (isSetup) {
+            await AsyncStorage.setItem("alreadySetup", "true");
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: "Home" as keyof RootStackParamList }],
+                })
+            );
+        } else {
+            navigation.goBack();
+        }
     };
 
     return (
@@ -36,7 +61,7 @@ const DefaultRpeScreen = () => {
                 </Picker>
             </View>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>Save</Text>
+                <Text style={styles.saveButtonText}>{isSetup ? "Get Started" : "Save"}</Text>
             </TouchableOpacity>
         </View>
     );

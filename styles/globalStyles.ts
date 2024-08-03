@@ -281,6 +281,8 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             marginBottom: 20,
         },
         sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 10 },
+        historyGroup: { marginBottom: 20 },
+        historyGroupDate: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
     });
 
 // SettingsScreen specific styles

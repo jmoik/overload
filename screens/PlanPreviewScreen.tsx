@@ -7,7 +7,6 @@ import { RootStackParamList } from "../types/navigation";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme } from "../styles/globalStyles";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Exercise } from "../models/Exercise";
 
 type PlanPreviewScreenRouteProp = RouteProp<RootStackParamList, "PlanPreview">;
@@ -29,13 +28,9 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
 
-    const handleAccept = async () => {
+    const handleNext = () => {
         plans.forEach((plan) => plan.exercises.forEach((exercise) => addExercise(exercise)));
-        await AsyncStorage.setItem("alreadySetup", "true");
-        navigation.reset({
-            index: 0,
-            routes: [{ name: "Home" }],
-        });
+        navigation.navigate("TrainingInterval");
     };
 
     const renderExerciseItem = ({ item }: { item: Exercise }) => (
@@ -69,12 +64,12 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                 ListFooterComponent={
                     <TouchableOpacity
                         style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
-                        onPress={handleAccept}
+                        onPress={handleNext}
                     >
                         <Text
                             style={[styles.buttonText, { color: currentTheme.colors.background }]}
                         >
-                            Accept Plans
+                            Next
                         </Text>
                     </TouchableOpacity>
                 }

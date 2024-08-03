@@ -57,6 +57,14 @@ export const suggestedPlans: { [key: string]: Plan } = {
         name: "ATG Mobility",
         exercises: [
             createExercise({
+                name: "Deep Squat",
+                description: "60s",
+                weeklySets: 6,
+                targetRPE: 7,
+                category: "ATG",
+                muscleGroup: "Legs",
+            }),
+            createExercise({
                 name: "ATG Split Squat",
                 description: "",
                 weeklySets: 6,

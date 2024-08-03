@@ -1,0 +1,39 @@
+{
+    "exercises": [
+        {
+            "id": "5wywei",
+            "name": "Hip Thrust",
+            "description": "",
+            "weeklySets": 6,
+            "targetRPE": 8,
+            "category": "Booty",
+            "history": [
+                {
+                    "date": "2024-08-03T14:41:24.255Z",
+                    "sets": 5,
+                    "reps": 5,
+                    "weight": 5,
+                    "rpe": 8
+                }
+            ]
+        },
+        {
+            "id": "-poyuy6",
+            "name": "Kick Back",
+            "description": "",
+            "weeklySets": 6,
+            "targetRPE": 8,
+            "category": "Booty",
+            "history": []
+        },
+        {
+            "id": "-4e4u23",
+            "name": "Split Squat",
+            "description": "",
+            "weeklySets": 6,
+            "targetRPE": 8,
+            "category": "Booty",
+            "history": []
+        }
+    ]
+}

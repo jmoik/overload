@@ -1,14 +1,32 @@
 // screens/TrainingIntervalScreen.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { RootStackParamList } from "../../types/navigation";
+
+type TrainingIntervalScreenNavigationProp = StackNavigationProp<
+    RootStackParamList,
+    "TrainingInterval"
+>;
 
 const TrainingIntervalScreen = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<TrainingIntervalScreenNavigationProp>();
     const { trainingInterval, setTrainingInterval } = useExerciseContext();
     const [selectedInterval, setSelectedInterval] = useState(trainingInterval);
+    const [isSetup, setIsSetup] = useState(false);
+
+    useEffect(() => {
+        checkIfSetup();
+    }, []);
+
+    const checkIfSetup = async () => {
+        const alreadySetup = await AsyncStorage.getItem("alreadySetup");
+        setIsSetup(alreadySetup !== "true");
+    };
 
     const generatePickerItems = () => {
         const items = [];
@@ -20,7 +38,11 @@ const TrainingIntervalScreen = () => {
 
     const handleSave = () => {
         setTrainingInterval(selectedInterval);
-        navigation.goBack();
+        if (isSetup) {
+            navigation.navigate("DefaultRpe");
+        } else {
+            navigation.goBack();
+        }
     };
 
     return (
@@ -36,7 +58,7 @@ const TrainingIntervalScreen = () => {
                 </Picker>
             </View>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>Save</Text>
+                <Text style={styles.saveButtonText}>{isSetup ? "Next" : "Save"}</Text>
             </TouchableOpacity>
         </View>
     );

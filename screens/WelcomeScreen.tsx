@@ -1,13 +1,13 @@
 // screens/WelcomeScreen.tsx
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, SafeAreaView } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../types/navigation";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createWelcomeStyles } from "../styles/globalStyles";
 import { suggestedPlans, Plan } from "../data/suggestedPlans";
+
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Welcome">;
 
 const WelcomeScreen = () => {
@@ -24,22 +24,13 @@ const WelcomeScreen = () => {
         );
     };
 
-    const handleGetStarted = async () => {
+    const handleNext = () => {
         if (selectedPlans.length === 0) {
             selectedPlans.push("no_program");
         }
 
         const plans: Plan[] = selectedPlans.map((planKey) => suggestedPlans[planKey]);
-
-        if (selectedPlans.length === 1 && selectedPlans[0] === "no_program") {
-            await AsyncStorage.setItem("alreadySetup", "true");
-            navigation.reset({
-                index: 0,
-                routes: [{ name: "Home" }],
-            });
-        } else {
-            navigation.navigate("PlanPreview", { plans });
-        }
+        navigation.navigate("PlanPreview", { plans });
     };
 
     return (
@@ -80,10 +71,10 @@ const WelcomeScreen = () => {
 
                 <TouchableOpacity
                     style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
-                    onPress={handleGetStarted}
+                    onPress={handleNext}
                 >
                     <Text style={[styles.buttonText, { color: currentTheme.colors.background }]}>
-                        Get Started
+                        Next
                     </Text>
                 </TouchableOpacity>
             </ScrollView>

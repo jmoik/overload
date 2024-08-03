@@ -8,6 +8,8 @@ import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createSettingsStyles } from "../styles/globalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ExerciseHistoryEntry } from "../models/Exercise";
+import * as DocumentPicker from "expo-document-picker";
 
 type SettingItem = {
     id: string;
@@ -25,34 +27,71 @@ const SettingsScreen = () => {
     const { exercises, exerciseHistory, setExercises, setExerciseHistory } = useExerciseContext();
 
     const shareExportData = async () => {
-        let exportData = "Workout Routine Export\n\n";
-
-        exercises.forEach((exercise) => {
-            exportData += `Exercise: ${exercise.name}\n`;
-            exportData += `Description: ${exercise.description}\n`;
-            exportData += `Sets per week: ${exercise.weeklySets}\n`;
-            exportData += `Target RPE: ${exercise.targetRPE}\n`;
-            exportData += `Category: ${exercise.category}\n\n`;
-
-            exportData += "Workout History:\n";
-            const history = exerciseHistory[exercise.id] || [];
-            history.forEach((entry) => {
-                exportData += `Date: ${new Date(entry.date).toLocaleDateString()}, `;
-                exportData += `Sets: ${entry.sets}, `;
-                exportData += `Reps: ${entry.reps}, `;
-                exportData += `Weight: ${entry.weight}kg\n`;
-                exportData += `RPE: ${entry.rpe}\n\n`;
-            });
-            exportData += "\n";
-        });
+        const exportData = {
+            exercises: exercises.map((exercise) => ({
+                ...exercise,
+                history: exerciseHistory[exercise.id] || [],
+            })),
+        };
 
         try {
+            const jsonString = JSON.stringify(exportData, null, 2);
             await Share.share({
-                message: exportData,
+                message: jsonString,
                 title: "Workout Routine Export",
             });
         } catch (error) {
             console.error("Error sharing export data:", error);
+        }
+    };
+
+    const importData = async () => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({ type: "application/json" });
+
+            if (result.canceled === false) {
+                const fileContent = await fetch(result.assets[0].uri).then((res) => res.text());
+                const importedData = JSON.parse(fileContent);
+
+                // Validate the data structure
+                if (!Array.isArray(importedData.exercises)) {
+                    throw new Error("Invalid data format");
+                }
+
+                // Update app state
+                setExercises(
+                    importedData.exercises.map(
+                        (e: {
+                            id: any;
+                            name: any;
+                            description: any;
+                            weeklySets: any;
+                            targetRPE: any;
+                            category: any;
+                        }) => ({
+                            id: e.id,
+                            name: e.name,
+                            description: e.description,
+                            weeklySets: e.weeklySets,
+                            targetRPE: e.targetRPE,
+                            category: e.category,
+                        })
+                    )
+                );
+
+                const newHistory = {};
+                importedData.exercises.forEach((e: { history: any; id: string | number }) => {
+                    if (Array.isArray(e.history)) {
+                        newHistory[e.id] = e.history;
+                    }
+                });
+                setExerciseHistory(newHistory);
+
+                Alert.alert("Success", "Data imported successfully");
+            }
+        } catch (error) {
+            console.error("Error importing data:", error);
+            Alert.alert("Error", "Failed to import data. Please check the file format.");
         }
     };
 
@@ -115,6 +154,7 @@ const SettingsScreen = () => {
             action: () => navigation.navigate("OneRepMaxFormula"),
         },
         { id: "2", title: "Export Data", action: shareExportData },
+        { id: "9", title: "Import Data", action: importData },
         { id: "3", title: "Rest Timer", action: () => navigation.navigate("RestTimer") },
         {
             id: "4",

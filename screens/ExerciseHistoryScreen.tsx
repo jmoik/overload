@@ -77,6 +77,7 @@ const ExerciseHistoryScreen = () => {
 
     const oneRepMaxData = useMemo(() => {
         return history
+            .filter((entry) => entry.rpe >= 8) // Only include entries with RPE 8 or higher
             .map((entry) => ({
                 date: new Date(entry.date),
                 oneRepMax: calculateOneRepMax(entry.weight, entry.reps),
