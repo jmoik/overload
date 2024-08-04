@@ -72,19 +72,42 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         setPlans(newPlans);
     };
 
+    const handleEditExercise = (
+        exercise: Exercise & { isSelected: boolean },
+        planIndex: number
+    ) => {
+        navigation.navigate("AddExercise", {
+            exerciseData: exercise,
+            onSave: (updatedExercise: Exercise) => {
+                const newPlans = [...plans];
+                const exerciseIndex = newPlans[planIndex].exercises.findIndex(
+                    (e) => e.id === exercise.id
+                );
+                newPlans[planIndex].exercises[exerciseIndex] = {
+                    ...updatedExercise,
+                    isSelected: exercise.isSelected,
+                };
+                setPlans(newPlans);
+            },
+        });
+    };
+
     const renderExerciseItem = (
         { item }: { item: Exercise & { isSelected: boolean } },
         planIndex: number
     ) => (
         <View style={[styles.exerciseItem, { borderColor: currentTheme.colors.border }]}>
-            <View style={styles.exerciseContent}>
+            <TouchableOpacity
+                style={styles.exerciseContent}
+                onPress={() => handleEditExercise(item, planIndex)}
+            >
                 <Text style={[styles.exerciseName, { color: currentTheme.colors.text }]}>
                     {item.name}
                 </Text>
                 <Text style={[styles.exerciseDetails, { color: currentTheme.colors.text }]}>
                     {item.weeklySets} sets/week
                 </Text>
-            </View>
+            </TouchableOpacity>
             <Switch
                 value={item.isSelected}
                 onValueChange={() => toggleExercise(planIndex, item.id)}

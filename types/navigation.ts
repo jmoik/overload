@@ -6,7 +6,13 @@ import { Exercise } from "../models/Exercise";
 export type RootStackParamList = {
     Home: undefined;
     RoutineList: undefined;
-    AddExercise: { exerciseId?: string } | undefined;
+    AddExercise:
+        | {
+              exerciseId?: string;
+              exerciseData?: Exercise;
+              onSave?: (updatedExercise: Exercise) => void;
+          }
+        | undefined;
     ExerciseHistory: { exerciseId: string };
     OneRepMaxFormula: undefined;
     RestTimer: undefined;

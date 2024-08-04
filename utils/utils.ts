@@ -10,6 +10,8 @@ export function generateExerciseId(exercise: Omit<Exercise, "id">): string {
         const char = data.charCodeAt(i);
         hash = (hash << 5) - hash + char;
         hash = hash & hash; // Convert to 32-bit integer
+        // add random number to avoid hash collision
+        hash += Math.floor(Math.random() * 10);
     }
     return hash.toString(36); // Convert to base 36 (numbers + letters)
 }

@@ -28,7 +28,9 @@ const AddExerciseScreen = () => {
     const [distance, setDistance] = useState("");
 
     useEffect(() => {
-        if (exerciseId) {
+        if (route.params?.exerciseData) {
+            handleEditExerciseFromPreview(route.params.exerciseData);
+        } else if (exerciseId) {
             const exercise = exercises.find((e) => e.id === exerciseId);
             if (exercise) {
                 setName(exercise.name);
@@ -57,13 +59,25 @@ const AddExerciseScreen = () => {
             muscleGroup,
         };
 
-        if (exerciseId) {
+        if (route.params?.onSave) {
+            route.params.onSave({ ...exerciseData, id: exerciseId || Date.now().toString() });
+        } else if (exerciseId) {
             updateExercise(exerciseId, exerciseData);
         } else {
             addExercise({ ...exerciseData, id: Date.now().toString() });
         }
 
         navigation.goBack();
+    };
+
+    const handleEditExerciseFromPreview = (exerciseData: Exercise) => {
+        setName(exerciseData.name);
+        setWeeklySets(exerciseData.weeklySets.toString());
+        setTargetRPE(exerciseData.targetRPE.toString());
+        setCategory(exerciseData.category);
+        setDescription(exerciseData.description);
+        setMuscleGroup(exerciseData.muscleGroup);
+        setDistance(exerciseData.distance?.toString() || "");
     };
 
     return (
