@@ -34,7 +34,8 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
             exercises: plan.exercises.map((exercise) => ({ ...exercise, isSelected: true })),
         }))
     );
-    const { addExercise } = useExerciseContext();
+    const { addExercise, exercises } = useExerciseContext();
+
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
 
@@ -59,7 +60,13 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         plans.forEach((plan) =>
             plan.exercises
                 .filter((exercise) => exercise.isSelected)
-                .forEach((exercise) => addExercise(exercise))
+                .forEach((exercise) => {
+                    // Check if an exercise with the same ID already exists
+                    const exerciseExists = exercises.some((e) => e.id === exercise.id);
+                    if (!exerciseExists) {
+                        addExercise(exercise);
+                    }
+                })
         );
         navigation.navigate("TrainingInterval");
     };
