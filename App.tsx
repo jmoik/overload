@@ -39,7 +39,7 @@ const Home = () => (
             name="Stats"
             component={StatsScreen}
             options={{
-                title: "Stats",
+                title: "Training Statistics",
                 tabBarIcon: ({ color, size }) => (
                     <Icon name="stats-chart" color={color} size={size} />
                 ),

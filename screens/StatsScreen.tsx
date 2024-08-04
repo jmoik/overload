@@ -17,34 +17,48 @@ const StatsScreen = () => {
     const {
         strengthLoadData,
         enduranceLoadData,
+        mobilityLoadData,
         targetStrengthLoad,
         targetEnduranceLoad,
+        targetMobilityLoad,
         actualStrengthLoad,
         actualEnduranceLoad,
+        actualMobilityLoad,
         actualStrengthSets,
         targetStrengthSets,
+        actualMobilitySets,
+        targetMobilitySets,
     } = useMemo(() => {
         const today = new Date();
         const intervalStart = subDays(today, trainingInterval);
 
         const strengthLoadByDay = Array(trainingInterval).fill(0);
         const enduranceLoadByDay = Array(trainingInterval).fill(0);
+        const mobilityLoadByDay = Array(trainingInterval).fill(0);
 
         let targetStrengthLoad = 0;
         let targetEnduranceLoad = 0;
+        let targetMobilityLoad = 0;
         let actualStrengthLoad = 0;
         let actualEnduranceLoad = 0;
+        let actualMobilityLoad = 0;
         let targetStrengthSets = 0;
         let actualStrengthSets = 0;
+        let targetMobilitySets = 0;
+        let actualMobilitySets = 0;
         let totalWeeklyEnduranceSets = 0;
 
         exercises.forEach((exercise: Exercise) => {
             const history = exerciseHistory[exercise.id] || [];
             const isEndurance = exercise.category === "endurance";
+            const isMobility = exercise.category === "mobility";
 
             if (isEndurance) {
                 targetEnduranceLoad += exercise.weeklySets * (exercise.distance ?? 0);
                 totalWeeklyEnduranceSets += exercise.weeklySets;
+            } else if (isMobility) {
+                targetMobilityLoad += exercise.weeklySets * exercise.targetRPE;
+                targetMobilitySets += exercise.weeklySets;
             } else {
                 targetStrengthLoad += exercise.weeklySets * exercise.targetRPE;
                 targetStrengthSets += exercise.weeklySets;
@@ -61,6 +75,11 @@ const StatsScreen = () => {
                             const load = entry.distance ?? 0;
                             enduranceLoadByDay[dayIndex] += load;
                             actualEnduranceLoad += load;
+                        } else if (isMobility) {
+                            const load = (entry.sets ?? 0) * entry.rpe;
+                            mobilityLoadByDay[dayIndex] += load;
+                            actualMobilityLoad += load;
+                            actualMobilitySets += entry.sets ?? 0;
                         } else {
                             const load = (entry.sets ?? 0) * entry.rpe;
                             strengthLoadByDay[dayIndex] += load;
@@ -75,12 +94,17 @@ const StatsScreen = () => {
         return {
             strengthLoadData: strengthLoadByDay.map((load) => Math.max(load, 0)),
             enduranceLoadData: enduranceLoadByDay.map((load) => Math.max(load, 0)),
+            mobilityLoadData: mobilityLoadByDay.map((load) => Math.max(load, 0)),
             targetStrengthLoad: Math.max(targetStrengthLoad, 0),
             targetEnduranceLoad: Math.max(targetEnduranceLoad, 0),
+            targetMobilityLoad: Math.max(targetMobilityLoad, 0),
             actualStrengthLoad,
             actualEnduranceLoad,
+            actualMobilityLoad,
             targetStrengthSets,
-            actualStrengthSets: actualStrengthSets,
+            actualStrengthSets,
+            targetMobilitySets,
+            actualMobilitySets,
             totalWeeklyEnduranceSets,
         };
     }, [exercises, exerciseHistory, trainingInterval]);
@@ -169,9 +193,24 @@ const StatsScreen = () => {
         </View>
     );
 
+    const renderMobilityStats = (
+        actualLoad: number,
+        targetLoad: number,
+        actualSets: number,
+        totalSets: number,
+        title: string
+    ) => (
+        <View style={styles.statsContainer}>
+            <Text style={styles.statsTitle}>{title} Stats for this Interval</Text>
+            <Text style={styles.statsText}>Target Load (Sets x RPE): {targetLoad.toFixed(1)}</Text>
+            <Text style={styles.statsText}>Actual Load: {actualLoad.toFixed(1)}</Text>
+            <Text style={styles.statsText}>Target Sets: {totalSets}</Text>
+            <Text style={styles.statsText}>Actual Sets: {actualSets}</Text>
+        </View>
+    );
+
     return (
         <ScrollView style={styles.container}>
-            <Text style={styles.title}>Training Statistics</Text>
             {renderChart(
                 createChartData(
                     strengthLoadData,
@@ -196,6 +235,21 @@ const StatsScreen = () => {
                 "Endurance"
             )}
             {renderEnduranceStats(actualEnduranceLoad, targetEnduranceLoad, "Endurance")}
+            {renderChart(
+                createChartData(
+                    mobilityLoadData,
+                    targetMobilityLoad / trainingInterval,
+                    "Mobility"
+                ),
+                "Mobility"
+            )}
+            {renderMobilityStats(
+                actualMobilityLoad,
+                targetMobilityLoad,
+                actualMobilitySets,
+                targetMobilitySets,
+                "Mobility"
+            )}
         </ScrollView>
     );
 };
