@@ -8,6 +8,15 @@ import { lightTheme, darkTheme, createStatsStyles } from "../styles/globalStyles
 import { subDays, isAfter } from "date-fns";
 import { Exercise, ExerciseHistoryEntry } from "../models/Exercise";
 
+const calculateMovingAverage = (data: number[], windowSize: number): number[] => {
+    let result = data.map((_, index, array) => {
+        const start = Math.max(0, index - windowSize + 1);
+        const window = array.slice(start, index + 1);
+        return window.reduce((sum, value) => sum + value, 0) / window.length;
+    });
+    return result.slice(-windowSize);
+};
+
 const StatsScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
@@ -18,6 +27,9 @@ const StatsScreen = () => {
         strengthLoadData,
         enduranceLoadData,
         mobilityLoadData,
+        strengthLoadDataForMA,
+        enduranceLoadDataForMA,
+        mobilityLoadDataForMA,
         targetStrengthLoad,
         targetEnduranceLoad,
         targetMobilityLoad,
@@ -31,10 +43,14 @@ const StatsScreen = () => {
     } = useMemo(() => {
         const today = new Date();
         const intervalStart = subDays(today, trainingInterval);
-
         const strengthLoadByDay = Array(trainingInterval).fill(0);
         const enduranceLoadByDay = Array(trainingInterval).fill(0);
         const mobilityLoadByDay = Array(trainingInterval).fill(0);
+
+        const intervalStartForMA = subDays(today, trainingInterval * 2);
+        const strengthLoadByDayForMA = Array(trainingInterval * 2).fill(0);
+        const enduranceLoadByDayForMA = Array(trainingInterval * 2).fill(0);
+        const mobilityLoadByDayForMA = Array(trainingInterval * 2).fill(0);
 
         let targetStrengthLoad = 0;
         let targetEnduranceLoad = 0;
@@ -89,12 +105,37 @@ const StatsScreen = () => {
                     }
                 }
             });
+
+            // data to calculate moving average
+            history.forEach((entry: ExerciseHistoryEntry) => {
+                const entryDate = new Date(entry.date);
+                if (isAfter(entryDate, intervalStartForMA)) {
+                    const dayIndex =
+                        trainingInterval * 2 -
+                        Math.ceil((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+                    if (dayIndex >= 0 && dayIndex < trainingInterval * 2) {
+                        if (isEndurance) {
+                            const load = entry.distance ?? 0;
+                            enduranceLoadByDayForMA[dayIndex] += load;
+                        } else if (isMobility) {
+                            const load = (entry.sets ?? 0) * entry.rpe;
+                            mobilityLoadByDayForMA[dayIndex] += load;
+                        } else {
+                            const load = (entry.sets ?? 0) * entry.rpe;
+                            strengthLoadByDayForMA[dayIndex] += load;
+                        }
+                    }
+                }
+            });
         });
 
         return {
             strengthLoadData: strengthLoadByDay.map((load) => Math.max(load, 0)),
             enduranceLoadData: enduranceLoadByDay.map((load) => Math.max(load, 0)),
             mobilityLoadData: mobilityLoadByDay.map((load) => Math.max(load, 0)),
+            strengthLoadDataForMA: strengthLoadByDayForMA.map((load) => Math.max(load, 0)),
+            enduranceLoadDataForMA: enduranceLoadByDayForMA.map((load) => Math.max(load, 0)),
+            mobilityLoadDataForMA: mobilityLoadByDayForMA.map((load) => Math.max(load, 0)),
             targetStrengthLoad: Math.max(targetStrengthLoad, 0),
             targetEnduranceLoad: Math.max(targetEnduranceLoad, 0),
             targetMobilityLoad: Math.max(targetMobilityLoad, 0),
@@ -109,25 +150,39 @@ const StatsScreen = () => {
         };
     }, [exercises, exerciseHistory, trainingInterval]);
 
-    const createChartData = (loadData: number[], targetLoad: number, title: string) => ({
-        labels: Array.from(
-            { length: trainingInterval },
-            (_, i) => `${i === trainingInterval - 1 ? "Today" : -trainingInterval + i + 1}`
-        ),
-        datasets: [
-            {
-                data: loadData,
-                color: (opacity = 1) => currentTheme.colors.primary,
-                strokeWidth: 2,
-            },
-            {
-                data: Array(trainingInterval).fill(targetLoad),
-                color: (opacity = 1) => "rgba(255, 0, 0, 0.8)",
-                strokeWidth: 2,
-            },
-        ],
-        legend: [`Actual Load`, `Target Load`],
-    });
+    const createChartData = (
+        loadData: number[],
+        dataForMA: number[],
+        targetLoad: number,
+        title: string
+    ) => {
+        const movingAverage = calculateMovingAverage(dataForMA, trainingInterval);
+
+        return {
+            labels: Array.from(
+                { length: trainingInterval },
+                (_, i) => `${i === trainingInterval - 1 ? "Today" : -trainingInterval + i + 1}`
+            ),
+            datasets: [
+                {
+                    data: loadData,
+                    color: (opacity = 1) => currentTheme.colors.primary,
+                    strokeWidth: 1,
+                },
+                {
+                    data: Array(trainingInterval).fill(targetLoad),
+                    color: (opacity = 1) => "rgba(255, 0, 0, 0.8)",
+                    strokeWidth: 1,
+                },
+                {
+                    data: movingAverage,
+                    color: (opacity = 1) => "rgba(0, 255, 0, 0.8)",
+                    strokeWidth: 1,
+                },
+            ],
+            legend: [`Actual`, `Target`, `MA`],
+        };
+    };
 
     const renderChart = (chartData: any, title: string) => (
         <>
@@ -148,14 +203,10 @@ const StatsScreen = () => {
                         style: {
                             borderRadius: 16,
                         },
-                        propsForDots: {
-                            r: "4",
-                            strokeWidth: "2",
-                            stroke: currentTheme.colors.primary,
-                        },
                     }}
                     bezier
                     style={styles.chart}
+                    legend={chartData.legend}
                 />
             ) : (
                 <Text style={styles.noDataText}>
@@ -214,6 +265,7 @@ const StatsScreen = () => {
             {renderChart(
                 createChartData(
                     strengthLoadData,
+                    strengthLoadDataForMA,
                     targetStrengthLoad / trainingInterval,
                     "Strength"
                 ),
@@ -229,6 +281,7 @@ const StatsScreen = () => {
             {renderChart(
                 createChartData(
                     enduranceLoadData,
+                    enduranceLoadDataForMA,
                     targetEnduranceLoad / trainingInterval,
                     "Endurance"
                 ),
@@ -238,6 +291,7 @@ const StatsScreen = () => {
             {renderChart(
                 createChartData(
                     mobilityLoadData,
+                    mobilityLoadDataForMA,
                     targetMobilityLoad / trainingInterval,
                     "Mobility"
                 ),

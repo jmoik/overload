@@ -3,7 +3,7 @@ import { Exercise, ExerciseHistoryEntry } from "../models/Exercise";
 
 export const generateRandomWorkoutData = (exercise: Exercise): ExerciseHistoryEntry[] => {
     const entries: ExerciseHistoryEntry[] = [];
-    const numberOfEntries = Math.floor(Math.random() * 10) + 5; // Generate 5-14 entries
+    const numberOfEntries = Math.floor(Math.random() * 5) + 3; // Generate 5-14 entries
 
     for (let i = 1; i < numberOfEntries; i++) {
         const date = new Date();
@@ -21,10 +21,10 @@ export const generateRandomWorkoutData = (exercise: Exercise): ExerciseHistoryEn
         } else {
             entries.push({
                 date: date,
-                sets: Math.floor(Math.random() * 3) + 2, // 2-4 sets
-                reps: Math.floor(Math.random() * 8) + 5, // 5-12 reps
+                sets: Math.floor(Math.random() * 2) + 2, // 2-4 sets
+                reps: Math.floor(Math.random() * 6) + 5, // 5-12 reps
                 weight: Math.floor(Math.random() * 50) + 50, // 50-100 kg
-                rpe: Math.floor(Math.random() * 3) + 7, // RPE 7-9
+                rpe: Math.floor(Math.random() * 3) + 6, // RPE 7-9
             });
         }
     }
