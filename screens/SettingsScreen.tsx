@@ -18,6 +18,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createSettingsStyles } from "../styles/globalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
+import { generateRandomWorkoutData } from "../utils/dataGenerators";
 
 type SettingItem = {
     id: string;
@@ -123,7 +124,10 @@ const SettingsScreen = () => {
                             setExercises([]);
                             setExerciseHistory({});
 
-                            // Reset the app to the initial state
+                            // Set alreadySetup to false
+                            await AsyncStorage.setItem("alreadySetup", "false");
+
+                            // Reset the app to the Welcome screen
                             navigation.dispatch(
                                 CommonActions.reset({
                                     index: 0,
@@ -154,18 +158,30 @@ const SettingsScreen = () => {
         navigation.navigate("AppInfo");
     };
 
-    const resetWelcomeScreen = async () => {
+    const goToWelcomeScreen = async () => {
         try {
             await AsyncStorage.setItem("alreadySetup", "false");
-            Alert.alert(
-                "Success",
-                "Welcome screen has been reset. Please restart the app to see the changes.",
-                [{ text: "OK" }]
+
+            // Reset the navigation to the Welcome screen
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: "Welcome" }],
+                })
             );
         } catch (error) {
             console.error("Error resetting welcome screen:", error);
             Alert.alert("Error", "Failed to reset welcome screen.");
         }
+    };
+
+    const populateRandomWorkoutData = () => {
+        const updatedHistory = { ...exerciseHistory };
+        exercises.forEach((exercise) => {
+            updatedHistory[exercise.id] = generateRandomWorkoutData(exercise);
+        });
+        setExerciseHistory(updatedHistory);
+        Alert.alert("Success", "Random workout data has been generated for all exercises.");
     };
 
     const settingsOptions: SettingItem[] = [
@@ -195,8 +211,8 @@ const SettingsScreen = () => {
         },
         {
             id: "8",
-            title: "Reset Welcome Screen",
-            action: resetWelcomeScreen,
+            title: "Go to Setup Screen",
+            action: goToWelcomeScreen,
         },
         {
             id: "9",
@@ -217,6 +233,11 @@ const SettingsScreen = () => {
             id: "12",
             title: "How to Use the App",
             action: handleInfoPress,
+        },
+        {
+            id: "13",
+            title: "Generate Random Workout Data",
+            action: populateRandomWorkoutData,
         },
     ];
 

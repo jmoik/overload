@@ -78,28 +78,16 @@ const AppContent = () => {
         }
     };
 
-    if (isFirstLaunch === null) {
-        return null;
-    }
-
     return (
         <NavigationContainer theme={navigationTheme[theme]}>
-            <Stack.Navigator>
-                {isFirstLaunch ? (
-                    <>
-                        <Stack.Screen
-                            name="Welcome"
-                            component={WelcomeScreen}
-                            options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                            name="PlanPreview"
-                            component={PlanPreviewScreen}
-                            options={{ title: "Preview Plan" }}
-                        />
-                    </>
-                ) : null}
+            <Stack.Navigator initialRouteName={isFirstLaunch ? "Welcome" : "Home"}>
+                <Stack.Screen
+                    name="Welcome"
+                    component={WelcomeScreen}
+                    options={{ headerShown: false }}
+                />
                 <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
+
                 <Stack.Screen
                     name="AddExercise"
                     component={AddExerciseScreen}
@@ -137,6 +125,11 @@ const AppContent = () => {
                     name="AppInfo"
                     component={InfoScreen}
                     options={{ title: "How to Use the App" }}
+                />
+                <Stack.Screen
+                    name="PlanPreview"
+                    component={PlanPreviewScreen}
+                    options={{ title: "Plan Preview" }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

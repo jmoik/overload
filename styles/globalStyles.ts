@@ -452,10 +452,12 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
         chart: {
             marginVertical: 8,
             borderRadius: 16,
-            width: Dimensions.get("window").width - 32, // Full width minus padding
+            width: Dimensions.get("window").width - 32,
+            marginBottom: 16,
         },
         statsContainer: {
             marginTop: 16,
+            marginBottom: 32,
             padding: 16,
             backgroundColor: theme.colors.card,
             borderRadius: 8,
@@ -470,5 +472,16 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
             color: theme.colors.text,
             textAlign: "center",
             marginTop: 20,
+        },
+        statsTitle: {
+            fontSize: 18,
+            fontWeight: "bold",
+            color: theme.colors.text,
+            marginBottom: 8,
+        },
+        subtitle: {
+            fontSize: 16,
+            color: theme.colors.text,
+            marginBottom: 8,
         },
     });

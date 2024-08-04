@@ -25,6 +25,7 @@ const AddExerciseScreen = () => {
     const [category, setCategory] = useState<ExerciseCategory>("strength");
     const [description, setDescription] = useState("");
     const [muscleGroup, setMuscleGroup] = useState("");
+    const [distance, setDistance] = useState("");
 
     useEffect(() => {
         if (exerciseId) {
@@ -36,6 +37,7 @@ const AddExerciseScreen = () => {
                 setMuscleGroup(exercise.muscleGroup);
                 setWeeklySets(exercise.weeklySets.toString());
                 setTargetRPE(exercise.targetRPE.toString());
+                setDistance(exercise.distance?.toString() || "");
             }
         }
     }, [exerciseId, exercises]);
@@ -109,6 +111,16 @@ const AddExerciseScreen = () => {
                 value={muscleGroup}
                 onChangeText={setMuscleGroup}
             />
+            {category === "endurance" && (
+                <TextInput
+                    style={styles.input}
+                    placeholder="Distance (km)"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={distance}
+                    onChangeText={setDistance}
+                    keyboardType="numeric"
+                />
+            )}
             <TextInput
                 style={styles.input}
                 placeholder="Description"

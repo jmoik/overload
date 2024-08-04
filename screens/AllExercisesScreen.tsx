@@ -146,7 +146,7 @@ const AllExercisesScreen = () => {
             const history = exerciseHistory[exercise.id] || [];
             const setsDoneInInterval = history.reduce((total, entry) => {
                 if (isAfter(new Date(entry.date), intervalStart)) {
-                    return total + entry.sets * entry.rpe;
+                    return total + (entry.sets ?? 0) * entry.rpe;
                 }
                 return total;
             }, 0);

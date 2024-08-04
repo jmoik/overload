@@ -62,7 +62,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 weeklySets: 6,
                 targetRPE: 7,
                 category: "mobility",
-                muscleGroup: "Legs",
+                muscleGroup: "Hips",
             }),
             createExercise({
                 name: "ATG Split Squat",
@@ -70,7 +70,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 weeklySets: 6,
                 targetRPE: 7,
                 category: "mobility",
-                muscleGroup: "Legs",
+                muscleGroup: "Hips",
             }),
             createExercise({
                 name: "Seated Good Morning",
@@ -118,15 +118,15 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 weeklySets: 4,
                 targetRPE: 6,
                 category: "mobility",
-                muscleGroup: "Legs",
+                muscleGroup: "Hips",
             }),
             createExercise({
                 name: "Pigeon Stretch",
-                description: "Hip opener stretch",
+                description: "",
                 weeklySets: 4,
                 targetRPE: 6,
                 category: "mobility",
-                muscleGroup: "Legs",
+                muscleGroup: "Hips",
             }),
             createExercise({
                 name: "Pancake Stretch",
@@ -134,7 +134,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 weeklySets: 4,
                 targetRPE: 6,
                 category: "mobility",
-                muscleGroup: "Legs",
+                muscleGroup: "Hips",
             }),
             createExercise({
                 name: "External Rotation",
@@ -142,7 +142,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 weeklySets: 4,
                 targetRPE: 8,
                 category: "mobility",
-                muscleGroup: "Pull",
+                muscleGroup: "Shoulders",
             }),
             createExercise({
                 name: "Lower Traps",
@@ -235,7 +235,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 weeklySets: 6,
                 targetRPE: 8,
                 category: "strength",
-                muscleGroup: "Pull",
+                muscleGroup: "Shoulders",
             }),
             createExercise({
                 name: "Side Lateral Raise",
@@ -243,7 +243,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 weeklySets: 6,
                 targetRPE: 8,
                 category: "strength",
-                muscleGroup: "Push",
+                muscleGroup: "Shoulders",
             }),
             createExercise({
                 name: "Bicep",
@@ -251,7 +251,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 weeklySets: 6,
                 targetRPE: 8,
                 category: "strength",
-                muscleGroup: "Pull",
+                muscleGroup: "Arms",
             }),
             createExercise({
                 name: "Tricep",
@@ -259,7 +259,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 weeklySets: 6,
                 targetRPE: 8,
                 category: "strength",
-                muscleGroup: "Push",
+                muscleGroup: "Arms",
             }),
             createExercise({
                 name: "Crunch",
@@ -289,6 +289,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 targetRPE: 4,
                 category: "endurance",
                 muscleGroup: "Legs",
+                distance: 6,
             }),
             createExercise({
                 name: "Long Run",
@@ -297,6 +298,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 targetRPE: 5,
                 category: "endurance",
                 muscleGroup: "Legs",
+                distance: 8,
             }),
             createExercise({
                 name: "Intervals",
@@ -305,6 +307,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 targetRPE: 8,
                 category: "endurance",
                 muscleGroup: "Legs",
+                distance: 6,
             }),
             createExercise({
                 name: "Stair Master",
@@ -313,6 +316,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 targetRPE: 4,
                 category: "endurance",
                 muscleGroup: "Legs",
+                distance: 0,
             }),
         ],
     },
