@@ -20,6 +20,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import PlanPreviewScreen from "./screens/PlanPreviewScreen";
 import StatsScreen from "./screens/StatsScreen";
 import DefaultRpeScreen from "./screens/settings/DefaultRpeScreen";
+import InfoScreen from "./screens/settings/InfoScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -131,6 +132,11 @@ const AppContent = () => {
                     name="DefaultRpe"
                     component={DefaultRpeScreen}
                     options={{ title: "Default RPE" }}
+                />
+                <Stack.Screen
+                    name="AppInfo"
+                    component={InfoScreen}
+                    options={{ title: "How to Use the App" }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

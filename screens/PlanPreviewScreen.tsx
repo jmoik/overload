@@ -39,7 +39,7 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                 {item.name}
             </Text>
             <Text style={[styles.exerciseDetails, { color: currentTheme.colors.text }]}>
-                {item.weeklySets} sets/week | Target RPE: {item.targetRPE}
+                {item.weeklySets} sets/week
             </Text>
         </View>
     );

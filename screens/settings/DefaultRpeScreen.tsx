@@ -1,4 +1,3 @@
-// screens/DefaultRpeScreen.tsx
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Picker } from "@react-native-picker/picker";
@@ -12,7 +11,7 @@ type DefaultRpeScreenNavigationProp = StackNavigationProp<RootStackParamList, "D
 
 const DefaultRpeScreen = () => {
     const navigation = useNavigation<DefaultRpeScreenNavigationProp>();
-    const { meanRpe, setMeanRpe } = useExerciseContext();
+    const { meanRpe, setMeanRpe, exercises, updateExercise } = useExerciseContext();
     const [selectedRPE, setSelectedRPE] = useState(meanRpe);
     const [isSetup, setIsSetup] = useState(false);
 
@@ -35,7 +34,13 @@ const DefaultRpeScreen = () => {
 
     const handleSave = async () => {
         setMeanRpe(selectedRPE);
+
         if (isSetup) {
+            // Update targetRPE for all exercises
+            exercises.forEach((exercise) => {
+                updateExercise(exercise.id, { ...exercise, targetRPE: selectedRPE });
+            });
+
             await AsyncStorage.setItem("alreadySetup", "true");
             navigation.dispatch(
                 CommonActions.reset({

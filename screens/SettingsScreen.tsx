@@ -1,14 +1,22 @@
 // screens/SettingsScreen.tsx
 import React from "react";
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import { View, Text, FlatList, TouchableOpacity, Share, Switch, Alert } from "react-native";
+import {
+    View,
+    Text,
+    FlatList,
+    TouchableOpacity,
+    Share,
+    Switch,
+    Alert,
+    Linking,
+} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { SettingsScreenNavigationProp } from "../types/navigation";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createSettingsStyles } from "../styles/globalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ExerciseHistoryEntry } from "../models/Exercise";
 import * as DocumentPicker from "expo-document-picker";
 
 type SettingItem = {
@@ -133,6 +141,19 @@ const SettingsScreen = () => {
         );
     };
 
+    const handleEmailPress = () => {
+        Linking.openURL("mailto:@opals.poet0m@icloud.com?subject=Feedback for Workout App");
+    };
+
+    const handleAppStoreRating = () => {
+        // Replace 'your-app-id' with your actual App Store ID
+        Linking.openURL("https://apps.apple.com/app/id[your-app-id]?action=write-review");
+    };
+
+    const handleInfoPress = () => {
+        navigation.navigate("AppInfo");
+    };
+
     const resetWelcomeScreen = async () => {
         try {
             await AsyncStorage.setItem("alreadySetup", "false");
@@ -154,42 +175,53 @@ const SettingsScreen = () => {
             action: () => navigation.navigate("OneRepMaxFormula"),
         },
         { id: "2", title: "Export Data", action: shareExportData },
-        { id: "9", title: "Import Data", action: importData },
-        { id: "3", title: "Rest Timer", action: () => navigation.navigate("RestTimer") },
+        { id: "3", title: "Import Data", action: importData },
+        { id: "4", title: "Rest Timer", action: () => navigation.navigate("RestTimer") },
         {
-            id: "4",
+            id: "5",
             title: "Training Interval",
             action: () => navigation.navigate("TrainingInterval"),
         },
         {
-            id: "5",
+            id: "6",
             title: "Default RPE",
             action: () => navigation.navigate("DefaultRpe"),
         },
         {
-            id: "6",
+            id: "7",
             title: "Dark Mode",
             action: () => {}, // This will be handled by the Switch component
             isSwitch: true,
         },
         {
-            id: "7",
+            id: "8",
             title: "Reset Welcome Screen",
             action: resetWelcomeScreen,
         },
         {
-            id: "8",
+            id: "9",
             title: "Delete All Data",
             action: handleDeleteAllData,
-            isDangerous: true,
+        },
+        {
+            id: "10",
+            title: "Report Bug / Request Feature",
+            action: handleEmailPress,
+        },
+        {
+            id: "11",
+            title: "Rate the App",
+            action: handleAppStoreRating,
+        },
+        {
+            id: "12",
+            title: "How to Use the App",
+            action: handleInfoPress,
         },
     ];
 
     const renderItem = ({ item }: { item: SettingItem }) => (
-        <TouchableOpacity
-            style={[styles.settingItem, item.isDangerous && styles.dangerousSettingItem]}
-            onPress={item.action}
-        >
+        <TouchableOpacity style={[styles.settingItem]} onPress={item.action}>
             <Text style={[styles.settingTitle]}>{item.title}</Text>
             {item.isSwitch ? (
                 <Switch
@@ -199,13 +231,11 @@ const SettingsScreen = () => {
                     thumbColor={theme === "dark" ? currentTheme.colors.background : "#f4f3f4"}
                 />
             ) : (
-                !item.isDangerous && (
-                    <Icon
-                        name="chevron-forward-outline"
-                        size={24}
-                        color={currentTheme.colors.primary}
-                    />
-                )
+                <Icon
+                    name="chevron-forward-outline"
+                    size={24}
+                    color={currentTheme.colors.primary}
+                />
             )}
         </TouchableOpacity>
     );

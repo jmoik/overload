@@ -1,6 +1,6 @@
 // src/data/suggestedPlans.ts
 
-import { Exercise } from "../models/Exercise";
+import { Exercise, ExerciseCategory } from "../models/Exercise";
 import { generateExerciseId } from "../utils/utils";
 
 export interface Plan {
@@ -24,7 +24,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 8,
                 targetRPE: 8,
-                category: "Powerlifting",
+                category: "strength",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -32,7 +32,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 12,
                 targetRPE: 8,
-                category: "Powerlifting",
+                category: "strength",
                 muscleGroup: "Push",
             }),
             createExercise({
@@ -40,7 +40,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Powerlifting",
+                category: "strength",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -48,7 +48,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Powerlifting",
+                category: "strength",
                 muscleGroup: "Push",
             }),
         ],
@@ -61,7 +61,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "60s",
                 weeklySets: 6,
                 targetRPE: 7,
-                category: "ATG",
+                category: "mobility",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -69,7 +69,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 7,
-                category: "ATG",
+                category: "mobility",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -77,7 +77,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 4,
                 targetRPE: 7,
-                category: "ATG",
+                category: "mobility",
                 muscleGroup: "Core",
             }),
             createExercise({
@@ -85,7 +85,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 4,
                 targetRPE: 7,
-                category: "ATG",
+                category: "strength",
                 muscleGroup: "Core",
             }),
             createExercise({
@@ -93,7 +93,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 3,
                 targetRPE: 8,
-                category: "ATG",
+                category: "strength",
                 muscleGroup: "Lower Legs",
             }),
             createExercise({
@@ -101,7 +101,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 3,
                 targetRPE: 8,
-                category: "ATG",
+                category: "strength",
                 muscleGroup: "Lower Legs",
             }),
             createExercise({
@@ -109,7 +109,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 7,
-                category: "ATG",
+                category: "strength",
                 muscleGroup: "Lower Legs",
             }),
             createExercise({
@@ -117,7 +117,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 4,
                 targetRPE: 6,
-                category: "ATG",
+                category: "mobility",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -125,7 +125,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "Hip opener stretch",
                 weeklySets: 4,
                 targetRPE: 6,
-                category: "ATG",
+                category: "mobility",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -133,7 +133,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 4,
                 targetRPE: 6,
-                category: "ATG",
+                category: "mobility",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -141,7 +141,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 4,
                 targetRPE: 8,
-                category: "ATG",
+                category: "mobility",
                 muscleGroup: "Pull",
             }),
             createExercise({
@@ -149,7 +149,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 4,
                 targetRPE: 8,
-                category: "ATG",
+                category: "strength",
                 muscleGroup: "Core",
             }),
             createExercise({
@@ -157,7 +157,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 4,
                 targetRPE: 7,
-                category: "ATG",
+                category: "mobility",
                 muscleGroup: "Core",
             }),
         ],
@@ -170,7 +170,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -178,7 +178,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 3,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -186,7 +186,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -194,7 +194,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 3,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -202,7 +202,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 3,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Push",
             }),
             createExercise({
@@ -210,7 +210,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Push",
             }),
             createExercise({
@@ -218,7 +218,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 8,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Pull",
             }),
             createExercise({
@@ -226,7 +226,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 8,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Pull",
             }),
             createExercise({
@@ -234,7 +234,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Pull",
             }),
             createExercise({
@@ -242,7 +242,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Push",
             }),
             createExercise({
@@ -250,7 +250,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Pull",
             }),
             createExercise({
@@ -258,7 +258,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Push",
             }),
             createExercise({
@@ -266,7 +266,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 3,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Core",
             }),
             createExercise({
@@ -274,7 +274,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 3,
                 targetRPE: 8,
-                category: "Bodybuilding",
+                category: "strength",
                 muscleGroup: "Core",
             }),
         ],
@@ -287,7 +287,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "6k",
                 weeklySets: 4,
                 targetRPE: 4,
-                category: "Endurance",
+                category: "endurance",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -295,7 +295,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "8k",
                 weeklySets: 2,
                 targetRPE: 5,
-                category: "Endurance",
+                category: "endurance",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -303,7 +303,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "2x2k",
                 weeklySets: 1,
                 targetRPE: 8,
-                category: "Endurance",
+                category: "endurance",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -311,7 +311,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "8",
                 weeklySets: 1,
                 targetRPE: 4,
-                category: "Endurance",
+                category: "endurance",
                 muscleGroup: "Legs",
             }),
         ],
@@ -324,7 +324,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Booty",
+                category: "strength",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -332,7 +332,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Booty",
+                category: "strength",
                 muscleGroup: "Legs",
             }),
             createExercise({
@@ -340,7 +340,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 6,
                 targetRPE: 8,
-                category: "Booty",
+                category: "strength",
                 muscleGroup: "Legs",
             }),
         ],

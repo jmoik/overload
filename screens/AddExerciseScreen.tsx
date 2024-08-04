@@ -1,12 +1,14 @@
 // screens/AddExerciseScreen.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import { View, TextInput, Button, Alert } from "react-native";
+import { View, TextInput, Button, Alert, TouchableOpacity, Modal, FlatList } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { AddExerciseScreenNavigationProp, AddExerciseScreenRouteProp } from "../types/navigation";
-import { Exercise } from "../models/Exercise";
+import { Exercise, ExerciseCategory } from "../models/Exercise";
 import { lightTheme, darkTheme, createAddExerciseStyles } from "../styles/globalStyles";
 import { useTheme } from "../contexts/ThemeContext";
+import { Text } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 
 const AddExerciseScreen = () => {
     const { theme } = useTheme();
@@ -20,7 +22,7 @@ const AddExerciseScreen = () => {
     const [name, setName] = useState("");
     const [weeklySets, setWeeklySets] = useState("");
     const [targetRPE, setTargetRPE] = useState("");
-    const [category, setCategory] = useState("");
+    const [category, setCategory] = useState<ExerciseCategory>("strength");
     const [description, setDescription] = useState("");
     const [muscleGroup, setMuscleGroup] = useState("");
 
@@ -87,13 +89,19 @@ const AddExerciseScreen = () => {
                 onChangeText={setTargetRPE}
                 keyboardType="numeric"
             />
-            <TextInput
-                style={styles.input}
-                placeholder="Category"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={category}
-                onChangeText={setCategory}
-            />
+            <View style={styles.pickerContainer}>
+                <Text style={styles.placeholderText}>Select Category</Text>
+                <Picker
+                    style={styles.picker}
+                    selectedValue={category}
+                    onValueChange={(itemValue) => setCategory(itemValue as ExerciseCategory)}
+                >
+                    <Picker.Item label="Strength" value="strength" />
+                    <Picker.Item label="Endurance" value="endurance" />
+                    <Picker.Item label="Mobility" value="mobility" />
+                    <Picker.Item label="Other" value="other" />
+                </Picker>
+            </View>
             <TextInput
                 style={styles.input}
                 placeholder="Muscle Group"

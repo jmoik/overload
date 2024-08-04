@@ -1,11 +1,14 @@
 // models/Exercise.ts
+
+export type ExerciseCategory = "strength" | "endurance" | "mobility" | "other";
+
 export interface Exercise {
     id: string;
     name: string;
     description: string;
     weeklySets: number;
     targetRPE: number;
-    category: string;
+    category: ExerciseCategory;
     muscleGroup: string;
 }
 export interface ExerciseHistoryEntry {

@@ -1,6 +1,6 @@
 // styles/globalStyles.ts
 
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, Platform, StyleSheet } from "react-native";
 import { Theme } from "@react-navigation/native";
 import { Icon } from "react-native-elements/dist/icons/Icon";
 
@@ -205,6 +205,34 @@ const createAddExerciseScreenStyles = (theme: typeof lightTheme | typeof darkThe
             marginBottom: 10,
             borderRadius: 5,
         },
+        pickerContainer: {
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            borderRadius: 5,
+            marginTop: 0,
+            marginBottom: 10,
+            height: 40,
+            justifyContent: "center",
+            overflow: "hidden",
+            width: "100%",
+            color: theme.colors.text,
+            backgroundColor: "transparent",
+        },
+        picker: {
+            height: 40,
+            width: "50%",
+            color: theme.colors.text,
+            marginBottom: 175,
+            marginLeft: "30%",
+            backgroundColor: "transparent",
+        },
+        pickerItem: { fontSize: 14 },
+        placeholderText: {
+            position: "absolute",
+            left: 10,
+            color: theme.colors.placeholder,
+            fontSize: 14,
+        },
     });
 
 // ExerciseHistoryScreen specific styles
@@ -282,7 +310,12 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
         },
         sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 10 },
         historyGroup: { marginBottom: 20 },
-        historyGroupDate: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
+        historyGroupDate: {
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 10,
+            color: theme.colors.text,
+        },
     });
 
 // SettingsScreen specific styles
@@ -304,10 +337,6 @@ const createSettingsStylesScreenStyles = (theme: typeof lightTheme | typeof dark
             fontSize: 16,
             color: theme.colors.text,
         },
-        dangerousSettingItem: {
-            backgroundColor: "#FF3B30",
-        },
-        dangeroussettingtitle: { color: "white", fontWeight: "bold" },
     });
 
 // WelcomeScreen specific styles

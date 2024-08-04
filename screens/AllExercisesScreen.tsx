@@ -247,7 +247,11 @@ const AllExercisesScreen = () => {
                 keyExtractor={(item) => item.id}
                 renderItem={renderExerciseItem}
                 renderSectionHeader={({ section: { title } }) =>
-                    groupBy !== "none" ? <Text style={styles.sectionHeader}>{title}</Text> : null
+                    groupBy !== "none" ? (
+                        <Text style={styles.sectionHeader}>
+                            {title.charAt(0).toUpperCase() + title.slice(1)}
+                        </Text>
+                    ) : null
                 }
             />
         </View>

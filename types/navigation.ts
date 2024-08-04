@@ -14,6 +14,7 @@ export type RootStackParamList = {
     DefaultRpe: undefined;
     Welcome: undefined;
     PlanPreview: { plans: Array<{ name: string; exercises: Exercise[] }> };
+    AppInfo: undefined;
 };
 
 export type AddExerciseScreenNavigationProp = StackNavigationProp<
