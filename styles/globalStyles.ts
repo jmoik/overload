@@ -452,7 +452,7 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
         },
         chart: {
             borderRadius: 16,
-            marginLeft: -16,
+            marginLeft: -40,
             width: Dimensions.get("window").width,
             marginBottom: 24,
             paddingHorizontal: 16,

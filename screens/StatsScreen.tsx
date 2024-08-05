@@ -14,7 +14,13 @@ const calculateMovingAverage = (data: number[], windowSize: number): number[] =>
         const window = array.slice(start, index + 1);
         return window.reduce((sum, value) => sum + value, 0) / window.length;
     });
-    return result.slice(-windowSize);
+    result = result.slice(-windowSize);
+
+    // check if the moving average is valid
+    if (result.some((load: number) => isNaN(load))) {
+        return Array(windowSize).fill(0);
+    }
+    return result;
 };
 
 const StatsScreen = () => {
@@ -41,11 +47,27 @@ const StatsScreen = () => {
         actualMobilitySets,
         targetMobilitySets,
     } = useMemo(() => {
+        console.log("Recalculating stats data");
+        console.log("trainingInterval: ", trainingInterval);
         const today = new Date();
         const intervalStart = subDays(today, trainingInterval);
-        const strengthLoadByDay = Array(trainingInterval).fill(0);
-        const enduranceLoadByDay = Array(trainingInterval).fill(0);
-        const mobilityLoadByDay = Array(trainingInterval).fill(0);
+
+        let strengthLoadByDay = Array(trainingInterval).fill(0);
+        let enduranceLoadByDay = Array(trainingInterval).fill(0);
+        let mobilityLoadByDay = Array(trainingInterval).fill(0);
+
+        // make sure length of strengthLoadByDay, enduranceLoadByDay, and mobilityLoadByDay is equal to trainingInterval
+        while (strengthLoadByDay.length < trainingInterval) {
+            strengthLoadByDay.push(0);
+        }
+        while (enduranceLoadByDay.length < trainingInterval) {
+            enduranceLoadByDay.push(0);
+        }
+        while (mobilityLoadByDay.length < trainingInterval) {
+            mobilityLoadByDay.push(0);
+        }
+
+        console.log("strengthLoadByDay: ", strengthLoadByDay);
 
         const intervalStartForMA = subDays(today, trainingInterval * 2);
         const strengthLoadByDayForMA = Array(trainingInterval * 2).fill(0);
@@ -129,6 +151,11 @@ const StatsScreen = () => {
             });
         });
 
+        // print out the stats
+        console.log(strengthLoadByDay.map((load) => Math.max(load, 0)));
+        console.log(enduranceLoadByDay.map((load) => Math.max(load, 0)));
+        console.log(mobilityLoadByDay.map((load) => Math.max(load, 0)));
+        console.log("intervalStart", intervalStart);
         return {
             strengthLoadData: strengthLoadByDay.map((load) => Math.max(load, 0)),
             enduranceLoadData: enduranceLoadByDay.map((load) => Math.max(load, 0)),
@@ -150,18 +177,14 @@ const StatsScreen = () => {
         };
     }, [exercises, exerciseHistory, trainingInterval]);
 
-    const createChartData = (
-        loadData: number[],
-        dataForMA: number[],
-        targetLoad: number,
-        title: string
-    ) => {
+    const createChartData = (loadData: number[], dataForMA: number[], targetLoad: number) => {
+        loadData = loadData.map((value) => (isNaN(value) ? 0 : value));
         const movingAverage = calculateMovingAverage(dataForMA, trainingInterval);
 
-        return {
+        const result = {
             labels: Array.from(
-                { length: trainingInterval },
-                (_, i) => `${i === trainingInterval - 1 ? "Today" : -trainingInterval + i + 1}`
+                { length: loadData.length }, // Use loadData.length instead of trainingInterval
+                (_, i) => `${i === loadData.length - 1 ? "Today" : -loadData.length + i + 1}`
             ),
             datasets: [
                 {
@@ -182,10 +205,29 @@ const StatsScreen = () => {
             ],
             legend: [`Actual`, `Target`, `MA`],
         };
+
+        if (
+            result.datasets[0].data.some((load: number) => isNaN(load)) ||
+            result.datasets[1].data.some((load: number) => isNaN(load)) ||
+            result.datasets[2].data.some((load: number) => isNaN(load)) ||
+            result.datasets[0].data.length != trainingInterval ||
+            result.datasets[2].data.length != trainingInterval
+        ) {
+            console.log(result.datasets[0].data);
+            console.log(result.datasets[1].data);
+            console.log(result.datasets[2].data);
+            console.log(trainingInterval);
+            console.log("Invalid data for chart");
+        }
+        return result;
     };
 
     const renderChart = (chartData: any, title: string) => {
         const screenWidth = Dimensions.get("window").width;
+
+        if (!chartData) {
+            return null;
+        }
 
         return (
             <View>
@@ -286,8 +328,7 @@ const StatsScreen = () => {
                 createChartData(
                     strengthLoadData,
                     strengthLoadDataForMA,
-                    targetStrengthLoad / trainingInterval,
-                    "Strength"
+                    targetStrengthLoad / trainingInterval
                 ),
                 "Strength"
             )}
@@ -305,8 +346,7 @@ const StatsScreen = () => {
                 createChartData(
                     enduranceLoadData,
                     enduranceLoadDataForMA,
-                    targetEnduranceLoad / trainingInterval,
-                    "Endurance"
+                    targetEnduranceLoad / trainingInterval
                 ),
                 "Endurance"
             )}
@@ -318,8 +358,7 @@ const StatsScreen = () => {
                 createChartData(
                     mobilityLoadData,
                     mobilityLoadDataForMA,
-                    targetMobilityLoad / trainingInterval,
-                    "Mobility"
+                    targetMobilityLoad / trainingInterval
                 ),
                 "Mobility"
             )}
