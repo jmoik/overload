@@ -263,47 +263,60 @@ const ExerciseHistoryScreen = () => {
         [deleteExerciseHistoryEntry, exerciseId, editingEntry, history]
     );
 
-    const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => (
-        <Swipeable
-            ref={(el) => (swipeableRefs.current[index] = el)}
-            renderRightActions={() => (
-                <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => handleDeleteEntry(item)}
-                >
-                    <Icon name="trash-outline" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-            )}
-            rightThreshold={40}
-        >
-            <TouchableOpacity style={styles.historyItem} onPress={() => handleEditEntry(item)}>
-                <Text style={styles.text}>
-                    {new Date(item.date).toLocaleDateString()}
-                    {"\n"}
-                    {exercise?.category === "endurance"
-                        ? `${item.distance} km in ${item.time} min${
-                              item.avgHeartRate ? ` @ ${item.avgHeartRate} bpm` : ""
-                          } ${`(RPE ${item.rpe})`} `
-                        : exercise?.category === "mobility"
-                        ? `${item.sets} sets ${`(RPE ${item.rpe})`}`
-                        : `${item.sets} sets x ${item.reps} reps @ ${
-                              item.weight
-                          } kg ${`(RPE ${item.rpe})`}`}
-                    {item.notes ? (
-                        <Text style={styles.notes}>
-                            {" "}
-                            {"\n"} ${item.notes}{" "}
-                        </Text>
-                    ) : null}
-                </Text>
-                {exercise?.category !== "endurance" && exercise?.category !== "mobility" && (
-                    <Text style={styles.oneRepMax}>
-                        1RM: {calculateOneRepMax(item.weight!, item.reps!)} kg
-                    </Text>
+    const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => {
+        const currentDate = new Date(item.date).toLocaleDateString();
+        const previousDate =
+            index > 0 ? new Date(history[index - 1].date).toLocaleDateString() : null;
+
+        return (
+            <>
+                {(index === 0 || currentDate !== previousDate) && (
+                    <Text style={styles.dateHeader}>{currentDate}</Text>
                 )}
-            </TouchableOpacity>
-        </Swipeable>
-    );
+                <Swipeable
+                    ref={(el) => (swipeableRefs.current[index] = el)}
+                    renderRightActions={() => (
+                        <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={() => handleDeleteEntry(item)}
+                        >
+                            <Icon name="trash-outline" size={24} color="#FFFFFF" />
+                        </TouchableOpacity>
+                    )}
+                    rightThreshold={40}
+                >
+                    <TouchableOpacity
+                        style={styles.historyItem}
+                        onPress={() => handleEditEntry(item)}
+                    >
+                        <Text style={styles.text}>
+                            {exercise?.category === "endurance"
+                                ? `${item.distance} km in ${item.time} min${
+                                      item.avgHeartRate ? ` @ ${item.avgHeartRate} bpm` : ""
+                                  } ${`(RPE ${item.rpe})`} `
+                                : exercise?.category === "mobility"
+                                ? `${item.sets} sets ${`(RPE ${item.rpe})`}`
+                                : `${item.sets} sets x ${item.reps} reps @ ${
+                                      item.weight
+                                  } kg ${`(RPE ${item.rpe})`}`}
+                            {item.notes ? (
+                                <Text style={styles.notes}>
+                                    {" "}
+                                    {"\n"} ${item.notes}{" "}
+                                </Text>
+                            ) : null}
+                        </Text>
+                        {exercise?.category !== "endurance" &&
+                            exercise?.category !== "mobility" && (
+                                <Text style={styles.oneRepMax}>
+                                    1RM: {calculateOneRepMax(item.weight!, item.reps!)} kg
+                                </Text>
+                            )}
+                    </TouchableOpacity>
+                </Swipeable>
+            </>
+        );
+    };
 
     if (!exercise) {
         return <Text>Exercise not found</Text>;
