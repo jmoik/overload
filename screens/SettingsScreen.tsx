@@ -205,40 +205,44 @@ const SettingsScreen = () => {
         },
         {
             id: "7",
-            title: "Dark Mode",
-            action: () => {}, // This will be handled by the Switch component
-            isSwitch: true,
-        },
-        {
-            id: "8",
             title: "Go to Setup Screen",
             action: goToWelcomeScreen,
         },
         {
-            id: "9",
-            title: "Delete All Data",
-            action: handleDeleteAllData,
-        },
-        {
-            id: "10",
+            id: "8",
             title: "Report Bug / Request Feature",
             action: handleEmailPress,
         },
         {
-            id: "11",
-            title: "Rate the App",
+            id: "9",
+            title: "Rate in App Store",
             action: handleAppStoreRating,
         },
         {
-            id: "12",
-            title: "How to Use the App",
+            id: "10",
+            title: "Info",
             action: handleInfoPress,
         },
         {
-            id: "13",
-            title: "Generate Random Workout Data",
-            action: populateRandomWorkoutData,
+            id: "11",
+            title: "Delete All Data",
+            action: handleDeleteAllData,
         },
+        ...(__DEV__
+            ? [
+                  {
+                      id: "12",
+                      title: "Populate Random Workout Data",
+                      action: populateRandomWorkoutData,
+                  },
+                  {
+                      id: "13",
+                      title: "Dark Mode",
+                      action: toggleTheme,
+                      isSwitch: true,
+                  },
+              ]
+            : []),
     ];
 
     const renderItem = ({ item }: { item: SettingItem }) => (

@@ -298,7 +298,6 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             alignItems: "center",
         },
         fillButton: {
-            backgroundColor: "#f0f0f0",
             marginRight: 20,
             marginBottom: 20,
         },
@@ -316,6 +315,8 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             marginBottom: 10,
             color: theme.colors.text,
         },
+        notesInput: { height: 40, textAlignVertical: "top" },
+        notes: { fontSize: 12, marginTop: 4 },
     });
 
 // SettingsScreen specific styles

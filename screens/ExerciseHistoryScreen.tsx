@@ -21,6 +21,7 @@ import { ExerciseHistoryEntry } from "../models/Exercise";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../styles/globalStyles";
+import { set } from "date-fns";
 
 const ExerciseHistoryScreen = () => {
     const { theme } = useTheme();
@@ -48,6 +49,7 @@ const ExerciseHistoryScreen = () => {
     const [distance, setDistance] = useState("");
     const [time, setTime] = useState("");
     const [avgHeartRate, setAvgHeartRate] = useState("");
+    const [Notes, setNotes] = useState("");
 
     const [date, setDate] = useState(new Date());
     const { oneRepMaxFormula } = useExerciseContext();
@@ -55,6 +57,11 @@ const ExerciseHistoryScreen = () => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const parseFloatNumbers = (input: string): number => {
+        // Replace comma with dot and parse
+        return parseFloat(input.replace(",", "."));
+    };
 
     useEffect(() => {
         return () => {
@@ -86,7 +93,7 @@ const ExerciseHistoryScreen = () => {
 
     const oneRepMaxData = useMemo(() => {
         return history
-            .filter((entry) => entry.rpe !== undefined && entry.rpe >= meanRpe) // Only include entries with default RPE or higher
+            .filter((entry) => entry.rpe !== undefined && entry.rpe >= meanRpe)
             .map((entry) => ({
                 date: new Date(entry.date),
                 oneRepMax: calculateOneRepMax(entry.weight, entry.reps),
@@ -95,17 +102,14 @@ const ExerciseHistoryScreen = () => {
     }, [history, calculateOneRepMax, meanRpe]);
 
     const enduranceData = useMemo(() => {
-        return (
-            history
-                // .filter((entry) => entry.rpe !== undefined && entry.rpe >= meanRpe) // Only include entries with default RPE or higher
-                .filter((entry) => entry.distance)
-                .map((entry) => ({
-                    date: new Date(entry.date),
-                    distance: entry.distance,
-                }))
-                .sort((a, b) => a.date.getTime() - b.date.getTime())
-        );
-    }, [history, meanRpe]);
+        return history
+            .filter((entry) => entry.distance)
+            .map((entry) => ({
+                date: new Date(entry.date),
+                distance: entry.distance,
+            }))
+            .sort((a, b) => a.date.getTime() - b.date.getTime());
+    }, [history]);
 
     const chartData = {
         labels: oneRepMaxData.map((data) => data.date.toLocaleDateString()),
@@ -129,14 +133,18 @@ const ExerciseHistoryScreen = () => {
         if (history.length > 0) {
             const lastWorkout = history[0];
             setSets(lastWorkout.sets?.toString() ?? "");
-            setReps(lastWorkout.reps?.toString() ?? "");
-            setWeight(lastWorkout.weight?.toString() ?? "");
             setRpe(lastWorkout.rpe.toString());
-            setDistance(lastWorkout.distance?.toString() || "");
-            setTime(lastWorkout.time?.toString() || "");
-            setAvgHeartRate(lastWorkout.avgHeartRate?.toString() || "");
+            if (exercise?.category === "endurance") {
+                setDistance(lastWorkout.distance?.toString() || "");
+                setTime(lastWorkout.time?.toString() || "");
+                setAvgHeartRate(lastWorkout.avgHeartRate?.toString() || "");
+            } else {
+                setReps(lastWorkout.reps?.toString() ?? "");
+                setWeight(lastWorkout.weight?.toString() ?? "");
+            }
+            setNotes(lastWorkout.notes);
         }
-    }, [history]);
+    }, [history, exercise]);
 
     const resetForm = () => {
         setSets("");
@@ -148,6 +156,7 @@ const ExerciseHistoryScreen = () => {
         setAvgHeartRate("");
         setDate(new Date());
         setEditingEntry(null);
+        setNotes("");
     };
 
     const handleAddOrUpdateEntry = () => {
@@ -156,7 +165,11 @@ const ExerciseHistoryScreen = () => {
             return;
         }
 
-        let entry: ExerciseHistoryEntry;
+        let entry: ExerciseHistoryEntry = {
+            notes: Notes,
+            date: editingEntry ? date : new Date(),
+            rpe: parseInt(rpe, 10) || exercise.targetRPE,
+        };
 
         if (exercise.category === "endurance") {
             if (!distance.trim() || !time.trim()) {
@@ -164,11 +177,19 @@ const ExerciseHistoryScreen = () => {
                 return;
             }
             entry = {
-                date: editingEntry ? date : new Date(),
-                distance: parseFloat(distance),
-                time: parseFloat(time),
+                ...entry,
+                distance: parseFloatNumbers(distance),
+                time: parseFloatNumbers(time),
                 avgHeartRate: avgHeartRate ? parseInt(avgHeartRate, 10) : undefined,
-                rpe: parseInt(rpe, 10) || exercise.targetRPE,
+            };
+        } else if (exercise.category === "mobility") {
+            if (!sets.trim()) {
+                Alert.alert("Error", "Please fill in all fields");
+                return;
+            }
+            entry = {
+                ...entry,
+                sets: parseInt(sets, 10),
             };
         } else {
             if (!sets.trim() || !reps.trim() || !weight.trim()) {
@@ -176,11 +197,10 @@ const ExerciseHistoryScreen = () => {
                 return;
             }
             entry = {
-                date: editingEntry ? date : new Date(),
+                ...entry,
                 sets: parseInt(sets, 10),
                 reps: parseInt(reps, 10),
-                weight: parseFloat(weight),
-                rpe: parseInt(rpe, 10) || exercise.targetRPE,
+                weight: parseFloatNumbers(weight),
             };
         }
 
@@ -202,6 +222,8 @@ const ExerciseHistoryScreen = () => {
             setDistance(entry.distance?.toString() || "");
             setTime(entry.time?.toString() || "");
             setAvgHeartRate(entry.avgHeartRate?.toString() || "");
+        } else if (exercise?.category === "mobility") {
+            setSets(entry.sets?.toString() || "");
         } else {
             setSets(entry.sets?.toString() || "");
             setReps(entry.reps?.toString() || "");
@@ -209,6 +231,7 @@ const ExerciseHistoryScreen = () => {
         }
         setRpe(entry.rpe.toString());
         setDate(new Date(entry.date));
+        setNotes(entry.notes || "");
     };
 
     const onDateChange = (event: any, selectedDate?: Date) => {
@@ -261,11 +284,14 @@ const ExerciseHistoryScreen = () => {
                         ? `${item.distance} km in ${item.time} min${
                               item.avgHeartRate ? ` @ ${item.avgHeartRate} bpm` : ""
                           } ${`(RPE ${item.rpe})`} `
+                        : exercise?.category === "mobility"
+                        ? `${item.sets} sets ${`(RPE ${item.rpe})`}`
                         : `${item.sets} sets x ${item.reps} reps @ ${
                               item.weight
-                          } kg${`(RPE ${item.rpe})`}`}
+                          } kg ${`(RPE ${item.rpe})`} \n`}
+                    {item.notes}
                 </Text>
-                {exercise?.category !== "endurance" && (
+                {exercise?.category !== "endurance" && exercise?.category !== "mobility" && (
                     <Text style={styles.oneRepMax}>
                         1RM: {calculateOneRepMax(item.weight!, item.reps!)} kg
                     </Text>
@@ -284,7 +310,7 @@ const ExerciseHistoryScreen = () => {
                 <Text style={styles.title}>{exercise?.name}</Text>
                 <View style={styles.headerButtons}>
                     <TouchableOpacity onPress={fillFromLastWorkout} style={styles.fillButton}>
-                        <Icon name="arrow-up" size={25} color="#007AFF" />
+                        <Icon name="copy-outline" size={25} color="#007AFF" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={timerRunning ? stopTimer : startTimer}>
                         <View style={styles.timerContainer}>
@@ -333,6 +359,41 @@ const ExerciseHistoryScreen = () => {
                         onChangeText={setRpe}
                         keyboardType="numeric"
                     />
+                    <TextInput
+                        style={[styles.input, styles.notesInput]}
+                        placeholder="Notes"
+                        placeholderTextColor={currentTheme.colors.placeholder}
+                        value={Notes}
+                        onChangeText={setNotes}
+                        multiline
+                    />
+                </View>
+            ) : exercise.category === "mobility" ? (
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Sets"
+                        placeholderTextColor={currentTheme.colors.placeholder}
+                        value={sets}
+                        onChangeText={setSets}
+                        keyboardType="numeric"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="RPE"
+                        placeholderTextColor={currentTheme.colors.placeholder}
+                        value={rpe}
+                        onChangeText={setRpe}
+                        keyboardType="numeric"
+                    />
+                    <TextInput
+                        style={[styles.input, styles.notesInput]}
+                        placeholder="Notes"
+                        placeholderTextColor={currentTheme.colors.placeholder}
+                        value={Notes}
+                        onChangeText={setNotes}
+                        multiline
+                    />
                 </View>
             ) : (
                 <View style={styles.inputContainer}>
@@ -357,8 +418,13 @@ const ExerciseHistoryScreen = () => {
                         placeholder="Weight"
                         placeholderTextColor={currentTheme.colors.placeholder}
                         value={weight}
-                        onChangeText={setWeight}
-                        keyboardType="numeric"
+                        onChangeText={(text) => {
+                            // Allow numbers and one comma or dot
+                            if (/^\d*[.,]?\d*$/.test(text)) {
+                                setWeight(text);
+                            }
+                        }}
+                        keyboardType="decimal-pad"
                     />
                     <TextInput
                         style={styles.input}
@@ -367,6 +433,14 @@ const ExerciseHistoryScreen = () => {
                         value={rpe}
                         onChangeText={setRpe}
                         keyboardType="numeric"
+                    />
+                    <TextInput
+                        style={[styles.input, styles.notesInput]}
+                        placeholder="Notes"
+                        placeholderTextColor={currentTheme.colors.placeholder}
+                        value={Notes}
+                        onChangeText={setNotes}
+                        multiline
                     />
                 </View>
             )}
@@ -429,10 +503,10 @@ const ExerciseHistoryScreen = () => {
                             }}
                         />
                     ) : (
-                        <Text></Text>
+                        <Text>Not enough data to show distance evolution</Text>
                     )}
                 </>
-            ) : (
+            ) : exercise.category !== "mobility" ? (
                 <>
                     <Text style={styles.sectionTitle}>1RM Progress</Text>
                     {oneRepMaxData.length > 1 ? (
@@ -468,7 +542,7 @@ const ExerciseHistoryScreen = () => {
                         <Text>Not enough data to show 1RM evolution</Text>
                     )}
                 </>
-            )}
+            ) : null}
         </View>
     );
 };

@@ -21,4 +21,5 @@ export interface ExerciseHistoryEntry {
     distance?: number;
     time?: number;
     avgHeartRate?: number;
+    notes: string;
 }

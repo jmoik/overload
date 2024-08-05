@@ -166,7 +166,7 @@ const AllExercisesScreen = () => {
                     return a.name.localeCompare(b.name);
                 }
             });
-            return [{ title: "", data: sortedExercises }];
+            return [{ title: "", data: sortedExercises, key: "none" }];
         }
 
         const grouped = exercises.reduce((acc, exercise) => {
@@ -181,7 +181,7 @@ const AllExercisesScreen = () => {
         Object.keys(grouped).forEach((key) => {
             grouped[key].sort((a, b) => {
                 if (sortBySetsLeft) {
-                    return calculateRemainingSets(a) - calculateRemainingSets(b);
+                    return calculateRemainingSets(b) - calculateRemainingSets(a);
                 } else {
                     return a.name.localeCompare(b.name);
                 }
@@ -193,17 +193,27 @@ const AllExercisesScreen = () => {
         return sortedKeys.map((key) => ({
             title: key,
             data: grouped[key],
+            key: `${groupBy}-${key}`, // Add a unique key for each section
         }));
     }, [exercises, groupBy, sortBySetsLeft, calculateRemainingSets]);
 
     const renderExerciseItem = useCallback(
-        ({ item, index }: { item: Exercise; index: number; section: { title: string } }) => {
+        ({
+            item,
+            index,
+            section,
+        }: {
+            item: Exercise;
+            index: number;
+            section: { title: string };
+        }) => {
             const remainingTrainingLoad = calculateRemainingSets(item);
             const setsLeft = Math.floor(remainingTrainingLoad / item.targetRPE);
             const setsLeftColor = setsLeft <= 0 ? "green" : "red";
 
             return (
                 <Swipeable
+                    key={item.id} // Use the exercise's id as the key
                     ref={(el) => (swipeableRefs.current[index] = el)}
                     renderRightActions={() => renderRightActions(item.id, item.name)}
                     renderLeftActions={renderLeftActions}
@@ -244,7 +254,7 @@ const AllExercisesScreen = () => {
         <View style={styles.container}>
             <SectionList
                 sections={groupedAndSortedExercises}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => `${item.id}-${index}`} // Use both id and index for extra uniqueness
                 renderItem={renderExerciseItem}
                 renderSectionHeader={({ section: { title } }) =>
                     groupBy !== "none" ? (

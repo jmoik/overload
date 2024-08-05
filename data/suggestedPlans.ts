@@ -46,23 +46,47 @@ export const suggestedPlans: { [key: string]: Plan } = {
         ],
     },
     atgLowerBody: {
-        name: "ATG Lower Body",
+        name: "ATG",
         exercises: [
+            createExercise({
+                name: "Dead Hang",
+                description: "45s",
+                weeklySets: 8,
+                targetRPE: 7,
+                category: "mobility",
+                muscleGroup: "Shoulders",
+            }),
             createExercise({
                 name: "Deep Squat",
                 description: "60s",
-                weeklySets: 6,
+                weeklySets: 8,
                 targetRPE: 7,
                 category: "mobility",
                 muscleGroup: "Hips",
             }),
             createExercise({
-                name: "ATG Split Squat",
+                name: "Ankle Stretch",
                 description: "",
                 weeklySets: 6,
                 targetRPE: 7,
                 category: "mobility",
+                muscleGroup: "Lower Legs",
+            }),
+            createExercise({
+                name: "ATG Split Squat",
+                description: "",
+                weeklySets: 8,
+                targetRPE: 7,
+                category: "mobility",
                 muscleGroup: "Hips",
+            }),
+            createExercise({
+                name: "Hamstring Stretch",
+                description: "",
+                weeklySets: 10,
+                targetRPE: 7,
+                category: "mobility",
+                muscleGroup: "Legs",
             }),
             createExercise({
                 name: "Seated Good Morning",
@@ -123,7 +147,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
             createExercise({
                 name: "Pancake Stretch",
                 description: "",
-                weeklySets: 4,
+                weeklySets: 6,
                 targetRPE: 6,
                 category: "mobility",
                 muscleGroup: "Hips",
@@ -133,14 +157,9 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 description: "",
                 weeklySets: 4,
                 targetRPE: 7,
-                category: "mobility",
+                category: "strength",
                 muscleGroup: "Core",
             }),
-        ],
-    },
-    atgUpperBody: {
-        name: "ATG Upper Body",
-        exercises: [
             createExercise({
                 name: "External Rotation",
                 description: "",

@@ -73,7 +73,7 @@ const StatsScreen = () => {
                 targetEnduranceLoad += exercise.weeklySets * (exercise.distance ?? 0);
                 totalWeeklyEnduranceSets += exercise.weeklySets;
             } else if (isMobility) {
-                targetMobilityLoad += exercise.weeklySets * exercise.targetRPE;
+                targetMobilityLoad += exercise.weeklySets;
                 targetMobilitySets += exercise.weeklySets;
             } else {
                 targetStrengthLoad += exercise.weeklySets * exercise.targetRPE;
@@ -92,7 +92,7 @@ const StatsScreen = () => {
                             enduranceLoadByDay[dayIndex] += load;
                             actualEnduranceLoad += load;
                         } else if (isMobility) {
-                            const load = (entry.sets ?? 0) * entry.rpe;
+                            const load = entry.sets ?? 0;
                             mobilityLoadByDay[dayIndex] += load;
                             actualMobilityLoad += load;
                             actualMobilitySets += entry.sets ?? 0;
@@ -118,7 +118,7 @@ const StatsScreen = () => {
                             const load = entry.distance ?? 0;
                             enduranceLoadByDayForMA[dayIndex] += load;
                         } else if (isMobility) {
-                            const load = (entry.sets ?? 0) * entry.rpe;
+                            const load = entry.sets ?? 0;
                             mobilityLoadByDayForMA[dayIndex] += load;
                         } else {
                             const load = (entry.sets ?? 0) * entry.rpe;
@@ -253,8 +253,8 @@ const StatsScreen = () => {
     ) => (
         <View style={styles.statsContainer}>
             <Text style={styles.statsTitle}>{title} Stats for this Interval</Text>
-            <Text style={styles.statsText}>Target Load (Sets x RPE): {targetLoad.toFixed(1)}</Text>
-            <Text style={styles.statsText}>Actual Load: {actualLoad.toFixed(1)}</Text>
+            {/* <Text style={styles.statsText}>Target Load (Sets x RPE): {targetLoad.toFixed(1)}</Text> */}
+            {/* <Text style={styles.statsText}>Actual Load: {actualLoad.toFixed(1)}</Text> */}
             <Text style={styles.statsText}>Target Sets: {totalSets}</Text>
             <Text style={styles.statsText}>Actual Sets: {actualSets}</Text>
         </View>
