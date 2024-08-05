@@ -317,6 +317,14 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
         },
         notesInput: { height: 40, textAlignVertical: "top" },
         notes: { fontSize: 12, marginTop: 4 },
+        dateHeader: {
+            fontSize: 16,
+            fontWeight: "bold",
+            backgroundColor: theme.colors.background,
+            color: theme.colors.text,
+            padding: 10,
+            marginTop: 10,
+        },
     });
 
 // SettingsScreen specific styles
@@ -499,5 +507,21 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
             height: 1,
             backgroundColor: theme.colors.border,
             marginVertical: 16,
+        },
+        viewPager: { flex: 1 },
+        statRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 5,
+        },
+        statLabel: {
+            flex: 1,
+            fontSize: 20,
+            // marginHorizontal: 10,
+        },
+        statValue: {
+            flex: 1,
+            fontSize: 16,
+            textAlign: "center",
         },
     });

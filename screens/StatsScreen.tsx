@@ -7,6 +7,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createStatsStyles } from "../styles/globalStyles";
 import { subDays, isAfter } from "date-fns";
 import { Exercise, ExerciseHistoryEntry } from "../models/Exercise";
+import ViewPager from "@react-native-community/viewpager";
 
 const calculateMovingAverage = (data: number[], windowSize: number): number[] => {
     let result = data.map((_, index, array) => {
@@ -47,8 +48,6 @@ const StatsScreen = () => {
         actualMobilitySets,
         targetMobilitySets,
     } = useMemo(() => {
-        console.log("Recalculating stats data");
-        console.log("trainingInterval: ", trainingInterval);
         const today = new Date();
         const intervalStart = subDays(today, trainingInterval);
 
@@ -66,8 +65,6 @@ const StatsScreen = () => {
         while (mobilityLoadByDay.length < trainingInterval) {
             mobilityLoadByDay.push(0);
         }
-
-        console.log("strengthLoadByDay: ", strengthLoadByDay);
 
         const intervalStartForMA = subDays(today, trainingInterval * 2);
         const strengthLoadByDayForMA = Array(trainingInterval * 2).fill(0);
@@ -151,11 +148,6 @@ const StatsScreen = () => {
             });
         });
 
-        // print out the stats
-        console.log(strengthLoadByDay.map((load) => Math.max(load, 0)));
-        console.log(enduranceLoadByDay.map((load) => Math.max(load, 0)));
-        console.log(mobilityLoadByDay.map((load) => Math.max(load, 0)));
-        console.log("intervalStart", intervalStart);
         return {
             strengthLoadData: strengthLoadByDay.map((load) => Math.max(load, 0)),
             enduranceLoadData: enduranceLoadByDay.map((load) => Math.max(load, 0)),
@@ -280,50 +272,58 @@ const StatsScreen = () => {
         actualLoad: number,
         targetLoad: number,
         actualSets: number,
-        totalSets: number,
+        targetSets: number,
         title: string
     ) => (
         <View style={styles.statsContainer}>
-            <Text style={styles.statsTitle}>{title} Stats for this Interval</Text>
-            <Text style={styles.statsText}>Target Load (Sets x RPE): {targetLoad.toFixed(1)}</Text>
-            <Text style={styles.statsText}>Actual Load: {actualLoad.toFixed(1)}</Text>
-            <Text style={styles.statsText}>Target Sets: {totalSets}</Text>
-            <Text style={styles.statsText}>Actual Sets: {actualSets}</Text>
+            <Text style={styles.statsTitle}>{title} Interval Statistics</Text>
+            <Text style={styles.statLabel}>
+                Load: {actualLoad.toFixed(1)} / {targetLoad.toFixed(1)}
+                {"\n"}
+            </Text>
+            <Text style={styles.statLabel}>
+                Sets: {actualSets} / {targetSets}
+            </Text>
         </View>
     );
 
-    const renderEnduranceStats = (
-        totalWeeklyLoad: number,
-        targetWeeklyLoad: number,
-        title: string
-    ) => (
+    const renderEnduranceStats = (actualLoad: number, targetLoad: number, title: string) => (
         <View style={styles.statsContainer}>
-            <Text style={styles.statsTitle}>{title} Stats for this Interval</Text>
-            <Text style={styles.statsText}>Target Distance: {targetWeeklyLoad.toFixed(1)}</Text>
-            <Text style={styles.statsText}>Actual Distance: {totalWeeklyLoad.toFixed(1)}</Text>
+            <Text style={styles.statsTitle}>{title} Interval Statistics</Text>
+            <Text style={styles.statLabel}>
+                Interval Distance (km): {actualLoad.toFixed(1)} / {targetLoad.toFixed(1)}
+                {"\n"}
+            </Text>
+            <Text style={styles.statLabel}>
+                Weekly Distance (km):{" "}
+                {((parseFloat(actualLoad.toFixed(1)) / trainingInterval) * 7).toFixed(1)} /{" "}
+                {((parseFloat(targetLoad.toFixed(1)) / trainingInterval) * 7).toFixed(1)}
+                {"\n"}
+            </Text>
+            <Text style={styles.statLabel}>
+                Monthly Distance (km):{" "}
+                {((parseFloat(actualLoad.toFixed(1)) / trainingInterval) * 30).toFixed(1)} /{" "}
+                {((parseFloat(targetLoad.toFixed(1)) / trainingInterval) * 30).toFixed(1)}
+                {"\n"}
+            </Text>
         </View>
     );
 
-    const renderMobilityStats = (
-        actualLoad: number,
-        targetLoad: number,
-        actualSets: number,
-        totalSets: number,
-        title: string
-    ) => (
+    const renderMobilityStats = (actualSets: number, targetSets: number, title: string) => (
         <View style={styles.statsContainer}>
-            <Text style={styles.statsTitle}>{title} Stats for this Interval</Text>
-            {/* <Text style={styles.statsText}>Target Load (Sets x RPE): {targetLoad.toFixed(1)}</Text> */}
-            {/* <Text style={styles.statsText}>Actual Load: {actualLoad.toFixed(1)}</Text> */}
-            <Text style={styles.statsText}>Target Sets: {totalSets}</Text>
-            <Text style={styles.statsText}>Actual Sets: {actualSets}</Text>
+            <Text style={styles.statsTitle}>{title} Interval Statistics</Text>
+            <Text style={styles.statLabel}>
+                Sets: {actualSets} / {targetSets}
+            </Text>
         </View>
     );
 
     const renderSeparator = () => <View style={styles.separator} />;
 
     return (
+        // <ViewPager style={styles.viewPager} initialPage={0}>
         <ScrollView style={styles.container}>
+            {/* <View key="1"> */}
             {renderChart(
                 createChartData(
                     strengthLoadData,
@@ -341,7 +341,8 @@ const StatsScreen = () => {
             )}
 
             {renderSeparator()}
-
+            {/* </View> */}
+            {/* <View key="2"> */}
             {renderChart(
                 createChartData(
                     enduranceLoadData,
@@ -353,7 +354,8 @@ const StatsScreen = () => {
             {renderEnduranceStats(actualEnduranceLoad, targetEnduranceLoad, "Endurance")}
 
             {renderSeparator()}
-
+            {/* </View> */}
+            {/* <View key="3"> */}
             {renderChart(
                 createChartData(
                     mobilityLoadData,
@@ -362,13 +364,9 @@ const StatsScreen = () => {
                 ),
                 "Mobility"
             )}
-            {renderMobilityStats(
-                actualMobilityLoad,
-                targetMobilityLoad,
-                actualMobilitySets,
-                targetMobilitySets,
-                "Mobility"
-            )}
+            {renderMobilityStats(actualMobilitySets, targetMobilitySets, "Mobility")}
+            {/* </View> */}
+            {/* </ViewPager> */}
         </ScrollView>
     );
 };
