@@ -75,8 +75,14 @@ const AppContent = () => {
             }
         } catch (error) {
             console.error("Error checking if first launch:", error);
+            setIsFirstLaunch(false);
         }
     };
+
+    if (isFirstLaunch === null) {
+        // Return a loading indicator or splash screen while checking
+        return null;
+    }
 
     return (
         <NavigationContainer theme={navigationTheme[theme]}>

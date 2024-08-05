@@ -184,37 +184,55 @@ const StatsScreen = () => {
         };
     };
 
-    const renderChart = (chartData: any, title: string) => (
-        <>
-            <Text style={styles.title}>{title}</Text>
-            {chartData.datasets[0].data.some((load: number) => load > 0) ? (
-                <LineChart
-                    data={chartData}
-                    width={Dimensions.get("window").width - 16}
-                    height={220}
-                    yAxisLabel=""
-                    chartConfig={{
-                        backgroundColor: currentTheme.colors.background,
-                        backgroundGradientFrom: currentTheme.colors.background,
-                        backgroundGradientTo: currentTheme.colors.background,
-                        decimalPlaces: 0,
-                        color: (opacity = 1) => currentTheme.colors.text,
-                        labelColor: (opacity = 1) => currentTheme.colors.text,
-                        style: {
-                            borderRadius: 16,
-                        },
-                    }}
-                    bezier
-                    style={styles.chart}
-                    legend={chartData.legend}
-                />
-            ) : (
-                <Text style={styles.noDataText}>
-                    No {title.toLowerCase()} training data available for the current interval
-                </Text>
-            )}
-        </>
-    );
+    const renderChart = (chartData: any, title: string) => {
+        const screenWidth = Dimensions.get("window").width;
+
+        return (
+            <View>
+                <Text style={styles.title}>{title}</Text>
+                {chartData.datasets[0].data.some((load: number) => load > 0) ? (
+                    <LineChart
+                        data={chartData}
+                        width={screenWidth - 16}
+                        height={220}
+                        yAxisLabel=""
+                        chartConfig={{
+                            backgroundColor: currentTheme.colors.background,
+                            backgroundGradientFrom: currentTheme.colors.background,
+                            backgroundGradientTo: currentTheme.colors.background,
+                            decimalPlaces: 1, // Set decimal places to 2 for more precision
+                            color: (opacity = 1) => currentTheme.colors.text,
+                            labelColor: (opacity = 1) => currentTheme.colors.text,
+                            propsForBackgroundLines: {
+                                strokeDasharray: "", // Solid gridlines
+                                stroke: currentTheme.colors.text, // Ensure gridlines are visible and consistent
+                            },
+                            propsForDots: {
+                                r: "3",
+                                strokeWidth: "1",
+                                stroke: currentTheme.colors.text,
+                            },
+                            strokeWidth: 2, // Width of the line
+                            useShadowColorFromDataset: false, // Do not use shadow color from dataset
+                            propsForLabels: {
+                                fontSize: 12,
+                                fontWeight: "bold",
+                            },
+                        }}
+                        bezier
+                        style={styles.chart}
+                        formatYLabel={(value) => parseFloat(value).toFixed(1)} // Ensure y-axis labels are not rounded to integers
+                        // verticalLabelRotation={30} // Adjusts rotation of x-axis labels for better readability
+                        fromZero={true} // Ensures y-axis starts from zero
+                    />
+                ) : (
+                    <Text style={styles.noDataText}>
+                        No {title.toLowerCase()} training data available for the current interval
+                    </Text>
+                )}
+            </View>
+        );
+    };
 
     const renderStrengthStats = (
         actualLoad: number,

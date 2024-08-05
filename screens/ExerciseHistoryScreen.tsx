@@ -288,8 +288,13 @@ const ExerciseHistoryScreen = () => {
                         ? `${item.sets} sets ${`(RPE ${item.rpe})`}`
                         : `${item.sets} sets x ${item.reps} reps @ ${
                               item.weight
-                          } kg ${`(RPE ${item.rpe})`} \n`}
-                    {item.notes}
+                          } kg ${`(RPE ${item.rpe})`}`}
+                    {item.notes ? (
+                        <Text style={styles.notes}>
+                            {" "}
+                            {"\n"} ${item.notes}{" "}
+                        </Text>
+                    ) : null}
                 </Text>
                 {exercise?.category !== "endurance" && exercise?.category !== "mobility" && (
                     <Text style={styles.oneRepMax}>

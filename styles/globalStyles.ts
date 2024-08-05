@@ -441,7 +441,7 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
         container: {
             flex: 1,
             backgroundColor: theme.colors.background,
-            padding: 16,
+            padding: 0,
         },
         title: {
             fontSize: 24,
@@ -451,9 +451,9 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
             textAlign: "center",
         },
         chart: {
-            marginVertical: 8,
             borderRadius: 16,
-            width: Dimensions.get("window").width - 32,
+            marginLeft: -16,
+            width: Dimensions.get("window").width,
             marginBottom: 16,
         },
         statsContainer: {
