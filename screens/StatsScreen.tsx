@@ -278,6 +278,8 @@ const StatsScreen = () => {
         </View>
     );
 
+    const renderSeparator = () => <View style={styles.separator} />;
+
     return (
         <ScrollView style={styles.container}>
             {renderChart(
@@ -296,6 +298,9 @@ const StatsScreen = () => {
                 targetStrengthSets,
                 "Strength"
             )}
+
+            {renderSeparator()}
+
             {renderChart(
                 createChartData(
                     enduranceLoadData,
@@ -306,6 +311,9 @@ const StatsScreen = () => {
                 "Endurance"
             )}
             {renderEnduranceStats(actualEnduranceLoad, targetEnduranceLoad, "Endurance")}
+
+            {renderSeparator()}
+
             {renderChart(
                 createChartData(
                     mobilityLoadData,
