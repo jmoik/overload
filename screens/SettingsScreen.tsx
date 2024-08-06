@@ -1,16 +1,7 @@
 // screens/SettingsScreen.tsx
 import React from "react";
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import {
-    View,
-    Text,
-    FlatList,
-    TouchableOpacity,
-    Share,
-    Switch,
-    Alert,
-    Linking,
-} from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Switch, Alert, Linking } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { SettingsScreenNavigationProp } from "../types/navigation";
 import { useExerciseContext } from "../contexts/ExerciseContext";
@@ -19,6 +10,8 @@ import { lightTheme, darkTheme, createSettingsStyles } from "../styles/globalSty
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import { generateRandomWorkoutData } from "../utils/dataGenerators";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 type SettingItem = {
     id: string;
@@ -42,12 +35,16 @@ const SettingsScreen = () => {
                 history: exerciseHistory[exercise.id] || [],
             })),
         };
-
         try {
             const jsonString = JSON.stringify(exportData, null, 2);
-            await Share.share({
-                message: jsonString,
-                title: "Workout Routine Export",
+            const fileUri = FileSystem.documentDirectory + "trainingExportData.txt";
+            await FileSystem.writeAsStringAsync(fileUri, jsonString, {
+                encoding: FileSystem.EncodingType.UTF8,
+            });
+            await Sharing.shareAsync(fileUri, {
+                mimeType: "text/plain",
+                dialogTitle: "Save training export data",
+                UTI: "public.plain-text",
             });
         } catch (error) {
             console.error("Error sharing export data:", error);
@@ -56,17 +53,17 @@ const SettingsScreen = () => {
 
     const importData = async () => {
         try {
-            const result = await DocumentPicker.getDocumentAsync({ type: "application/json" });
-
+            const result = await DocumentPicker.getDocumentAsync({
+                type: ["application/json", "text/plain"],
+                copyToCacheDirectory: false,
+            });
             if (result.canceled === false) {
-                const fileContent = await fetch(result.assets[0].uri).then((res) => res.text());
+                const fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri);
                 const importedData = JSON.parse(fileContent);
-
                 // Validate the data structure
                 if (!Array.isArray(importedData.exercises)) {
                     throw new Error("Invalid data format");
                 }
-
                 // Update app state
                 setExercises(
                     importedData.exercises.map(
@@ -87,7 +84,6 @@ const SettingsScreen = () => {
                         })
                     )
                 );
-
                 const newHistory = {};
                 importedData.exercises.forEach((e: { history: any; id: string | number }) => {
                     if (Array.isArray(e.history)) {
@@ -95,7 +91,6 @@ const SettingsScreen = () => {
                     }
                 });
                 setExerciseHistory(newHistory);
-
                 Alert.alert("Success", "Data imported successfully");
             }
         } catch (error) {
@@ -103,7 +98,6 @@ const SettingsScreen = () => {
             Alert.alert("Error", "Failed to import data. Please check the file format.");
         }
     };
-
     const handleDeleteAllData = () => {
         Alert.alert(
             "Delete All Data",
