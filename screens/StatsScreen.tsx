@@ -30,41 +30,13 @@ const StatsScreen = () => {
     const styles = createStatsStyles(currentTheme);
     const { exercises, exerciseHistory, trainingInterval } = useExerciseContext();
 
-    const {
-        strengthLoadData,
-        enduranceLoadData,
-        mobilityLoadData,
-        strengthLoadDataForMA,
-        enduranceLoadDataForMA,
-        mobilityLoadDataForMA,
-        targetStrengthLoad,
-        targetEnduranceLoad,
-        targetMobilityLoad,
-        actualStrengthLoad,
-        actualEnduranceLoad,
-        actualMobilityLoad,
-        actualStrengthSets,
-        targetStrengthSets,
-        actualMobilitySets,
-        targetMobilitySets,
-    } = useMemo(() => {
+    const calculateStats = () => {
         const today = new Date();
         const intervalStart = subDays(today, trainingInterval);
 
         let strengthLoadByDay = Array(trainingInterval).fill(0);
         let enduranceLoadByDay = Array(trainingInterval).fill(0);
         let mobilityLoadByDay = Array(trainingInterval).fill(0);
-
-        // make sure length of strengthLoadByDay, enduranceLoadByDay, and mobilityLoadByDay is equal to trainingInterval
-        while (strengthLoadByDay.length < trainingInterval) {
-            strengthLoadByDay.push(0);
-        }
-        while (enduranceLoadByDay.length < trainingInterval) {
-            enduranceLoadByDay.push(0);
-        }
-        while (mobilityLoadByDay.length < trainingInterval) {
-            mobilityLoadByDay.push(0);
-        }
 
         const intervalStartForMA = subDays(today, trainingInterval * 2);
         const strengthLoadByDayForMA = Array(trainingInterval * 2).fill(0);
@@ -82,6 +54,16 @@ const StatsScreen = () => {
         let targetMobilitySets = 0;
         let actualMobilitySets = 0;
         let totalWeeklyEnduranceSets = 0;
+
+        while (strengthLoadByDay.length < trainingInterval) {
+            strengthLoadByDay.push(0);
+        }
+        while (enduranceLoadByDay.length < trainingInterval) {
+            enduranceLoadByDay.push(0);
+        }
+        while (mobilityLoadByDay.length < trainingInterval) {
+            mobilityLoadByDay.push(0);
+        }
 
         exercises.forEach((exercise: Exercise) => {
             const history = exerciseHistory[exercise.id] || [];
@@ -167,7 +149,9 @@ const StatsScreen = () => {
             actualMobilitySets,
             totalWeeklyEnduranceSets,
         };
-    }, [exercises, exerciseHistory, trainingInterval]);
+    };
+
+    const stats = calculateStats();
 
     const createChartData = (loadData: number[], dataForMA: number[], targetLoad: number) => {
         loadData = loadData.map((value) => (isNaN(value) ? 0 : value));
@@ -321,22 +305,20 @@ const StatsScreen = () => {
     const renderSeparator = () => <View style={styles.separator} />;
 
     return (
-        // <ViewPager style={styles.viewPager} initialPage={0}>
         <ScrollView style={styles.container}>
-            {/* <View key="1"> */}
             {renderChart(
                 createChartData(
-                    strengthLoadData,
-                    strengthLoadDataForMA,
-                    targetStrengthLoad / trainingInterval
+                    stats.strengthLoadData,
+                    stats.strengthLoadDataForMA,
+                    stats.targetStrengthLoad / trainingInterval
                 ),
                 "Strength"
             )}
             {renderStrengthStats(
-                actualStrengthLoad,
-                targetStrengthLoad,
-                actualStrengthSets,
-                targetStrengthSets,
+                stats.actualStrengthLoad,
+                stats.targetStrengthLoad,
+                stats.actualStrengthSets,
+                stats.targetStrengthSets,
                 "Strength"
             )}
 
@@ -345,26 +327,30 @@ const StatsScreen = () => {
             {/* <View key="2"> */}
             {renderChart(
                 createChartData(
-                    enduranceLoadData,
-                    enduranceLoadDataForMA,
-                    targetEnduranceLoad / trainingInterval
+                    stats.enduranceLoadData,
+                    stats.enduranceLoadDataForMA,
+                    stats.targetEnduranceLoad / trainingInterval
                 ),
                 "Endurance"
             )}
-            {renderEnduranceStats(actualEnduranceLoad, targetEnduranceLoad, "Endurance")}
+            {renderEnduranceStats(
+                stats.actualEnduranceLoad,
+                stats.targetEnduranceLoad,
+                "Endurance"
+            )}
 
             {renderSeparator()}
             {/* </View> */}
             {/* <View key="3"> */}
             {renderChart(
                 createChartData(
-                    mobilityLoadData,
-                    mobilityLoadDataForMA,
-                    targetMobilityLoad / trainingInterval
+                    stats.mobilityLoadData,
+                    stats.mobilityLoadDataForMA,
+                    stats.targetMobilityLoad / trainingInterval
                 ),
                 "Mobility"
             )}
-            {renderMobilityStats(actualMobilitySets, targetMobilitySets, "Mobility")}
+            {renderMobilityStats(stats.actualMobilitySets, stats.targetMobilitySets, "Mobility")}
             {/* </View> */}
             {/* </ViewPager> */}
         </ScrollView>

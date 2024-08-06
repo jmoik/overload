@@ -112,7 +112,7 @@ const ExerciseHistoryScreen = () => {
     }, [history]);
 
     const chartData = {
-        labels: oneRepMaxData.map((data) => data.date.toLocaleDateString()),
+        labels: oneRepMaxData.map((data) => data.date.toLocaleDateString().slice(0, -4)),
         datasets: [
             {
                 data: oneRepMaxData.map((data) => data.oneRepMax),
@@ -121,7 +121,7 @@ const ExerciseHistoryScreen = () => {
     };
 
     const enduranceChartData = {
-        labels: enduranceData.map((data) => data.date.toLocaleDateString()),
+        labels: enduranceData.map((data) => data.date.toLocaleDateString().slice(0, -4)),
         datasets: [
             {
                 data: enduranceData.map((data) => data.distance),
@@ -302,7 +302,7 @@ const ExerciseHistoryScreen = () => {
                             {item.notes ? (
                                 <Text style={styles.notes}>
                                     {" "}
-                                    {"\n"} ${item.notes}{" "}
+                                    {"\n"} {item.notes}{" "}
                                 </Text>
                             ) : null}
                         </Text>
