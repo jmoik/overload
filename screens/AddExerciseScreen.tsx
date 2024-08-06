@@ -39,7 +39,7 @@ const AddExerciseScreen = () => {
                 setMuscleGroup(exercise.muscleGroup);
                 setWeeklySets(exercise.weeklySets.toString());
                 setTargetRPE(exercise.targetRPE.toString());
-                setDistance(exercise.distance?.toString() || "");
+                setDistance(exercise.distance?.toString() || "0");
             }
         }
     }, [exerciseId, exercises]);
@@ -57,6 +57,7 @@ const AddExerciseScreen = () => {
             category,
             description,
             muscleGroup,
+            distance: category === "endurance" ? parseFloat(distance) : undefined,
         };
 
         if (route.params?.onSave) {

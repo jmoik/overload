@@ -32,7 +32,6 @@ const StatsScreen = () => {
 
     const calculateStats = () => {
         const today = new Date();
-        const intervalStart = subDays(today, trainingInterval);
 
         let strengthLoadByDay = Array(trainingInterval).fill(0);
         let enduranceLoadByDay = Array(trainingInterval).fill(0);
@@ -72,6 +71,7 @@ const StatsScreen = () => {
 
             if (isEndurance) {
                 targetEnduranceLoad += exercise.weeklySets * (exercise.distance ?? 0);
+                console.log("Target Endurance Load: ", targetEnduranceLoad);
                 totalWeeklyEnduranceSets += exercise.weeklySets;
             } else if (isMobility) {
                 targetMobilityLoad += exercise.weeklySets;
@@ -83,26 +83,34 @@ const StatsScreen = () => {
 
             history.forEach((entry: ExerciseHistoryEntry) => {
                 const entryDate = new Date(entry.date);
-                if (isAfter(entryDate, intervalStart)) {
-                    const dayIndex =
-                        trainingInterval -
-                        Math.ceil((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
-                    if (dayIndex >= 0 && dayIndex < trainingInterval) {
-                        if (isEndurance) {
-                            const load = entry.distance ?? 0;
-                            enduranceLoadByDay[dayIndex] += load;
-                            actualEnduranceLoad += load;
-                        } else if (isMobility) {
-                            const load = entry.sets ?? 0;
-                            mobilityLoadByDay[dayIndex] += load;
-                            actualMobilityLoad += load;
-                            actualMobilitySets += entry.sets ?? 0;
-                        } else {
-                            const load = (entry.sets ?? 0) * entry.rpe;
-                            strengthLoadByDay[dayIndex] += load;
-                            actualStrengthLoad += load;
-                            actualStrengthSets += entry.sets ?? 0;
-                        }
+
+                // dayIndex = [-trainingInterval+1, -trainingInterval+2, ..., 0 (today)]
+                // dayIndex = [-10+1, -10+2, ..., 0 (today)]
+                // dayIndex = [-9, -8, ..., 0 (today)] => 10 days
+
+                const dayIndex =
+                    trainingInterval -
+                    Math.round((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)) -
+                    1;
+                // console.log("Day Index: ", dayIndex);
+                // console.log("Entry name: ", exercise.name);
+                // console.log("Entry: ", entry);
+
+                if (dayIndex >= 0 && dayIndex < trainingInterval) {
+                    if (isEndurance) {
+                        const load = entry.distance ?? 0;
+                        enduranceLoadByDay[dayIndex] += load;
+                        actualEnduranceLoad += load;
+                    } else if (isMobility) {
+                        const load = entry.sets ?? 0;
+                        mobilityLoadByDay[dayIndex] += load;
+                        actualMobilityLoad += load;
+                        actualMobilitySets += entry.sets ?? 0;
+                    } else {
+                        const load = (entry.sets ?? 0) * entry.rpe;
+                        strengthLoadByDay[dayIndex] += load;
+                        actualStrengthLoad += load;
+                        actualStrengthSets += entry.sets ?? 0;
                     }
                 }
             });
@@ -113,7 +121,8 @@ const StatsScreen = () => {
                 if (isAfter(entryDate, intervalStartForMA)) {
                     const dayIndex =
                         trainingInterval * 2 -
-                        Math.ceil((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+                        Math.ceil((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)) -
+                        1;
                     if (dayIndex >= 0 && dayIndex < trainingInterval * 2) {
                         if (isEndurance) {
                             const load = entry.distance ?? 0;
@@ -129,6 +138,11 @@ const StatsScreen = () => {
                 }
             });
         });
+
+        // log
+        // console.log("Strength Load By Day: ", strengthLoadByDay);
+        // console.log("Endurance Load By Day: ", enduranceLoadByDay);
+        // console.log("Mobility Load By Day: ", mobilityLoadByDay);
 
         return {
             strengthLoadData: strengthLoadByDay.map((load) => Math.max(load, 0)),
@@ -159,28 +173,37 @@ const StatsScreen = () => {
 
         const result = {
             labels: Array.from(
-                { length: loadData.length }, // Use loadData.length instead of trainingInterval
+                { length: loadData.length },
                 (_, i) => `${i === loadData.length - 1 ? "Today" : -loadData.length + i + 1}`
             ),
             datasets: [
                 {
-                    data: loadData,
-                    color: (opacity = 1) => currentTheme.colors.primary,
-                    strokeWidth: 1,
-                },
-                {
                     data: Array(trainingInterval).fill(targetLoad),
                     color: (opacity = 1) => "rgba(255, 0, 0, 0.8)",
-                    strokeWidth: 1,
+                    strokeWidth: 2,
+                    withDots: false,
                 },
+                {
+                    data: loadData,
+                    color: (opacity = 1) => currentTheme.colors.primary,
+                    strokeWidth: 2,
+                    withDots: true,
+                },
+
                 {
                     data: movingAverage,
                     color: (opacity = 1) => "rgba(0, 255, 0, 0.8)",
-                    strokeWidth: 1,
+                    strokeWidth: 2,
+                    withDots: false,
                 },
             ],
-            legend: [`Actual`, `Target`, `MA`],
+            legend: [
+                `Target: ${targetLoad.toFixed(1)}`,
+                `Actual: ${loadData[loadData.length - 1].toFixed(1)}`,
+                `MA: ${movingAverage[movingAverage.length - 1].toFixed(1)}`,
+            ],
         };
+        // console.log("Datasets: ", result.datasets);
 
         if (
             result.datasets[0].data.some((load: number) => isNaN(load)) ||
@@ -192,7 +215,6 @@ const StatsScreen = () => {
             console.log(result.datasets[0].data);
             console.log(result.datasets[1].data);
             console.log(result.datasets[2].data);
-            console.log(trainingInterval);
             console.log("Invalid data for chart");
         }
         return result;

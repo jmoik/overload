@@ -53,51 +53,81 @@ const SettingsScreen = () => {
 
     const importData = async () => {
         try {
-            const result = await DocumentPicker.getDocumentAsync({
-                type: ["application/json", "text/plain"],
-                copyToCacheDirectory: false,
-            });
-            if (result.canceled === false) {
-                const fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri);
-                const importedData = JSON.parse(fileContent);
-                // Validate the data structure
-                if (!Array.isArray(importedData.exercises)) {
-                    throw new Error("Invalid data format");
-                }
-                // Update app state
-                setExercises(
-                    importedData.exercises.map(
-                        (e: {
-                            id: any;
-                            name: any;
-                            description: any;
-                            weeklySets: any;
-                            targetRPE: any;
-                            category: any;
-                        }) => ({
-                            id: e.id,
-                            name: e.name,
-                            description: e.description,
-                            weeklySets: e.weeklySets,
-                            targetRPE: e.targetRPE,
-                            category: e.category,
-                        })
-                    )
-                );
-                const newHistory = {};
-                importedData.exercises.forEach((e: { history: any; id: string | number }) => {
-                    if (Array.isArray(e.history)) {
-                        newHistory[e.id] = e.history;
-                    }
+            let fileContent;
+            if (__DEV__) {
+                const result = await DocumentPicker.getDocumentAsync({
+                    type: ["application/json", "text/plain"],
+                    copyToCacheDirectory: false,
                 });
-                setExerciseHistory(newHistory);
-                Alert.alert("Success", "Data imported successfully");
+                if (result.canceled === false) {
+                    fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri);
+                } else {
+                    return; // User cancelled the picker
+                }
+            } else {
+                // For production builds on iOS
+                const result = await DocumentPicker.getDocumentAsync({
+                    type: ["application/json", "text/plain"],
+                    copyToCacheDirectory: true,
+                });
+                if (result.canceled === false) {
+                    fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri, {
+                        encoding: FileSystem.EncodingType.UTF8,
+                    });
+                } else {
+                    return; // User cancelled the picker
+                }
             }
+
+            if (!fileContent) {
+                throw new Error("No file content");
+            }
+
+            const importedData = JSON.parse(fileContent);
+            // Validate the data structure
+            if (!Array.isArray(importedData.exercises)) {
+                throw new Error("Invalid data format");
+            }
+            // Update app state
+            setExercises(
+                importedData.exercises.map(
+                    (e: {
+                        id: any;
+                        name: any;
+                        description: any;
+                        weeklySets: any;
+                        targetRPE: any;
+                        category: any;
+                        muscleGroup: any;
+                        distance: any;
+                    }) => ({
+                        id: e.id,
+                        name: e.name,
+                        description: e.description,
+                        weeklySets: e.weeklySets,
+                        targetRPE: e.targetRPE,
+                        category: e.category,
+                        muscleGroup: e.muscleGroup,
+                        distance: e.distance,
+                    })
+                )
+            );
+            const newHistory = {};
+            importedData.exercises.forEach((e: { history: any; id: string | number }) => {
+                if (Array.isArray(e.history)) {
+                    newHistory[e.id] = e.history;
+                }
+            });
+            setExerciseHistory(newHistory);
+            Alert.alert("Success", "Data imported successfully");
+
+            Alert.alert("Success", "Data imported successfully");
         } catch (error) {
             console.error("Error importing data:", error);
-            Alert.alert("Error", "Failed to import data. Please check the file format.");
+            Alert.alert("Error", `Failed to import data: ${error.message}`);
         }
     };
+
     const handleDeleteAllData = () => {
         Alert.alert(
             "Delete All Data",
@@ -199,29 +229,29 @@ const SettingsScreen = () => {
         },
         {
             id: "7",
-            title: "Go to Setup Screen",
-            action: goToWelcomeScreen,
-        },
-        {
-            id: "8",
             title: "Report Bug / Request Feature",
             action: handleEmailPress,
         },
         {
-            id: "9",
+            id: "8",
             title: "Rate in App Store",
             action: handleAppStoreRating,
         },
         {
-            id: "10",
-            title: "Info",
-            action: handleInfoPress,
+            id: "9",
+            title: "Go to Setup Screen",
+            action: goToWelcomeScreen,
         },
         {
-            id: "11",
+            id: "10",
             title: "Delete All Data",
             action: handleDeleteAllData,
         },
+        // {
+        //     id: "11",
+        //     title: "Info",
+        //     action: handleInfoPress,
+        // },
         ...(__DEV__
             ? [
                   {

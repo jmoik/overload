@@ -1,34 +1,39 @@
 {
-  "expo": {
-    "name": "training",
-    "slug": "training",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "entryPoint": "./App.tsx",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.julian256.training"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "d53017a3-3d40-4c0f-801b-f9d0d328abe4"
-      }
+    "expo": {
+        "name": "Overload",
+        "slug": "training",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "entryPoint": "./App.tsx",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "light",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.julian256.overload",
+            "infoPlist": {
+                "UIFileSharingEnabled": true,
+                "LSSupportsOpeningDocumentsInPlace": true,
+                "NSDocumentsFolderUsageDescription": "This app needs access to documents for importing training data."
+            }
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#ffffff"
+            }
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "extra": {
+            "eas": {
+                "projectId": "d53017a3-3d40-4c0f-801b-f9d0d328abe4"
+            }
+        }
     }
-  }
 }
