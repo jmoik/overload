@@ -82,19 +82,19 @@ const StatsScreen = () => {
             }
 
             history.forEach((entry: ExerciseHistoryEntry) => {
-                const entryDate = new Date(entry.date);
-
                 // dayIndex = [-trainingInterval+1, -trainingInterval+2, ..., 0 (today)]
                 // dayIndex = [-10+1, -10+2, ..., 0 (today)]
                 // dayIndex = [-9, -8, ..., 0 (today)] => 10 days
 
-                const dayIndex =
-                    trainingInterval -
-                    Math.round((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)) -
-                    1;
+                const today = new Date();
+                const daysAgo = Math.ceil(
+                    (today.getDate() - new Date(entry.date).getDate()) / (1000 * 60 * 60 * 24)
+                );
+                const dayIndex = trainingInterval - daysAgo - 1;
+
                 // console.log("Day Index: ", dayIndex);
+                // console.log("Days Ago: ", daysAgo);
                 // console.log("Entry name: ", exercise.name);
-                // console.log("Entry: ", entry);
 
                 if (dayIndex >= 0 && dayIndex < trainingInterval) {
                     if (isEndurance) {
@@ -117,23 +117,21 @@ const StatsScreen = () => {
 
             // data to calculate moving average
             history.forEach((entry: ExerciseHistoryEntry) => {
-                const entryDate = new Date(entry.date);
-                if (isAfter(entryDate, intervalStartForMA)) {
-                    const dayIndex =
-                        trainingInterval * 2 -
-                        Math.ceil((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)) -
-                        1;
-                    if (dayIndex >= 0 && dayIndex < trainingInterval * 2) {
-                        if (isEndurance) {
-                            const load = entry.distance ?? 0;
-                            enduranceLoadByDayForMA[dayIndex] += load;
-                        } else if (isMobility) {
-                            const load = entry.sets ?? 0;
-                            mobilityLoadByDayForMA[dayIndex] += load;
-                        } else {
-                            const load = (entry.sets ?? 0) * entry.rpe;
-                            strengthLoadByDayForMA[dayIndex] += load;
-                        }
+                const today = new Date();
+                const daysAgo = Math.ceil(
+                    (today.getDate() - new Date(entry.date).getDate()) / (1000 * 60 * 60 * 24)
+                );
+                const dayIndex = trainingInterval * 2 - daysAgo - 1;
+                if (dayIndex >= 0 && dayIndex < trainingInterval * 2) {
+                    if (isEndurance) {
+                        const load = entry.distance ?? 0;
+                        enduranceLoadByDayForMA[dayIndex] += load;
+                    } else if (isMobility) {
+                        const load = entry.sets ?? 0;
+                        mobilityLoadByDayForMA[dayIndex] += load;
+                    } else {
+                        const load = (entry.sets ?? 0) * entry.rpe;
+                        strengthLoadByDayForMA[dayIndex] += load;
                     }
                 }
             });
