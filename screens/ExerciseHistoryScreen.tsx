@@ -132,17 +132,26 @@ const ExerciseHistoryScreen = () => {
     const fillFromLastWorkout = useCallback(() => {
         if (history.length > 0) {
             const lastWorkout = history[0];
-            setSets(lastWorkout.sets?.toString() ?? "");
-            setRpe(lastWorkout.rpe.toString());
             if (exercise?.category === "endurance") {
                 setDistance(lastWorkout.distance?.toString() || "");
                 setTime(lastWorkout.time?.toString() || "");
                 setAvgHeartRate(lastWorkout.avgHeartRate?.toString() || "");
+            } else if (exercise?.category === "mobility") {
+                setSets(lastWorkout.sets?.toString() ?? "");
+            } else if (exercise?.category === "nsuns") {
+                if (lastWorkout.setsArray && lastWorkout.setsArray.length > 0) {
+                    const lastSet = lastWorkout.setsArray[lastWorkout.setsArray.length - 1];
+                    setReps(lastSet.reps.toString());
+                    setWeight(lastSet.weight.toString());
+                    setRpe(lastSet.rpe.toString());
+                }
             } else {
+                setSets(lastWorkout.sets?.toString() ?? "");
                 setReps(lastWorkout.reps?.toString() ?? "");
                 setWeight(lastWorkout.weight?.toString() ?? "");
             }
-            setNotes(lastWorkout.notes);
+            setRpe(lastWorkout.rpe.toString());
+            setNotes(lastWorkout.notes || "");
         }
     }, [history, exercise]);
 
@@ -169,6 +178,7 @@ const ExerciseHistoryScreen = () => {
             notes: Notes,
             date: editingEntry ? date : new Date(),
             rpe: parseInt(rpe, 10) || exercise.targetRPE,
+            setsArray: [],
         };
 
         if (exercise.category === "endurance") {
@@ -190,6 +200,32 @@ const ExerciseHistoryScreen = () => {
             entry = {
                 ...entry,
                 sets: parseInt(sets, 10),
+            };
+        } else if (exercise.category === "nsuns") {
+            if (!reps.trim() || !weight.trim()) {
+                Alert.alert("Error", "Please fill in all fields");
+                return;
+            }
+            entry = {
+                ...entry,
+                setsArray: entry.setsArray
+                    ? [
+                          ...entry.setsArray,
+                          {
+                              reps: parseInt(reps, 10),
+                              weight: parseFloatNumbers(weight),
+                              rpe: parseInt(rpe, 10),
+                              notes: Notes,
+                          },
+                      ]
+                    : [
+                          {
+                              reps: parseInt(reps, 10),
+                              weight: parseFloatNumbers(weight),
+                              rpe: parseInt(rpe, 10),
+                              notes: Notes,
+                          },
+                      ],
             };
         } else {
             if (!sets.trim() || !reps.trim() || !weight.trim()) {
@@ -216,30 +252,6 @@ const ExerciseHistoryScreen = () => {
         resetForm();
     };
 
-    const handleEditEntry = (entry: ExerciseHistoryEntry) => {
-        setEditingEntry(entry);
-        if (exercise?.category === "endurance") {
-            setDistance(entry.distance?.toString() || "");
-            setTime(entry.time?.toString() || "");
-            setAvgHeartRate(entry.avgHeartRate?.toString() || "");
-        } else if (exercise?.category === "mobility") {
-            setSets(entry.sets?.toString() || "");
-        } else {
-            setSets(entry.sets?.toString() || "");
-            setReps(entry.reps?.toString() || "");
-            setWeight(entry.weight?.toString() || "");
-        }
-        setRpe(entry.rpe.toString());
-        setDate(new Date(entry.date));
-        setNotes(entry.notes || "");
-    };
-
-    const onDateChange = (event: any, selectedDate?: Date) => {
-        const currentDate = selectedDate || date;
-        setShowDatePicker(Platform.OS === "ios");
-        setDate(currentDate);
-    };
-
     const handleDeleteEntry = useCallback(
         (entryToDelete: ExerciseHistoryEntry) => {
             Alert.alert("Delete Entry", "Are you sure you want to delete this entry?", [
@@ -263,6 +275,31 @@ const ExerciseHistoryScreen = () => {
         [deleteExerciseHistoryEntry, exerciseId, editingEntry, history]
     );
 
+    const handleEditEntry = (entry: ExerciseHistoryEntry) => {
+        setEditingEntry(entry);
+        if (exercise?.category === "endurance") {
+            setDistance(entry.distance?.toString() || "");
+            setTime(entry.time?.toString() || "");
+            setAvgHeartRate(entry.avgHeartRate?.toString() || "");
+        } else if (exercise?.category === "mobility") {
+            setSets(entry.sets?.toString() || "");
+        } else if (exercise?.category === "nsuns") {
+            if (entry.setsArray && entry.setsArray.length > 0) {
+                const lastSet = entry.setsArray[entry.setsArray.length - 1];
+                setReps(lastSet.reps.toString());
+                setWeight(lastSet.weight.toString());
+                setRpe(lastSet.rpe.toString());
+            }
+        } else {
+            setSets(entry.sets?.toString() || "");
+            setReps(entry.reps?.toString() || "");
+            setWeight(entry.weight?.toString() || "");
+        }
+        setRpe(entry.rpe.toString());
+        setDate(new Date(entry.date));
+        setNotes(entry.notes || "");
+    };
+
     const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => {
         const currentDate = new Date(item.date).toLocaleDateString();
         const previousDate =
@@ -275,14 +312,7 @@ const ExerciseHistoryScreen = () => {
                 )}
                 <Swipeable
                     ref={(el) => (swipeableRefs.current[index] = el)}
-                    renderRightActions={() => (
-                        <TouchableOpacity
-                            style={styles.deleteButton}
-                            onPress={() => handleDeleteEntry(item)}
-                        >
-                            <Icon name="trash-outline" size={24} color="#FFFFFF" />
-                        </TouchableOpacity>
-                    )}
+                    renderRightActions={() => renderDeleteButton(item)}
                     rightThreshold={40}
                 >
                     <TouchableOpacity
@@ -290,33 +320,66 @@ const ExerciseHistoryScreen = () => {
                         onPress={() => handleEditEntry(item)}
                     >
                         <Text style={styles.text}>
-                            {exercise?.category === "endurance"
-                                ? `${item.distance} km in ${item.time} min${
-                                      item.avgHeartRate ? ` @ ${item.avgHeartRate} bpm` : ""
-                                  } ${`(RPE ${item.rpe})`} `
-                                : exercise?.category === "mobility"
-                                ? `${item.sets} sets ${`(RPE ${item.rpe})`}`
-                                : `${item.sets} sets x ${item.reps} reps @ ${
-                                      item.weight
-                                  } kg ${`(RPE ${item.rpe})`}`}
-                            {item.notes ? (
-                                <Text style={styles.notes}>
-                                    {" "}
-                                    {"\n"} {item.notes}{" "}
-                                </Text>
-                            ) : null}
+                            {renderExerciseDetails(item)}
+                            {renderNotes(item)}
                         </Text>
-                        {exercise?.category !== "endurance" &&
-                            exercise?.category !== "mobility" && (
-                                <Text style={styles.oneRepMax}>
-                                    1RM: {calculateOneRepMax(item.weight!, item.reps!)} kg
-                                </Text>
-                            )}
+                        {renderOneRepMax(item)}
                     </TouchableOpacity>
                 </Swipeable>
             </>
         );
     };
+
+    const renderDeleteButton = (item: ExerciseHistoryEntry) => (
+        <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteEntry(item)}>
+            <Icon name="trash-outline" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+    );
+
+    const renderExerciseDetails = (item: ExerciseHistoryEntry) => {
+        switch (exercise?.category) {
+            case "endurance":
+                return `${item.distance} km in ${item.time} min${
+                    item.avgHeartRate ? ` @ ${item.avgHeartRate} bpm` : ""
+                } (RPE ${item.rpe})`;
+            case "mobility":
+                return `${item.sets} sets (RPE ${item.rpe})`;
+            case "nsuns":
+                return item.setsArray
+                    .map(
+                        (set) =>
+                            `${set.reps} reps @ ${set.weight} kg (RPE ${set.rpe}) ${
+                                set.notes ? ` - ${set.notes}` : ""
+                            }`
+                    )
+                    .join("\n");
+            default:
+                return `${item.sets} sets x ${item.reps} reps @ ${item.weight} kg (RPE ${item.rpe})`;
+        }
+    };
+
+    const renderNotes = (item: ExerciseHistoryEntry) =>
+        item.notes ? (
+            <Text style={styles.notes}>
+                {"\n"} {item.notes}
+            </Text>
+        ) : null;
+
+    const renderOneRepMax = (item: ExerciseHistoryEntry) =>
+        exercise?.category !== "endurance" && exercise?.category !== "mobility" ? (
+            <Text style={styles.oneRepMax}>
+                1RM:{" "}
+                {calculateOneRepMax(
+                    exercise?.category === "nsuns" && Array.isArray(item.sets)
+                        ? item.sets[0].weight
+                        : item.weight!,
+                    exercise?.category === "nsuns" && Array.isArray(item.sets)
+                        ? item.sets[0].reps
+                        : item.reps!
+                )}{" "}
+                kg
+            </Text>
+        ) : null;
 
     if (!exercise) {
         return <Text>Exercise not found</Text>;
@@ -343,125 +406,8 @@ const ExerciseHistoryScreen = () => {
                 </View>
             </View>
 
-            {exercise.category === "endurance" ? (
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Distance (km)"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={distance}
-                        onChangeText={setDistance}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Time (min)"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={time}
-                        onChangeText={setTime}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Avg Heart Rate"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={avgHeartRate}
-                        onChangeText={setAvgHeartRate}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="RPE"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={rpe}
-                        onChangeText={setRpe}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={[styles.input, styles.notesInput]}
-                        placeholder="Notes"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={Notes}
-                        onChangeText={setNotes}
-                        multiline
-                    />
-                </View>
-            ) : exercise.category === "mobility" ? (
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Sets"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={sets}
-                        onChangeText={setSets}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="RPE"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={rpe}
-                        onChangeText={setRpe}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={[styles.input, styles.notesInput]}
-                        placeholder="Notes"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={Notes}
-                        onChangeText={setNotes}
-                        multiline
-                    />
-                </View>
-            ) : (
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Sets"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={sets}
-                        onChangeText={setSets}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Reps"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={reps}
-                        onChangeText={setReps}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Weight"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={weight}
-                        onChangeText={(text) => {
-                            // Allow numbers and one comma or dot
-                            if (/^\d*[.,]?\d*$/.test(text)) {
-                                setWeight(text);
-                            }
-                        }}
-                        keyboardType="decimal-pad"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="RPE"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={rpe}
-                        onChangeText={setRpe}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={[styles.input, styles.notesInput]}
-                        placeholder="Notes"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={Notes}
-                        onChangeText={setNotes}
-                        multiline
-                    />
-                </View>
-            )}
+            {renderInputFields()}
+
             {editingEntry && (
                 <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
                     <Text>Change Date: {date.toLocaleDateString()}</Text>
@@ -481,88 +427,232 @@ const ExerciseHistoryScreen = () => {
                 title={editingEntry ? "Update Entry" : "Add to History"}
                 onPress={handleAddOrUpdateEntry}
             />
+
             <FlatList
-                data={history.sort((a: ExerciseHistoryEntry, b: ExerciseHistoryEntry) => {
-                    return new Date(b.date).getTime() - new Date(a.date).getTime();
-                })}
+                data={history.sort(
+                    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+                )}
                 renderItem={renderHistoryItem}
                 keyExtractor={(item, index) => index.toString()}
             />
-            {exercise.category === "endurance" ? (
-                <>
-                    <Text style={styles.sectionTitle}>Distance Progress</Text>
-                    {enduranceData.length > 1 ? (
-                        <LineChart
-                            data={enduranceChartData}
-                            width={Dimensions.get("window").width - 30}
-                            height={220}
-                            yAxisLabel=""
-                            yAxisSuffix=" km"
-                            chartConfig={{
-                                backgroundColor: "#e26a00",
-                                backgroundGradientFrom: "#fb8c00",
-                                backgroundGradientTo: "#ffa726",
-                                decimalPlaces: 1,
-                                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                                labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                                style: {
-                                    borderRadius: 16,
-                                },
-                                propsForDots: {
-                                    r: "4",
-                                    strokeWidth: "2",
-                                    stroke: "#ffa726",
-                                },
-                            }}
-                            bezier
-                            style={{
-                                marginVertical: 5,
-                                borderRadius: 16,
-                            }}
-                        />
-                    ) : (
-                        <Text>Not enough data to show distance evolution</Text>
-                    )}
-                </>
-            ) : exercise.category !== "mobility" ? (
-                <>
-                    <Text style={styles.sectionTitle}>1RM Progress</Text>
-                    {oneRepMaxData.length > 1 ? (
-                        <LineChart
-                            data={chartData}
-                            width={Dimensions.get("window").width - 30}
-                            height={220}
-                            yAxisLabel=""
-                            yAxisSuffix=" kg"
-                            chartConfig={{
-                                backgroundColor: "#e26a00",
-                                backgroundGradientFrom: "#fb8c00",
-                                backgroundGradientTo: "#ffa726",
-                                decimalPlaces: 0,
-                                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                                labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                                style: {
-                                    borderRadius: 16,
-                                },
-                                propsForDots: {
-                                    r: "4",
-                                    strokeWidth: "2",
-                                    stroke: "#ffa726",
-                                },
-                            }}
-                            bezier
-                            style={{
-                                marginVertical: 5,
-                                borderRadius: 16,
-                            }}
-                        />
-                    ) : (
-                        <Text>Not enough data to show 1RM evolution</Text>
-                    )}
-                </>
-            ) : null}
+
+            {renderProgressChart()}
         </View>
     );
+
+    function renderInputFields() {
+        const commonFields = (
+            <TextInput
+                style={[styles.input, styles.notesInput]}
+                placeholder="Notes"
+                placeholderTextColor={currentTheme.colors.placeholder}
+                value={Notes}
+                onChangeText={setNotes}
+                multiline
+            />
+        );
+
+        switch (exercise?.category) {
+            case "endurance":
+                return (
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Distance (km)"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={distance}
+                            onChangeText={setDistance}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Time (min)"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={time}
+                            onChangeText={setTime}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Avg Heart Rate"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={avgHeartRate}
+                            onChangeText={setAvgHeartRate}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="RPE"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={rpe}
+                            onChangeText={setRpe}
+                            keyboardType="numeric"
+                        />
+                        {commonFields}
+                    </View>
+                );
+            case "mobility":
+                return (
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Sets"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={sets}
+                            onChangeText={setSets}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="RPE"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={rpe}
+                            onChangeText={setRpe}
+                            keyboardType="numeric"
+                        />
+                        {commonFields}
+                    </View>
+                );
+            case "nsuns":
+                return (
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Reps"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={reps}
+                            onChangeText={setReps}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Weight"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={weight}
+                            onChangeText={(text) => {
+                                if (/^\d*[.,]?\d*$/.test(text)) {
+                                    setWeight(text);
+                                }
+                            }}
+                            keyboardType="decimal-pad"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="RPE"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={rpe}
+                            onChangeText={setRpe}
+                            keyboardType="numeric"
+                        />
+                        {commonFields}
+                    </View>
+                );
+            default:
+                return (
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Sets"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={sets}
+                            onChangeText={setSets}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Reps"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={reps}
+                            onChangeText={setReps}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Weight"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={weight}
+                            onChangeText={(text) => {
+                                if (/^\d*[.,]?\d*$/.test(text)) {
+                                    setWeight(text);
+                                }
+                            }}
+                            keyboardType="decimal-pad"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="RPE"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={rpe}
+                            onChangeText={setRpe}
+                            keyboardType="numeric"
+                        />
+                        {commonFields}
+                    </View>
+                );
+        }
+    }
+    function renderProgressChart() {
+        const chartConfig = {
+            backgroundColor: "#e26a00",
+            backgroundGradientFrom: "#fb8c00",
+            backgroundGradientTo: "#ffa726",
+            decimalPlaces: exercise?.category === "endurance" ? 1 : 0,
+            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            style: { borderRadius: 16 },
+            propsForDots: { r: "4", strokeWidth: "2", stroke: "#ffa726" },
+        };
+
+        const chartStyle = {
+            marginVertical: 5,
+            borderRadius: 16,
+        };
+
+        switch (exercise?.category) {
+            case "endurance":
+                return (
+                    <>
+                        <Text style={styles.sectionTitle}>Distance Progress</Text>
+                        {enduranceData.length > 1 ? (
+                            <LineChart
+                                data={enduranceChartData}
+                                width={Dimensions.get("window").width - 30}
+                                height={220}
+                                yAxisLabel=""
+                                yAxisSuffix=" km"
+                                chartConfig={chartConfig}
+                                bezier
+                                style={chartStyle}
+                            />
+                        ) : (
+                            <Text>Not enough data to show distance evolution</Text>
+                        )}
+                    </>
+                );
+            case "mobility":
+                return null;
+            default:
+                return (
+                    <>
+                        <Text style={styles.sectionTitle}>1RM Progress</Text>
+                        {oneRepMaxData.length > 1 ? (
+                            <LineChart
+                                data={chartData}
+                                width={Dimensions.get("window").width - 30}
+                                height={220}
+                                yAxisLabel=""
+                                yAxisSuffix=" kg"
+                                chartConfig={chartConfig}
+                                bezier
+                                style={chartStyle}
+                            />
+                        ) : (
+                            <Text>Not enough data to show 1RM evolution</Text>
+                        )}
+                    </>
+                );
+        }
+    }
 };
 
 export default ExerciseHistoryScreen;

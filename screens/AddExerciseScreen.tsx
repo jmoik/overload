@@ -116,6 +116,7 @@ const AddExerciseScreen = () => {
                     <Picker.Item label="Strength" value="strength" />
                     <Picker.Item label="Endurance" value="endurance" />
                     <Picker.Item label="Mobility" value="mobility" />
+                    <Picker.Item label="nSuns" value="nsuns" />
                     <Picker.Item label="Other" value="other" />
                 </Picker>
             </View>
