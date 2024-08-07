@@ -94,14 +94,17 @@ const StatsScreen = () => {
                 // dayIndex = [-9, -8, ..., 0 (today)] => 10 days
 
                 const today = new Date();
-                const daysAgo = Math.ceil(
-                    (today.getDate() - new Date(entry.date).getDate()) / (1000 * 60 * 60 * 24)
+                const entryDate = new Date(entry.date);
+                const daysAgo = Math.floor(
+                    (today.getTime() - entryDate.getTime()) / (1000 * 3600 * 24)
                 );
                 const dayIndex = trainingInterval - daysAgo - 1;
 
                 // console.log("Day Index: ", dayIndex);
                 // console.log("Days Ago: ", daysAgo);
                 // console.log("Entry name: ", exercise.name);
+                // console.log("Entry date: ", new Date(entry.date).getDate());
+                // console.log("Today: ", today.getDate());
 
                 if (dayIndex >= 0 && dayIndex < trainingInterval) {
                     if (isEndurance) {
@@ -128,8 +131,9 @@ const StatsScreen = () => {
             // data to calculate moving average
             history.forEach((entry: ExerciseHistoryEntry) => {
                 const today = new Date();
-                const daysAgo = Math.ceil(
-                    (today.getDate() - new Date(entry.date).getDate()) / (1000 * 60 * 60 * 24)
+                const entryDate = new Date(entry.date);
+                const daysAgo = Math.floor(
+                    (today.getTime() - entryDate.getTime()) / (1000 * 3600 * 24)
                 );
                 const dayIndex = trainingInterval * 2 - daysAgo - 1;
                 if (dayIndex >= 0 && dayIndex < trainingInterval * 2) {
