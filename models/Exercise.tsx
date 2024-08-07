@@ -33,7 +33,7 @@ export interface NSunsExerciseHistoryEntry extends BaseExerciseHistoryEntry {
 
 export type Set = {
     reps: number;
-    weight: number;
+    relativeWeight: number;
     rpe: number;
     notes?: string;
 };
@@ -54,4 +54,5 @@ export interface Exercise {
     muscleGroup: string;
     distance?: number;
     workout?: Set[]; // Add this line for nSuns exercises
+    oneRepMax?: number;
 }

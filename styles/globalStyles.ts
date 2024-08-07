@@ -338,6 +338,204 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
         },
     });
 
+// ExerciseHistoryScreen specific styles
+const createNsunsExerciseHistoryScreen = (theme: typeof lightTheme | typeof darkTheme) =>
+    StyleSheet.create({
+        inputContainer: {
+            flexDirection: "row",
+            marginBottom: 20,
+        },
+        historyItem: {
+            padding: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: "#ccc",
+            marginBottom: 10,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+        },
+        deleteButton: {
+            backgroundColor: "#FF3B30",
+            justifyContent: "center",
+            alignItems: "center",
+            width: 80,
+            height: "100%",
+        },
+        oneRepMax: {
+            color: "#666",
+            fontWeight: "bold",
+            textAlign: "right",
+        },
+        timerContainer: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 20,
+        },
+        timerText: { fontSize: 20, fontWeight: "bold" },
+        headerButtons: {
+            flexDirection: "row",
+            alignItems: "center",
+        },
+        fillButton: {
+            marginRight: 20,
+            marginBottom: 20,
+        },
+        dateButton: {
+            backgroundColor: "#f0f0f0",
+            padding: 10,
+            borderRadius: 5,
+            marginBottom: 20,
+        },
+        sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 10 },
+        historyGroup: { marginBottom: 20 },
+        historyGroupDate: {
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 10,
+            color: theme.colors.text,
+        },
+        notesInput: { height: 40, textAlignVertical: "top" },
+        notes: { fontSize: 12, marginTop: 4 },
+        dateHeader: {
+            fontSize: 16,
+            fontWeight: "bold",
+            backgroundColor: theme.colors.background,
+            color: theme.colors.text,
+            padding: 10,
+            marginTop: 10,
+        },
+        container: {
+            flex: 1,
+            backgroundColor: theme.colors.background,
+        },
+        listContainer: {
+            padding: 16,
+        },
+        setItem: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: 16,
+            // borderRadius: 10,
+            marginBottom: 4,
+            height: 60, // Set a fixed height
+        },
+        setText: {
+            fontSize: 18,
+            fontWeight: "500",
+            color: theme.colors.text,
+            flex: 1, // Allow text to take up available space
+            paddingBottom: 24,
+        },
+        iconContainer: {
+            width: 24,
+            height: 24,
+            justifyContent: "center",
+            alignItems: "center",
+        },
+        placeholderIcon: {
+            width: 24,
+            height: 24,
+        },
+        percentText: { fontSize: 14, color: "#999999", marginTop: 0 },
+
+        modalContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+        },
+        modalContent: {
+            backgroundColor: theme.colors.background,
+            padding: 20,
+            borderRadius: 10,
+            width: "80%",
+        },
+        modalTitle: {
+            fontSize: 20,
+            fontWeight: "bold",
+            marginBottom: 15,
+            color: theme.colors.text,
+        },
+
+        saveButton: {
+            backgroundColor: theme.colors.primary,
+            padding: 10,
+            borderRadius: 5,
+            alignItems: "center",
+            marginBottom: 10,
+        },
+        saveButtonText: {
+            color: "#fff",
+            fontWeight: "bold",
+        },
+        cancelButton: {
+            padding: 10,
+            borderRadius: 5,
+            alignItems: "center",
+        },
+        cancelButtonText: {
+            color: theme.colors.text,
+        },
+        editContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+        },
+        input: {
+            borderBottomWidth: 1,
+            borderColor: theme.colors.primary,
+            padding: 4,
+            fontSize: 18,
+            color: theme.colors.text,
+            minWidth: 60,
+        },
+        unitText: {
+            fontSize: 18,
+            color: theme.colors.text,
+            marginLeft: 4,
+        },
+        oneRepMaxContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+        },
+        oneRepMaxLabel: {
+            fontSize: 18,
+            color: theme.colors.text,
+            fontWeight: "bold",
+        },
+        header: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: theme.colors.border,
+        },
+        title: {
+            fontSize: 24,
+            fontWeight: "bold",
+            color: theme.colors.text,
+        },
+        oneRepMaxValue: {
+            fontSize: 18,
+            color: theme.colors.primary,
+            fontWeight: "bold",
+            // minWidth: 35,
+            textAlign: "right",
+        },
+        oneRepMaxInput: {
+            fontSize: 18,
+            color: theme.colors.primary,
+            fontWeight: "bold",
+            borderBottomWidth: 1,
+            borderColor: theme.colors.primary,
+            padding: 0,
+            minWidth: 50,
+            textAlign: "right",
+        },
+    });
+
 // SettingsScreen specific styles
 const createSettingsStylesScreenStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     StyleSheet.create({
@@ -446,6 +644,11 @@ export const createSettingsStyles = (theme: typeof lightTheme | typeof darkTheme
 export const createWelcomeStyles = (theme: typeof lightTheme | typeof darkTheme) => ({
     ...createGlobalStyles(theme),
     ...createWelcomeStylesScreenStyles(theme),
+});
+
+export const createNsunsExerciseHistoryStyles = (theme: typeof lightTheme | typeof darkTheme) => ({
+    ...createGlobalStyles(theme),
+    ...createNsunsExerciseHistoryScreen(theme),
 });
 
 export type GlobalStyles = ReturnType<typeof createGlobalStyles>;

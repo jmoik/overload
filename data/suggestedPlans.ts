@@ -18,15 +18,15 @@ function createExercise(exerciseData: Omit<Exercise, "id">): Exercise {
 
 function createNSunsWorkout(baseWeight: number): Set[] {
     return [
-        { reps: 5, weight: baseWeight * 0.75, rpe: 0 },
-        { reps: 3, weight: baseWeight * 0.85, rpe: 0 },
-        { reps: 1, weight: baseWeight * 0.95, rpe: 0 },
-        { reps: 5, weight: baseWeight * 0.9, rpe: 0 },
-        { reps: 3, weight: baseWeight * 0.85, rpe: 0 },
-        { reps: 3, weight: baseWeight * 0.8, rpe: 0 },
-        { reps: 5, weight: baseWeight * 0.75, rpe: 0 },
-        { reps: 5, weight: baseWeight * 0.7, rpe: 0 },
-        { reps: 5, weight: baseWeight * 0.65, rpe: 0 },
+        { reps: 5, relativeWeight: baseWeight * 0.75, rpe: 0 },
+        { reps: 3, relativeWeight: baseWeight * 0.85, rpe: 0 },
+        { reps: 1, relativeWeight: baseWeight * 0.95, rpe: 0 },
+        { reps: 5, relativeWeight: baseWeight * 0.9, rpe: 0 },
+        { reps: 3, relativeWeight: baseWeight * 0.85, rpe: 0 },
+        { reps: 3, relativeWeight: baseWeight * 0.8, rpe: 0 },
+        { reps: 5, relativeWeight: baseWeight * 0.75, rpe: 0 },
+        { reps: 5, relativeWeight: baseWeight * 0.7, rpe: 0 },
+        { reps: 5, relativeWeight: baseWeight * 0.65, rpe: 0 },
     ];
 }
 
@@ -42,6 +42,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 category: "nsuns",
                 muscleGroup: "Legs",
                 workout: createNSunsWorkout(100), // Assuming 100kg as base weight
+                oneRepMax: 100,
             }),
             createExercise({
                 name: "Bench",
@@ -51,6 +52,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 category: "nsuns",
                 muscleGroup: "Push",
                 workout: createNSunsWorkout(80), // Assuming 80kg as base weight
+                oneRepMax: 80,
             }),
             createExercise({
                 name: "Deadlift",
@@ -60,6 +62,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 category: "nsuns",
                 muscleGroup: "Legs",
                 workout: createNSunsWorkout(120), // Assuming 120kg as base weight
+                oneRepMax: 120,
             }),
         ],
     },
