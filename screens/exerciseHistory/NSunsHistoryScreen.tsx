@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useMemo } from "react";
 import {
     View,
     Text,
@@ -7,6 +7,7 @@ import {
     SafeAreaView,
     TextInput,
     Alert,
+    SectionList,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
@@ -23,6 +24,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createNsunsExerciseHistoryStyles(currentTheme);
+    const { exerciseHistory } = useExerciseContext();
 
     const { exercises, updateExercise, addExerciseToHistory, meanRpe } = useExerciseContext();
     const [exercise, setExercise] = useState(exercises.find((e) => e.id === exerciseId));
@@ -152,45 +154,119 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
         return weight;
     };
 
-    const renderSet = useCallback(
-        ({ item, index }: { item: Set; index: number }) => (
-            <TouchableOpacity style={styles.setItem} onPress={() => toggleSet(index)}>
-                <View>
-                    <Text style={styles.setText}>
-                        {item.isAMRAP && amrapReps[index]
-                            ? `${amrapReps[index]} reps @ ${calculateSetWeight(item)} kg`
-                            : `${item.reps}${item.isAMRAP ? "+" : ""} reps @ ${calculateSetWeight(
-                                  item
-                              )} kg`}
-                    </Text>
-                    <Text style={styles.percentText}>
-                        {`${item.relativeWeight.toFixed(0)}% of 1 RM`}
-                    </Text>
-                </View>
-                <View style={styles.iconContainer}>
-                    {completedSets[index] ? (
-                        <Icon
-                            name="checkmark-circle"
-                            size={24}
-                            color={currentTheme.colors.primary}
-                        />
-                    ) : (
-                        <View style={styles.placeholderIcon} />
-                    )}
-                </View>
-            </TouchableOpacity>
-        ),
-        [completedSets, currentTheme.colors.primary, exercise?.oneRepMax, amrapReps]
-    );
-
     if (!exercise) {
         return <Text>Exercise not found</Text>;
     }
 
+    const allWorkouts = useMemo(() => {
+        const history = exerciseHistory[exerciseId] || [];
+        const groupedHistory = history.reduce((acc, entry) => {
+            const date = new Date(entry.date).toISOString().split("T")[0];
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(entry);
+            return acc;
+        }, {} as Record<string, StrengthExerciseHistoryEntry[]>);
+
+        const historySections = Object.entries(groupedHistory).map(([date, entries]) => ({
+            title: date,
+            data: entries,
+            isHistory: true,
+        }));
+
+        const currentWorkout = {
+            title: "Current Workout",
+            data: workout,
+            isHistory: false,
+        };
+
+        const historyTitle = {
+            title: "History",
+            data: [],
+            isHistory: true,
+            isHistoryTitle: true,
+        };
+
+        return [currentWorkout, historyTitle, ...historySections].sort((a, b) =>
+            a.isHistory === b.isHistory ? b.title.localeCompare(a.title) : a.isHistory ? 1 : -1
+        );
+    }, [exerciseHistory, exerciseId, workout]);
+
+    const renderItem = useCallback(
+        ({
+            item,
+            section,
+        }: {
+            item: Set | StrengthExerciseHistoryEntry;
+            section: { isHistory: boolean };
+        }) => {
+            const isCurrentWorkout = !section.isHistory;
+            const setItem = isCurrentWorkout ? (item as Set) : null;
+            const historyItem = !isCurrentWorkout ? (item as StrengthExerciseHistoryEntry) : null;
+
+            return (
+                <TouchableOpacity
+                    style={styles.setItem}
+                    onPress={() => (isCurrentWorkout ? toggleSet(workout.indexOf(setItem!)) : null)}
+                >
+                    <View>
+                        <Text style={styles.setText}>
+                            {isCurrentWorkout
+                                ? setItem!.isAMRAP && amrapReps[workout.indexOf(setItem!)]
+                                    ? `${
+                                          amrapReps[workout.indexOf(setItem!)]
+                                      } reps @ ${calculateSetWeight(setItem!)} kg`
+                                    : `${setItem!.reps}${
+                                          setItem!.isAMRAP ? "+" : ""
+                                      } reps @ ${calculateSetWeight(setItem!)} kg`
+                                : `${historyItem!.reps} reps @ ${historyItem!.weight} kg`}
+                        </Text>
+                        <Text style={styles.percentText}>
+                            {isCurrentWorkout
+                                ? `${setItem!.relativeWeight.toFixed(0)}% of 1 RM`
+                                : `RPE: ${historyItem!.rpe}`}
+                        </Text>
+                    </View>
+                    <View style={styles.iconContainer}>
+                        {(isCurrentWorkout && completedSets[workout.indexOf(setItem!)]) ||
+                        !isCurrentWorkout ? (
+                            <Icon
+                                name="checkmark-circle"
+                                size={24}
+                                color={currentTheme.colors.primary}
+                            />
+                        ) : (
+                            <View style={styles.placeholderIcon} />
+                        )}
+                    </View>
+                </TouchableOpacity>
+            );
+        },
+        [
+            currentTheme.colors.primary,
+            amrapReps,
+            completedSets,
+            toggleSet,
+            calculateSetWeight,
+            workout,
+        ]
+    );
+
+    const renderSectionHeader = useCallback(
+        ({ section: { title, isHistory } }: { section: { title: string; isHistory: boolean } }) =>
+            isHistory ? (
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionHeaderText}>{title}</Text>
+                </View>
+            ) : null,
+        []
+    );
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>{exercise.name}</Text>
+                <Text style={styles.title}>{exercise?.name}</Text>
                 <TouchableOpacity onPress={handleEdit1RM} style={styles.oneRepMaxContainer}>
                     <Text style={styles.oneRepMaxLabel}> 1 RM: </Text>
                     {isEditing1RM ? (
@@ -205,17 +281,19 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
                         />
                     ) : (
                         <Text style={styles.oneRepMaxValue}>
-                            {exercise.oneRepMax?.toFixed(0) || "N/A"}
+                            {exercise?.oneRepMax?.toFixed(0) || "N/A"}
                         </Text>
                     )}
                     <Text style={styles.oneRepMaxValue}> kg</Text>
                 </TouchableOpacity>
             </View>
-            <FlatList
-                data={workout}
-                renderItem={renderSet}
-                keyExtractor={(item, index) => index.toString()}
+
+            <SectionList
+                sections={allWorkouts}
+                renderItem={renderItem}
+                keyExtractor={(item, index) => ("id" in item ? item.id : index.toString())}
                 contentContainerStyle={styles.listContainer}
+                renderSectionHeader={renderSectionHeader}
             />
         </SafeAreaView>
     );

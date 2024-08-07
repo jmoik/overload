@@ -384,15 +384,6 @@ const createNsunsExerciseHistoryScreen = (theme: typeof lightTheme | typeof dark
             flexDirection: "row",
             marginBottom: 20,
         },
-        historyItem: {
-            padding: 10,
-            borderBottomWidth: 1,
-            borderBottomColor: "#ccc",
-            marginBottom: 10,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-        },
         deleteButton: {
             backgroundColor: "#FF3B30",
             justifyContent: "center",
@@ -448,8 +439,10 @@ const createNsunsExerciseHistoryScreen = (theme: typeof lightTheme | typeof dark
             flex: 1,
             backgroundColor: theme.colors.background,
         },
-        listContainer: {
-            padding: 16,
+        separator: {
+            height: 1,
+            backgroundColor: theme.colors.border,
+            marginVertical: 16,
         },
         setItem: {
             flexDirection: "row",
@@ -573,6 +566,23 @@ const createNsunsExerciseHistoryScreen = (theme: typeof lightTheme | typeof dark
             minWidth: 50,
             textAlign: "right",
         },
+        sectionHeader: {
+            backgroundColor: theme.colors.background,
+            padding: 16,
+            paddingTop: 100,
+            borderBottomWidth: 1,
+            borderBottomColor: theme.colors.border,
+        },
+        sectionHeaderText: { fontSize: 18, fontWeight: "bold" },
+        historyItem: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: theme.colors.border,
+        },
+        listContainer: { paddingBottom: 20 },
     });
 
 // SettingsScreen specific styles

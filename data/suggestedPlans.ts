@@ -35,7 +35,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
             createExercise({
                 name: "Squat",
                 description: "",
-                weeklySets: 8,
+                weeklySets: 14,
                 targetRPE: 8,
                 category: "nsuns",
                 muscleGroup: "Legs",
@@ -45,7 +45,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
             createExercise({
                 name: "Bench",
                 description: "",
-                weeklySets: 12,
+                weeklySets: 14,
                 targetRPE: 8,
                 category: "nsuns",
                 muscleGroup: "Push",
@@ -55,7 +55,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
             createExercise({
                 name: "Deadlift",
                 description: "",
-                weeklySets: 6,
+                weeklySets: 14,
                 targetRPE: 8,
                 category: "nsuns",
                 muscleGroup: "Legs",
@@ -251,7 +251,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
             createExercise({
                 name: "Overhead Press",
                 description: "",
-                weeklySets: 6,
+                weeklySets: 14,
                 targetRPE: 8,
                 category: "nsuns",
                 muscleGroup: "Push",
