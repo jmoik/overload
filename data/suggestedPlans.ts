@@ -16,15 +16,15 @@ function createExercise(exerciseData: Omit<Exercise, "id">): Exercise {
     };
 }
 
-function createNSunsWorkout(baseWeight: number): Set[] {
+function createNSunsWorkout(): Set[] {
     return [
-        { reps: 5, relativeWeight: baseWeight * 0.75 },
-        { reps: 3, relativeWeight: baseWeight * 0.85 },
-        { reps: 1, relativeWeight: baseWeight * 0.95 },
-        { reps: 4, relativeWeight: baseWeight * 0.85 },
-        { reps: 3, relativeWeight: baseWeight * 0.85 },
-        { reps: 5, relativeWeight: baseWeight * 0.75 },
-        { reps: 5, relativeWeight: baseWeight * 0.75 },
+        { reps: 5, relativeWeight: 75, isAMRAP: false },
+        { reps: 3, relativeWeight: 85, isAMRAP: false },
+        { reps: 1, relativeWeight: 95, isAMRAP: true },
+        { reps: 4, relativeWeight: 85, isAMRAP: false },
+        { reps: 3, relativeWeight: 85, isAMRAP: false },
+        { reps: 5, relativeWeight: 75, isAMRAP: false },
+        { reps: 5, relativeWeight: 75, isAMRAP: false },
     ];
 }
 
@@ -39,7 +39,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 targetRPE: 8,
                 category: "nsuns",
                 muscleGroup: "Legs",
-                workout: createNSunsWorkout(100), // Assuming 100kg as base weight
+                workout: createNSunsWorkout(), // Assuming 100kg as base weight
                 oneRepMax: 100,
             }),
             createExercise({
@@ -49,7 +49,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 targetRPE: 8,
                 category: "nsuns",
                 muscleGroup: "Push",
-                workout: createNSunsWorkout(80), // Assuming 80kg as base weight
+                workout: createNSunsWorkout(), // Assuming 80kg as base weight
                 oneRepMax: 80,
             }),
             createExercise({
@@ -59,7 +59,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 targetRPE: 8,
                 category: "nsuns",
                 muscleGroup: "Legs",
-                workout: createNSunsWorkout(120), // Assuming 120kg as base weight
+                workout: createNSunsWorkout(), // Assuming 120kg as base weight
                 oneRepMax: 120,
             }),
         ],
@@ -255,6 +255,8 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 targetRPE: 8,
                 category: "nsuns",
                 muscleGroup: "Push",
+                workout: createNSunsWorkout(),
+                oneRepMax: 40,
             }),
             createExercise({
                 name: "Chest Fly",

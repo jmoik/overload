@@ -26,21 +26,16 @@ export interface MobilityExerciseHistoryEntry extends BaseExerciseHistoryEntry {
     sets: number;
 }
 
-export interface NSunsExerciseHistoryEntry extends BaseExerciseHistoryEntry {
-    category: "nsuns";
-    setsArray: Set[];
-}
-
 export type Set = {
     reps: number;
     relativeWeight: number;
+    isAMRAP: boolean;
 };
 
 export type ExerciseHistoryEntry =
     | StrengthExerciseHistoryEntry
     | EnduranceExerciseHistoryEntry
-    | MobilityExerciseHistoryEntry
-    | NSunsExerciseHistoryEntry;
+    | MobilityExerciseHistoryEntry;
 
 export interface Exercise {
     id: string;

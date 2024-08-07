@@ -10,9 +10,10 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import { Set } from "../../models/Exercise";
+import { Set, StrengthExerciseHistoryEntry } from "../../models/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createNsunsExerciseHistoryStyles } from "../../styles/globalStyles";
+import { generateEntryId } from "../../utils/utils";
 
 interface NSunsHistoryScreenProps {
     exerciseId: string;
@@ -23,11 +24,12 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createNsunsExerciseHistoryStyles(currentTheme);
 
-    const { exercises, updateExercise } = useExerciseContext();
+    const { exercises, updateExercise, addExerciseToHistory, meanRpe } = useExerciseContext();
     const [exercise, setExercise] = useState(exercises.find((e) => e.id === exerciseId));
     const [isEditing1RM, setIsEditing1RM] = useState(false);
     const [editedOneRepMax, setEditedOneRepMax] = useState(exercise?.oneRepMax?.toString() || "");
     const inputRef = useRef<TextInput>(null);
+    const [amrapReps, setAmrapReps] = useState<{ [key: number]: string }>({});
 
     const workout: Set[] = exercise?.workout || [];
 
@@ -50,36 +52,95 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
         setIsEditing1RM(false);
     };
 
-    const toggleSet = (index: number) => {
-        setCompletedSets((prev) => {
-            const newCompletedSets = [...prev];
-            newCompletedSets[index] = !newCompletedSets[index];
+    const createHistoryEntries = () => {
+        const currentDate = new Date();
+        workout.forEach((set, index) => {
+            const weight = calculateSetWeight(set);
+            const reps = set.isAMRAP ? Number(amrapReps[index]) || set.reps : set.reps;
+            const entryWithoutId: Omit<StrengthExerciseHistoryEntry, "id"> = {
+                date: currentDate,
+                rpe: meanRpe,
+                notes: `Set ${index + 1} of nSuns workout${set.isAMRAP ? " (AMRAP)" : ""}`,
+                sets: 1,
+                reps: reps,
+                weight: weight,
+                category: "strength",
+            };
+            const entry: StrengthExerciseHistoryEntry = {
+                ...entryWithoutId,
+                id: generateEntryId(entryWithoutId),
+            };
+            addExerciseToHistory(exerciseId, entry);
+        });
+        setAmrapReps({});
+    };
 
-            if (newCompletedSets.every((set) => set)) {
-                Alert.alert("All Sets Completed", "Would you like to increase your 1RM by 2 kg?", [
+    const toggleSet = (index: number) => {
+        if (workout[index].isAMRAP) {
+            Alert.prompt(
+                "AMRAP Set",
+                "Enter the number of reps completed:",
+                [
                     {
-                        text: "No",
-                        onPress: () => setCompletedSets(new Array(workout.length).fill(false)),
+                        text: "Cancel",
+                        onPress: () => {},
+                        style: "cancel",
                     },
                     {
-                        text: "Yes",
-                        onPress: () => {
-                            if (exercise) {
-                                const newOneRepMax = Math.floor((exercise.oneRepMax ?? 0) + 2);
-                                const updatedExercise = { ...exercise, oneRepMax: newOneRepMax };
-                                updateExercise(exerciseId, updatedExercise);
-                                setExercise(updatedExercise);
-                                setEditedOneRepMax(newOneRepMax.toString());
+                        text: "OK",
+                        onPress: (reps?: string) => {
+                            if (reps && !isNaN(Number(reps)) && Number(reps) > 0) {
+                                setAmrapReps((prev) => ({ ...prev, [index]: reps }));
+                                setCompletedSets((prev) => {
+                                    const newCompletedSets = [...prev];
+                                    newCompletedSets[index] = true;
+                                    checkAllSetsCompleted(newCompletedSets);
+                                    return newCompletedSets;
+                                });
                             }
-                            setCompletedSets(new Array(workout.length).fill(false));
                         },
                     },
-                ]);
+                ],
+                "plain-text",
+                amrapReps[index],
+                "numeric" // This sets the keyboard type to numeric
+            );
+        } else {
+            setCompletedSets((prev) => {
+                const newCompletedSets = [...prev];
+                newCompletedSets[index] = !newCompletedSets[index];
+                checkAllSetsCompleted(newCompletedSets);
                 return newCompletedSets;
-            }
+            });
+        }
+    };
 
-            return newCompletedSets;
-        });
+    const checkAllSetsCompleted = (completedSets: boolean[]) => {
+        if (completedSets.every((set) => set)) {
+            Alert.alert("All Sets Completed", "Would you like to increase your 1RM by 2 kg?", [
+                {
+                    text: "No",
+                    onPress: () => {
+                        setCompletedSets(new Array(workout.length).fill(false));
+                        createHistoryEntries();
+                    },
+                },
+                {
+                    text: "Yes",
+                    onPress: () => {
+                        if (exercise) {
+                            const newOneRepMax = Math.floor((exercise.oneRepMax ?? 0) + 2);
+                            const updatedExercise = { ...exercise, oneRepMax: newOneRepMax };
+                            updateExercise(exerciseId, updatedExercise);
+                            setExercise(updatedExercise);
+                            setEditedOneRepMax(newOneRepMax.toString());
+                        }
+                        setCompletedSets(new Array(workout.length).fill(false));
+                        createHistoryEntries();
+                    },
+                },
+            ]);
+        }
     };
 
     const calculateSetWeight = (set: Set) => {
@@ -96,7 +157,11 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
             <TouchableOpacity style={styles.setItem} onPress={() => toggleSet(index)}>
                 <View>
                     <Text style={styles.setText}>
-                        {`${item.reps} reps @ ${calculateSetWeight(item)} kg`}
+                        {item.isAMRAP && amrapReps[index]
+                            ? `${amrapReps[index]} reps @ ${calculateSetWeight(item)} kg`
+                            : `${item.reps}${item.isAMRAP ? "+" : ""} reps @ ${calculateSetWeight(
+                                  item
+                              )} kg`}
                     </Text>
                     <Text style={styles.percentText}>
                         {`${item.relativeWeight.toFixed(0)}% of 1 RM`}
@@ -115,7 +180,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
                 </View>
             </TouchableOpacity>
         ),
-        [completedSets, currentTheme.colors.primary, exercise?.oneRepMax]
+        [completedSets, currentTheme.colors.primary, exercise?.oneRepMax, amrapReps]
     );
 
     if (!exercise) {

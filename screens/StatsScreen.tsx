@@ -6,7 +6,13 @@ import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createStatsStyles } from "../styles/globalStyles";
 import { subDays, isAfter } from "date-fns";
-import { Exercise, ExerciseHistoryEntry } from "../models/Exercise";
+import {
+    EnduranceExerciseHistoryEntry,
+    Exercise,
+    ExerciseHistoryEntry,
+    MobilityExerciseHistoryEntry,
+    StrengthExerciseHistoryEntry,
+} from "../models/Exercise";
 import ViewPager from "@react-native-community/viewpager";
 
 const calculateMovingAverage = (data: number[], windowSize: number): number[] => {
@@ -68,10 +74,11 @@ const StatsScreen = () => {
             const history = exerciseHistory[exercise.id] || [];
             const isEndurance = exercise.category === "endurance";
             const isMobility = exercise.category === "mobility";
+            const isStrength = exercise.category === "strength";
+            const isNsuns = exercise.category === "nsuns";
 
             if (isEndurance) {
                 targetEnduranceLoad += exercise.weeklySets * (exercise.distance ?? 0);
-                console.log("Target Endurance Load: ", targetEnduranceLoad);
                 totalWeeklyEnduranceSets += exercise.weeklySets;
             } else if (isMobility) {
                 targetMobilityLoad += exercise.weeklySets;
@@ -98,19 +105,22 @@ const StatsScreen = () => {
 
                 if (dayIndex >= 0 && dayIndex < trainingInterval) {
                     if (isEndurance) {
-                        const load = entry.distance ?? 0;
+                        const enduranceEntry = entry as EnduranceExerciseHistoryEntry;
+                        const load = enduranceEntry.distance ?? 0;
                         enduranceLoadByDay[dayIndex] += load;
                         actualEnduranceLoad += load;
                     } else if (isMobility) {
-                        const load = entry.sets ?? 0;
+                        const mobilityEntry = entry as MobilityExerciseHistoryEntry;
+                        const load = mobilityEntry.sets;
                         mobilityLoadByDay[dayIndex] += load;
                         actualMobilityLoad += load;
-                        actualMobilitySets += entry.sets ?? 0;
+                        actualMobilitySets += mobilityEntry.sets ?? 0;
                     } else {
-                        const load = (entry.sets ?? 0) * entry.rpe;
+                        const strengthEntry = entry as StrengthExerciseHistoryEntry;
+                        const load = strengthEntry.sets * entry.rpe;
                         strengthLoadByDay[dayIndex] += load;
                         actualStrengthLoad += load;
-                        actualStrengthSets += entry.sets ?? 0;
+                        actualStrengthSets += strengthEntry.sets ?? 0;
                     }
                 }
             });
@@ -124,13 +134,16 @@ const StatsScreen = () => {
                 const dayIndex = trainingInterval * 2 - daysAgo - 1;
                 if (dayIndex >= 0 && dayIndex < trainingInterval * 2) {
                     if (isEndurance) {
-                        const load = entry.distance ?? 0;
+                        const enduranceEntry = entry as EnduranceExerciseHistoryEntry;
+                        const load = enduranceEntry.distance ?? 0;
                         enduranceLoadByDayForMA[dayIndex] += load;
                     } else if (isMobility) {
-                        const load = entry.sets ?? 0;
+                        const mobilityEntry = entry as MobilityExerciseHistoryEntry;
+                        const load = mobilityEntry.sets ?? 0;
                         mobilityLoadByDayForMA[dayIndex] += load;
                     } else {
-                        const load = (entry.sets ?? 0) * entry.rpe;
+                        const strengthEntry = entry as StrengthExerciseHistoryEntry;
+                        const load = (strengthEntry.sets ?? 0) * entry.rpe;
                         strengthLoadByDayForMA[dayIndex] += load;
                     }
                 }
