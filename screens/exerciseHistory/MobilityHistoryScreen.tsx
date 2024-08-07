@@ -184,7 +184,7 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         }
 
         const entryWithoutId: Omit<MobilityExerciseHistoryEntry, "id"> = {
-            date: editingEntry ? date : new Date(),
+            date: date,
             rpe: parsedRpe,
             notes: notes.trim(),
             category: "mobility",

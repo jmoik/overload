@@ -213,7 +213,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         }
 
         const entryWithoutId: Omit<StrengthExerciseHistoryEntry, "id"> = {
-            date: editingEntry ? date : new Date(),
+            date: date,
             rpe: parsedRpe,
             notes: notes.trim(),
             sets: parsedSets,

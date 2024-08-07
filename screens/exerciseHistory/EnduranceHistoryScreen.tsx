@@ -231,7 +231,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         }
 
         const entryWithoutId: Omit<EnduranceExerciseHistoryEntry, "id"> = {
-            date: editingEntry ? date : new Date(),
+            date: date,
             distance: parsedDistance,
             time: parsedTime,
             avgHeartRate: parsedAvgHeartRate,
