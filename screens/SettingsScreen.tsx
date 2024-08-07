@@ -111,7 +111,6 @@ const SettingsScreen = () => {
                         category: e.category,
                         muscleGroup: e.muscleGroup,
                         distance: e.distance,
-                        // Add workout property for nSuns exercises as array of sets
                         workout: e.workout,
                         oneRepMax: e.oneRepMax,
                     })

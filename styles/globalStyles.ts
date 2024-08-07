@@ -281,6 +281,29 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             flex: 1,
             padding: 15,
         },
+        inputRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 10,
+        },
+        smallInput: {
+            flex: 1,
+            marginRight: 5,
+        },
+        notesInput: {
+            flex: 1,
+        },
+        dateButton: {
+            backgroundColor: theme.colors.card,
+            padding: 10,
+            borderRadius: 5,
+            alignItems: "center",
+            justifyContent: "center",
+            flex: 1,
+        },
+        dateButtonText: {
+            color: theme.colors.text,
+        },
         title: {
             fontSize: 24,
             fontWeight: "bold",
@@ -340,12 +363,6 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             marginRight: 20,
             marginBottom: 20,
         },
-        dateButton: {
-            backgroundColor: "#f0f0f0",
-            padding: 10,
-            borderRadius: 5,
-            marginBottom: 20,
-        },
         sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 10 },
         historyGroup: { marginBottom: 20 },
         historyGroupDate: {
@@ -354,7 +371,6 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             marginBottom: 10,
             color: theme.colors.text,
         },
-        notesInput: { height: 40, textAlignVertical: "top" },
         notes: { fontSize: 12, marginTop: 4 },
         dateHeader: {
             fontSize: 16,

@@ -1,15 +1,12 @@
 // MobilityHistoryScreen.tsx
 import React, { useState, useRef, useCallback } from "react";
-import { View, TextInput, Text, TouchableOpacity, Alert, FlatList } from "react-native";
+import { View, TextInput, Text, TouchableOpacity, Alert, Platform } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import BaseHistoryScreen from "./BaseHistoryScreen";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import {
-    MobilityExerciseHistoryEntry,
-    ExerciseHistoryEntry,
-    EnduranceExerciseHistoryEntry,
-} from "../../models/Exercise";
+import { MobilityExerciseHistoryEntry, ExerciseHistoryEntry } from "../../models/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
@@ -26,8 +23,9 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
     const [sets, setSets] = useState("");
     const [rpe, setRpe] = useState("");
     const [notes, setNotes] = useState("");
-    const [date, setDate] = useState(new Date());
+    const [date, setDate] = useState<Date>(new Date());
     const [editingEntry, setEditingEntry] = useState<MobilityExerciseHistoryEntry | null>(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     const {
         addExerciseToHistory,
@@ -39,41 +37,68 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
 
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
 
+    const onDateChange = (event: any, selectedDate?: Date) => {
+        setShowDatePicker(Platform.OS === "ios");
+        if (selectedDate) {
+            setDate(selectedDate);
+        }
+    };
+
     const handleEditEntry = (entry: ExerciseHistoryEntry) => {
         const mobilityEntry = entry as MobilityExerciseHistoryEntry;
         setEditingEntry(mobilityEntry);
         setRpe(mobilityEntry.rpe.toString());
-        setDate(mobilityEntry.date);
+        setDate(new Date(mobilityEntry.date));
         setNotes(mobilityEntry.notes || "");
         setSets(mobilityEntry.sets.toString());
     };
 
     const renderInputFields = () => (
-        <View style={styles.inputContainer}>
-            <TextInput
-                style={styles.input}
-                placeholder="Sets"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={sets}
-                onChangeText={setSets}
-                keyboardType="numeric"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="RPE"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={rpe}
-                onChangeText={setRpe}
-                keyboardType="numeric"
-            />
-            <TextInput
-                style={[styles.input, styles.notesInput]}
-                placeholder="Notes"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={notes}
-                onChangeText={setNotes}
-                multiline
-            />
+        <View>
+            <View style={styles.inputRow}>
+                <TextInput
+                    style={[styles.input, styles.smallInput]}
+                    placeholder="Sets"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={sets}
+                    onChangeText={setSets}
+                    keyboardType="numeric"
+                />
+                <TextInput
+                    style={[styles.input, styles.smallInput]}
+                    placeholder="RPE"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={rpe}
+                    onChangeText={setRpe}
+                    keyboardType="numeric"
+                />
+            </View>
+            <View style={styles.inputRow}>
+                <TextInput
+                    style={[styles.input, styles.notesInput]}
+                    placeholder="Notes"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={notes}
+                    onChangeText={setNotes}
+                    multiline
+                />
+            </View>
+            <View style={styles.inputRow}>
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+                    <Text style={styles.dateButtonText}>
+                        {editingEntry ? "Change Date: " : "Date: "}
+                        {date.toLocaleDateString()}
+                    </Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                    <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                    />
+                )}
+            </View>
         </View>
     );
 
@@ -101,10 +126,10 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
 
     const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => {
         const item_ = item as MobilityExerciseHistoryEntry;
-        const currentDate = new Date(item_.date).toISOString().split("T")[0];
+        const currentDate = new Date(item_.date).toLocaleDateString();
         const previousDate =
             index > 0
-                ? new Date(exerciseHistory[exerciseId][index - 1].date).toISOString().split("T")[0]
+                ? new Date(exerciseHistory[exerciseId][index - 1].date).toLocaleDateString()
                 : null;
 
         return (
@@ -145,13 +170,11 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
     };
 
     const handleAddOrUpdateEntry = () => {
-        // Validate required fields
         if (!sets.trim()) {
             Alert.alert("Error", "Please fill in the Sets field");
             return;
         }
 
-        // Parse and validate numeric values
         const parsedSets = parseInt(sets);
         const parsedRpe = rpe ? parseInt(rpe) : meanRpe;
 
@@ -161,7 +184,7 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         }
 
         const entryWithoutId: Omit<MobilityExerciseHistoryEntry, "id"> = {
-            date: editingEntry ? new Date(date) : new Date(),
+            date: editingEntry ? date : new Date(),
             rpe: parsedRpe,
             notes: notes.trim(),
             category: "mobility",
@@ -184,11 +207,12 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
             addExerciseToHistory(exerciseId, entry);
         }
 
-        // Reset form
         setEditingEntry(null);
         setRpe("");
         setNotes("");
         setDate(new Date());
+        setSets("");
+        setShowDatePicker(false);
     };
 
     const fillFromLastWorkout = useCallback(() => {

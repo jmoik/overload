@@ -161,7 +161,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
     const allWorkouts = useMemo(() => {
         const history = exerciseHistory[exerciseId] || [];
         const groupedHistory = history.reduce((acc, entry) => {
-            const date = new Date(entry.date).toISOString().split("T")[0];
+            const date = new Date(entry.date).toLocaleDateString();
             if (!acc[date]) {
                 acc[date] = [];
             }

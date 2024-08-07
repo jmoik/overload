@@ -1,8 +1,9 @@
 // EnduranceHistoryScreen.tsx
 import React, { useState, useRef, useCallback } from "react";
-import { View, TextInput, Text, TouchableOpacity, Alert, FlatList } from "react-native";
+import { View, TextInput, Text, TouchableOpacity, Alert, Platform } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import BaseHistoryScreen from "./BaseHistoryScreen";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
 import { EnduranceExerciseHistoryEntry, ExerciseHistoryEntry } from "../../models/Exercise";
@@ -24,8 +25,9 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const [avgHeartRate, setAvgHeartRate] = useState("");
     const [rpe, setRpe] = useState("");
     const [notes, setNotes] = useState("");
-    const [date, setDate] = useState(new Date());
+    const [date, setDate] = useState<Date>(new Date());
     const [editingEntry, setEditingEntry] = useState<EnduranceExerciseHistoryEntry | null>(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     const {
         addExerciseToHistory,
@@ -37,11 +39,18 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
 
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
 
+    const onDateChange = (event: any, selectedDate?: Date) => {
+        setShowDatePicker(Platform.OS === "ios");
+        if (selectedDate) {
+            setDate(selectedDate);
+        }
+    };
+
     const handleEditEntry = (entry: ExerciseHistoryEntry) => {
         const enduranceEntry = entry as EnduranceExerciseHistoryEntry;
         setEditingEntry(enduranceEntry);
         setRpe(enduranceEntry.rpe.toString());
-        setDate(enduranceEntry.date);
+        setDate(new Date(enduranceEntry.date));
         setNotes(enduranceEntry.notes || "");
         setDistance(enduranceEntry.distance.toString());
         setTime(enduranceEntry.time.toString());
@@ -49,47 +58,69 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     };
 
     const renderInputFields = () => (
-        <View style={styles.inputContainer}>
-            <TextInput
-                style={styles.input}
-                placeholder="Distance (km)"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={distance}
-                onChangeText={setDistance}
-                keyboardType="decimal-pad"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Time (minutes)"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={time}
-                onChangeText={setTime}
-                keyboardType="decimal-pad"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Avg Heart Rate (bpm)"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={avgHeartRate}
-                onChangeText={setAvgHeartRate}
-                keyboardType="numeric"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="RPE"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={rpe}
-                onChangeText={setRpe}
-                keyboardType="numeric"
-            />
-            <TextInput
-                style={[styles.input, styles.notesInput]}
-                placeholder="Notes"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={notes}
-                onChangeText={setNotes}
-                multiline
-            />
+        <View>
+            <View style={styles.inputRow}>
+                <TextInput
+                    style={[styles.input, styles.smallInput]}
+                    placeholder="Distance (km)"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={distance}
+                    onChangeText={setDistance}
+                    keyboardType="decimal-pad"
+                />
+                <TextInput
+                    style={[styles.input, styles.smallInput]}
+                    placeholder="Time (minutes)"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={time}
+                    onChangeText={setTime}
+                    keyboardType="decimal-pad"
+                />
+            </View>
+            <View style={styles.inputRow}>
+                <TextInput
+                    style={[styles.input, styles.smallInput]}
+                    placeholder="Avg Heart Rate (bpm)"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={avgHeartRate}
+                    onChangeText={setAvgHeartRate}
+                    keyboardType="numeric"
+                />
+                <TextInput
+                    style={[styles.input, styles.smallInput]}
+                    placeholder="RPE"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={rpe}
+                    onChangeText={setRpe}
+                    keyboardType="numeric"
+                />
+            </View>
+            <View style={styles.inputRow}>
+                <TextInput
+                    style={[styles.input, styles.notesInput]}
+                    placeholder="Notes"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={notes}
+                    onChangeText={setNotes}
+                    multiline
+                />
+            </View>
+            <View style={styles.inputRow}>
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+                    <Text style={styles.dateButtonText}>
+                        {editingEntry ? "Change Date: " : "Date: "}
+                        {date.toLocaleDateString()}
+                    </Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                    <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                    />
+                )}
+            </View>
         </View>
     );
 
@@ -101,6 +132,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         setNotes("");
         setDate(new Date());
         setEditingEntry(null);
+        setShowDatePicker(false);
     };
 
     const handleDeleteEntry = useCallback(
@@ -130,10 +162,10 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
 
     const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => {
         const item_ = item as EnduranceExerciseHistoryEntry;
-        const currentDate = new Date(item_.date).toISOString().split("T")[0];
+        const currentDate = new Date(item_.date).toLocaleDateString();
         const previousDate =
             index > 0
-                ? new Date(exerciseHistory[exerciseId][index - 1].date).toISOString().split("T")[0]
+                ? new Date(exerciseHistory[exerciseId][index - 1].date).toLocaleDateString()
                 : null;
 
         return (
@@ -175,13 +207,11 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     };
 
     const handleAddOrUpdateEntry = () => {
-        // Validate required fields
         if (!distance.trim() || !time.trim()) {
             Alert.alert("Error", "Please fill in at least Distance and Time fields");
             return;
         }
 
-        // Parse and validate numeric values
         const parsedDistance = parseFloat(distance.replace(",", "."));
         const parsedTime = parseFloat(time.replace(",", "."));
         const parsedAvgHeartRate = avgHeartRate ? parseInt(avgHeartRate) : undefined;
