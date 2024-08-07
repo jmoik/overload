@@ -1,14 +1,25 @@
 // screens/AddExerciseScreen.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import { View, TextInput, Button, Alert, TouchableOpacity, Modal, FlatList } from "react-native";
+import {
+    View,
+    TextInput,
+    Button,
+    Alert,
+    TouchableOpacity,
+    Modal,
+    FlatList,
+    ScrollView,
+} from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { AddExerciseScreenNavigationProp, AddExerciseScreenRouteProp } from "../types/navigation";
-import { Exercise, ExerciseCategory } from "../models/Exercise";
+import { Exercise, Set } from "../models/Exercise";
 import { lightTheme, darkTheme, createAddExerciseStyles } from "../styles/globalStyles";
 import { useTheme } from "../contexts/ThemeContext";
 import { Text } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { Swipeable } from "react-native-gesture-handler";
+import { Icon } from "react-native-elements";
 
 const AddExerciseScreen = () => {
     const { theme } = useTheme();
@@ -22,10 +33,12 @@ const AddExerciseScreen = () => {
     const [name, setName] = useState("");
     const [weeklySets, setWeeklySets] = useState("");
     const [targetRPE, setTargetRPE] = useState("");
-    const [category, setCategory] = useState<ExerciseCategory>("strength");
+    const [category, setCategory] = useState("strength" as Exercise["category"]);
     const [description, setDescription] = useState("");
     const [muscleGroup, setMuscleGroup] = useState("");
     const [distance, setDistance] = useState("");
+    const [oneRepMax, setOneRepMax] = useState("");
+    const [workout, setWorkout] = useState<Set[]>([]);
 
     useEffect(() => {
         if (route.params?.exerciseData) {
@@ -40,6 +53,10 @@ const AddExerciseScreen = () => {
                 setWeeklySets(exercise.weeklySets.toString());
                 setTargetRPE(exercise.targetRPE.toString());
                 setDistance(exercise.distance?.toString() || "0");
+                if (exercise.category === "nsuns") {
+                    setOneRepMax(exercise.oneRepMax?.toString() || "");
+                    setWorkout(exercise.workout || []);
+                }
             }
         }
     }, [exerciseId, exercises]);
@@ -58,6 +75,8 @@ const AddExerciseScreen = () => {
             description,
             muscleGroup,
             distance: category === "endurance" ? parseFloat(distance) : undefined,
+            oneRepMax: category === "nsuns" ? parseFloat(oneRepMax) : undefined,
+            workout: category === "nsuns" ? workout : undefined,
         };
 
         if (route.params?.onSave) {
@@ -71,6 +90,21 @@ const AddExerciseScreen = () => {
         navigation.goBack();
     };
 
+    const handleAddSet = () => {
+        setWorkout([...workout, { reps: 0, relativeWeight: 0 }]);
+    };
+
+    const handleUpdateSet = (index: number, field: keyof Set, value: string) => {
+        const updatedWorkout = [...workout];
+        if (value === "") {
+            updatedWorkout[index][field] = 0;
+        } else {
+            const numValue = field === "reps" ? parseInt(value, 10) : parseFloat(value);
+            updatedWorkout[index][field] = isNaN(numValue) ? 0 : numValue;
+        }
+        setWorkout(updatedWorkout);
+    };
+
     const handleEditExerciseFromPreview = (exerciseData: Exercise) => {
         setName(exerciseData.name);
         setWeeklySets(exerciseData.weeklySets.toString());
@@ -81,73 +115,133 @@ const AddExerciseScreen = () => {
         setDistance(exerciseData.distance?.toString() || "");
     };
 
+    const handleRemoveSet = (index: number) => {
+        const updatedWorkout = workout.filter((_, i) => i !== index);
+        setWorkout(updatedWorkout);
+    };
+
+    const renderRightActions = (index: number) => {
+        return (
+            <TouchableOpacity style={styles.deleteAction} onPress={() => handleRemoveSet(index)}>
+                <Icon name="delete" size={24} color="white" />
+            </TouchableOpacity>
+        );
+    };
+
+    const renderSet = (set: Set, index: number) => {
+        return (
+            <Swipeable renderRightActions={() => renderRightActions(index)} rightThreshold={40}>
+                <View style={styles.setContainer}>
+                    <TextInput
+                        style={styles.setInput}
+                        placeholder="Reps"
+                        placeholderTextColor={currentTheme.colors.placeholder}
+                        value={set.reps === 0 ? "" : set.reps.toString()}
+                        onChangeText={(value) => handleUpdateSet(index, "reps", value)}
+                        keyboardType="numeric"
+                    />
+                    <TextInput
+                        style={styles.setInput}
+                        placeholder="Relative Weight (%)"
+                        placeholderTextColor={currentTheme.colors.placeholder}
+                        value={set.relativeWeight === 0 ? "" : set.relativeWeight.toString()}
+                        onChangeText={(value) => handleUpdateSet(index, "relativeWeight", value)}
+                        keyboardType="numeric"
+                    />
+                </View>
+            </Swipeable>
+        );
+    };
+
     return (
-        <View style={styles.container}>
-            <TextInput
-                style={styles.input}
-                placeholder="Exercise Name"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={name}
-                onChangeText={setName}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Weekly Sets"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={weeklySets}
-                onChangeText={setWeeklySets}
-                keyboardType="numeric"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Target RPE"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={targetRPE}
-                onChangeText={setTargetRPE}
-                keyboardType="numeric"
-            />
-            <View style={styles.pickerContainer}>
-                <Text style={styles.placeholderText}>Select Category</Text>
-                <Picker
-                    style={styles.picker}
-                    selectedValue={category}
-                    onValueChange={(itemValue) => setCategory(itemValue as ExerciseCategory)}
-                >
-                    <Picker.Item label="Strength" value="strength" />
-                    <Picker.Item label="Endurance" value="endurance" />
-                    <Picker.Item label="Mobility" value="mobility" />
-                    <Picker.Item label="nSuns" value="nsuns" />
-                    <Picker.Item label="Other" value="other" />
-                </Picker>
-            </View>
-            <TextInput
-                style={styles.input}
-                placeholder="Muscle Group"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={muscleGroup}
-                onChangeText={setMuscleGroup}
-            />
-            {category === "endurance" && (
+        <View style={styles.screen}>
+            <ScrollView style={styles.container}>
                 <TextInput
                     style={styles.input}
-                    placeholder="Distance (km)"
+                    placeholder="Exercise Name"
                     placeholderTextColor={currentTheme.colors.placeholder}
-                    value={distance}
-                    onChangeText={setDistance}
+                    value={name}
+                    onChangeText={setName}
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Weekly Sets"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={weeklySets}
+                    onChangeText={setWeeklySets}
                     keyboardType="numeric"
                 />
-            )}
-            <TextInput
-                style={styles.input}
-                placeholder="Description"
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={description}
-                onChangeText={setDescription}
-            />
-            <Button
-                title={exerciseId ? "Update Exercise" : "Add Exercise"}
-                onPress={handleAddOrUpdateExercise}
-            />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Target RPE"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={targetRPE}
+                    onChangeText={setTargetRPE}
+                    keyboardType="numeric"
+                />
+                <View style={styles.pickerContainer}>
+                    <Text style={styles.placeholderText}>Select Category</Text>
+                    <Picker
+                        style={styles.picker}
+                        selectedValue={category}
+                        onValueChange={(itemValue) =>
+                            setCategory(itemValue as Exercise["category"])
+                        }
+                    >
+                        <Picker.Item label="Strength" value="strength" />
+                        <Picker.Item label="Endurance" value="endurance" />
+                        <Picker.Item label="Mobility" value="mobility" />
+                        <Picker.Item label="nSuns" value="nsuns" />
+                        <Picker.Item label="Other" value="other" />
+                    </Picker>
+                </View>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Muscle Group"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={muscleGroup}
+                    onChangeText={setMuscleGroup}
+                />
+                {category === "endurance" && (
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Distance (km)"
+                        placeholderTextColor={currentTheme.colors.placeholder}
+                        value={distance}
+                        onChangeText={setDistance}
+                        keyboardType="numeric"
+                    />
+                )}
+                <TextInput
+                    style={styles.input}
+                    placeholder="Description"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={description}
+                    onChangeText={setDescription}
+                />
+                {category === "nsuns" && (
+                    <>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="One Rep Max"
+                            placeholderTextColor={currentTheme.colors.placeholder}
+                            value={oneRepMax}
+                            onChangeText={setOneRepMax}
+                            keyboardType="numeric"
+                        />
+                        <Text style={styles.sectionTitle}>Workout Sets</Text>
+                        {workout.map((set, index) => renderSet(set, index))}
+                        <Button title="Add Set" onPress={handleAddSet} />
+                    </>
+                )}
+
+                <View style={styles.buttonContainer}>
+                    <Button
+                        title={exerciseId ? "Update Exercise" : "Add Exercise"}
+                        onPress={handleAddOrUpdateExercise}
+                    />
+                </View>
+            </ScrollView>
         </View>
     );
 };

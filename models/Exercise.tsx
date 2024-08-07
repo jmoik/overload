@@ -34,8 +34,6 @@ export interface NSunsExerciseHistoryEntry extends BaseExerciseHistoryEntry {
 export type Set = {
     reps: number;
     relativeWeight: number;
-    rpe: number;
-    notes?: string;
 };
 
 export type ExerciseHistoryEntry =

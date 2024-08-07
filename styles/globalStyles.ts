@@ -24,6 +24,7 @@ export const lightTheme = {
             4: "#D6D6D6",
             5: "#CCCCCC",
         },
+        error: "#FF3B30",
     },
 };
 
@@ -47,6 +48,7 @@ export const darkTheme = {
             4: "#272727",
             5: "#2C2C2C",
         },
+        error: "#FF3B30",
     },
 };
 
@@ -191,10 +193,26 @@ const createAllExercisesScreenStyles = (theme: typeof lightTheme | typeof darkTh
 // AddExerciseScreen specific styles
 const createAddExerciseScreenStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     StyleSheet.create({
-        container: {
+        screen: {
             flex: 1,
-            padding: 20,
             backgroundColor: theme.colors.background,
+            // paddingBottom: 20,
+            // marginBottom: 20,
+        },
+        deleteAction: {
+            backgroundColor: theme.colors.error,
+            justifyContent: "center",
+            alignItems: "center",
+            width: 80,
+            height: "100%",
+        },
+        scrollViewContent: { flexGrow: 1 },
+        container: { paddingHorizontal: 16, paddingTop: 20 },
+        buttonContainer: {
+            padding: 16,
+            backgroundColor: theme.colors.background,
+            // marginBottom: 20,
+            paddingBottom: 100,
         },
         input: {
             borderWidth: 1,
@@ -232,6 +250,27 @@ const createAddExerciseScreenStyles = (theme: typeof lightTheme | typeof darkThe
             left: 10,
             color: theme.colors.placeholder,
             fontSize: 14,
+        },
+        sectionTitle: {
+            fontSize: 18,
+            fontWeight: "bold",
+            marginTop: 10,
+            marginBottom: 5,
+            color: theme.colors.text,
+        },
+        setContainer: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 10,
+        },
+        setInput: {
+            flex: 1,
+            height: 40,
+            borderColor: theme.colors.border,
+            borderWidth: 1,
+            marginRight: 10,
+            paddingHorizontal: 10,
+            color: theme.colors.text,
         },
     });
 

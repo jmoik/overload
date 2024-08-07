@@ -18,15 +18,13 @@ function createExercise(exerciseData: Omit<Exercise, "id">): Exercise {
 
 function createNSunsWorkout(baseWeight: number): Set[] {
     return [
-        { reps: 5, relativeWeight: baseWeight * 0.75, rpe: 0 },
-        { reps: 3, relativeWeight: baseWeight * 0.85, rpe: 0 },
-        { reps: 1, relativeWeight: baseWeight * 0.95, rpe: 0 },
-        { reps: 5, relativeWeight: baseWeight * 0.9, rpe: 0 },
-        { reps: 3, relativeWeight: baseWeight * 0.85, rpe: 0 },
-        { reps: 3, relativeWeight: baseWeight * 0.8, rpe: 0 },
-        { reps: 5, relativeWeight: baseWeight * 0.75, rpe: 0 },
-        { reps: 5, relativeWeight: baseWeight * 0.7, rpe: 0 },
-        { reps: 5, relativeWeight: baseWeight * 0.65, rpe: 0 },
+        { reps: 5, relativeWeight: baseWeight * 0.75 },
+        { reps: 3, relativeWeight: baseWeight * 0.85 },
+        { reps: 1, relativeWeight: baseWeight * 0.95 },
+        { reps: 4, relativeWeight: baseWeight * 0.85 },
+        { reps: 3, relativeWeight: baseWeight * 0.85 },
+        { reps: 5, relativeWeight: baseWeight * 0.75 },
+        { reps: 5, relativeWeight: baseWeight * 0.75 },
     ];
 }
 

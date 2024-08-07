@@ -1,5 +1,13 @@
 import React, { useState, useCallback, useRef } from "react";
-import { View, Text, TouchableOpacity, FlatList, SafeAreaView, TextInput } from "react-native";
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    FlatList,
+    SafeAreaView,
+    TextInput,
+    Alert,
+} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
 import { Set } from "../../models/Exercise";
@@ -41,12 +49,46 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
         }
         setIsEditing1RM(false);
     };
+
     const toggleSet = (index: number) => {
         setCompletedSets((prev) => {
             const newCompletedSets = [...prev];
             newCompletedSets[index] = !newCompletedSets[index];
+
+            if (newCompletedSets.every((set) => set)) {
+                Alert.alert("All Sets Completed", "Would you like to increase your 1RM by 2 kg?", [
+                    {
+                        text: "No",
+                        onPress: () => setCompletedSets(new Array(workout.length).fill(false)),
+                    },
+                    {
+                        text: "Yes",
+                        onPress: () => {
+                            if (exercise) {
+                                const newOneRepMax = Math.floor((exercise.oneRepMax ?? 0) + 2);
+                                const updatedExercise = { ...exercise, oneRepMax: newOneRepMax };
+                                updateExercise(exerciseId, updatedExercise);
+                                setExercise(updatedExercise);
+                                setEditedOneRepMax(newOneRepMax.toString());
+                            }
+                            setCompletedSets(new Array(workout.length).fill(false));
+                        },
+                    },
+                ]);
+                return newCompletedSets;
+            }
+
             return newCompletedSets;
         });
+    };
+
+    const calculateSetWeight = (set: Set) => {
+        let weight = (set.relativeWeight * (exercise?.oneRepMax || 1)) / 100;
+
+        // round to nearest 2.5kg
+        weight = Math.floor(weight / 2.5) * 2.5;
+
+        return weight;
     };
 
     const renderSet = useCallback(
@@ -54,9 +96,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
             <TouchableOpacity style={styles.setItem} onPress={() => toggleSet(index)}>
                 <View>
                     <Text style={styles.setText}>
-                        {`${item.reps} reps at ${
-                            (item.relativeWeight * (exercise?.oneRepMax || 1)) / 100
-                        } kg`}
+                        {`${item.reps} reps @ ${calculateSetWeight(item)} kg`}
                     </Text>
                     <Text style={styles.percentText}>
                         {`${item.relativeWeight.toFixed(0)}% of 1 RM`}
