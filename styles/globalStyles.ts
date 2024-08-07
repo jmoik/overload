@@ -325,6 +325,17 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             padding: 10,
             marginTop: 10,
         },
+        setItem: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: "#ccc",
+        },
+        setText: {
+            fontSize: 16,
+        },
     });
 
 // SettingsScreen specific styles
