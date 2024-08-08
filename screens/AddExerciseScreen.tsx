@@ -69,7 +69,7 @@ const AddExerciseScreen = () => {
 
         const exerciseData: Omit<Exercise, "id"> = {
             name,
-            weeklySets: parseInt(weeklySets, 10),
+            weeklySets: category === "endurance" ? 1 : parseInt(weeklySets, 10),
             targetRPE: parseInt(targetRPE, 10) || meanRpe,
             category,
             description,
@@ -91,15 +91,16 @@ const AddExerciseScreen = () => {
     };
 
     const handleAddSet = () => {
-        setWorkout([...workout, { reps: 0, relativeWeight: 0 }]);
+        setWorkout([...workout, { reps: 0, relativeWeight: 0, isAMRAP: false }]);
     };
 
-    const handleUpdateSet = (index: number, field: keyof Set, value: string) => {
+    const handleUpdateSet = (index: number, field: keyof Set, value: string | boolean) => {
         const updatedWorkout = [...workout];
-        if (value === "") {
-            updatedWorkout[index][field] = 0;
+        if (field === "isAMRAP") {
+            updatedWorkout[index][field] = value as boolean;
         } else {
-            const numValue = field === "reps" ? parseInt(value, 10) : parseFloat(value);
+            const numValue =
+                field === "reps" ? parseInt(value as string, 10) : parseFloat(value as string);
             updatedWorkout[index][field] = isNaN(numValue) ? 0 : numValue;
         }
         setWorkout(updatedWorkout);
@@ -148,6 +149,12 @@ const AddExerciseScreen = () => {
                         onChangeText={(value) => handleUpdateSet(index, "relativeWeight", value)}
                         keyboardType="numeric"
                     />
+                    <TouchableOpacity
+                        style={[styles.amrapButton, set.isAMRAP && styles.amrapButtonActive]}
+                        onPress={() => handleUpdateSet(index, "isAMRAP", !set.isAMRAP)}
+                    >
+                        <Text style={styles.amrapButtonText}>AMRAP</Text>
+                    </TouchableOpacity>
                 </View>
             </Swipeable>
         );
@@ -163,14 +170,16 @@ const AddExerciseScreen = () => {
                     value={name}
                     onChangeText={setName}
                 />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Weekly Sets"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={weeklySets}
-                    onChangeText={setWeeklySets}
-                    keyboardType="numeric"
-                />
+                {category !== "endurance" && (
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Weekly Sets"
+                        placeholderTextColor={currentTheme.colors.placeholder}
+                        value={weeklySets}
+                        onChangeText={setWeeklySets}
+                        keyboardType="numeric"
+                    />
+                )}
                 <TextInput
                     style={styles.input}
                     placeholder="Target RPE"
@@ -192,7 +201,6 @@ const AddExerciseScreen = () => {
                         <Picker.Item label="Endurance" value="endurance" />
                         <Picker.Item label="Mobility" value="mobility" />
                         <Picker.Item label="nSuns" value="nsuns" />
-                        <Picker.Item label="Other" value="other" />
                     </Picker>
                 </View>
                 <TextInput
@@ -205,7 +213,7 @@ const AddExerciseScreen = () => {
                 {category === "endurance" && (
                     <TextInput
                         style={styles.input}
-                        placeholder="Distance (km)"
+                        placeholder="Total Interval Distance (km)"
                         placeholderTextColor={currentTheme.colors.placeholder}
                         value={distance}
                         onChangeText={setDistance}

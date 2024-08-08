@@ -21,6 +21,7 @@ import PlanPreviewScreen from "./screens/PlanPreviewScreen";
 import StatsScreen from "./screens/StatsScreen";
 import DefaultRpeScreen from "./screens/settings/DefaultRpeScreen";
 import InfoScreen from "./screens/settings/InfoScreen";
+import SuggestedWorkoutScreen from "./screens/SuggestedWorkoutScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -43,6 +44,14 @@ const Home = () => (
                 tabBarIcon: ({ color, size }) => (
                     <Icon name="stats-chart" color={color} size={size} />
                 ),
+            }}
+        />
+        <Tab.Screen
+            name="SuggestedWorkout"
+            component={SuggestedWorkoutScreen}
+            options={{
+                title: "Suggested Workout",
+                tabBarIcon: ({ color, size }) => <Icon name="barbell" color={color} size={size} />,
             }}
         />
         <Tab.Screen
