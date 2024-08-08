@@ -165,7 +165,9 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
             if (!acc[date]) {
                 acc[date] = [];
             }
-            acc[date].push(entry);
+            if (entry.category === "strength") {
+                acc[date].push(entry as StrengthExerciseHistoryEntry);
+            }
             return acc;
         }, {} as Record<string, StrengthExerciseHistoryEntry[]>);
 

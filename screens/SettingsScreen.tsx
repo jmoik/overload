@@ -116,7 +116,7 @@ const SettingsScreen = () => {
                     })
                 )
             );
-            const newHistory = {};
+            const newHistory: { [key: string]: any[] } = {};
             importedData.exercises.forEach((e: { history: any; id: string | number }) => {
                 if (Array.isArray(e.history)) {
                     newHistory[e.id] = e.history;
@@ -126,7 +126,7 @@ const SettingsScreen = () => {
             Alert.alert("Success", "Data imported successfully");
 
             Alert.alert("Success", "Data imported successfully");
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error importing data:", error);
             Alert.alert("Error", `Failed to import data: ${error.message}`);
         }

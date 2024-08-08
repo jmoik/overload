@@ -6,7 +6,13 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { Swipeable } from "react-native-gesture-handler";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { RoutineScreenNavigationProp } from "../types/navigation";
-import { Exercise } from "../models/Exercise";
+import {
+    EnduranceExerciseHistoryEntry,
+    Exercise,
+    ExerciseHistoryEntry,
+    MobilityExerciseHistoryEntry,
+    StrengthExerciseHistoryEntry,
+} from "../models/Exercise";
 import { subDays, isAfter } from "date-fns";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createAllExercisesStyles } from "../styles/globalStyles";
@@ -144,14 +150,26 @@ const AllExercisesScreen = () => {
             const intervalStart = subDays(today, trainingInterval);
 
             const history = exerciseHistory[exercise.id] || [];
-            const setsDoneInInterval = history.reduce((total, entry) => {
+            const setsDoneInInterval = history.reduce((total, entry: ExerciseHistoryEntry) => {
                 if (isAfter(new Date(entry.date), intervalStart)) {
-                    return total + (entry.sets ?? 0) * entry.rpe;
+                    // cast to StrengthExerciseHistoryEntry to access the sets property
+                    if (entry.category === "strength") {
+                        return total + (entry as StrengthExerciseHistoryEntry).sets;
+                    } else if (entry.category === "mobility") {
+                        return total + (entry as MobilityExerciseHistoryEntry).sets;
+                    } else if (entry.category === "endurance") {
+                        return total + (entry as EnduranceExerciseHistoryEntry).distance;
+                    }
                 }
                 return total;
             }, 0);
 
-            const remainingSets = exercise.weeklySets * exercise.targetRPE - setsDoneInInterval;
+            let remainingSets = exercise.weeklySets - setsDoneInInterval;
+
+            // for endurance set use distance
+            if (exercise.category === "endurance") {
+                remainingSets = exercise.weeklySets * (exercise.distance ?? 0) - setsDoneInInterval;
+            }
             return remainingSets;
         },
         [exerciseHistory, trainingInterval]
@@ -208,8 +226,17 @@ const AllExercisesScreen = () => {
             section: { title: string };
         }) => {
             const remainingTrainingLoad = calculateRemainingSets(item);
-            const setsLeft = Math.floor(remainingTrainingLoad / item.targetRPE);
+            // const setsLeft = Math.floor(remainingTrainingLoad / item.targetRPE);
+            const setsLeft = remainingTrainingLoad;
             const setsLeftColor = setsLeft <= 0 ? "green" : "red";
+
+            const weeklySetsText =
+                item.category === "endurance"
+                    ? `${item.weeklySets * item.distance ?? 0} km / interval`
+                    : `${item.weeklySets} sets / interval`;
+
+            const setsLeftText =
+                item.category === "endurance" ? `${setsLeft} km left` : `Sets left: ${setsLeft}`;
 
             return (
                 <Swipeable
@@ -228,13 +255,11 @@ const AllExercisesScreen = () => {
                         <View style={styles.exerciseItemLeft}>
                             <Text style={styles.exerciseName}>{item.name}</Text>
                             <Text style={styles.exerciseDescription}>{item.description}</Text>
-                            <Text style={styles.exerciseSetsPerWeek}>
-                                {item.weeklySets} total weekly Sets
-                            </Text>
+                            <Text style={styles.exerciseSetsPerWeek}>{weeklySetsText}</Text>
                         </View>
                         <View style={styles.exerciseItemRight}>
                             <Text style={[styles.remainingSets, { color: setsLeftColor }]}>
-                                Sets left: {setsLeft}
+                                {setsLeftText}
                             </Text>
                         </View>
                     </TouchableOpacity>
