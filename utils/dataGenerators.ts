@@ -3,11 +3,11 @@ import { Exercise, ExerciseHistoryEntry } from "../models/Exercise";
 
 export const generateRandomWorkoutData = (exercise: Exercise): ExerciseHistoryEntry[] => {
     const entries: ExerciseHistoryEntry[] = [];
-    const numberOfEntries = Math.floor(Math.random() * 5) + 3; // Generate 5-14 entries
+    const numberOfEntries = Math.floor(Math.random() * 3) + 2; // Generate 5-14 entries
 
     for (let i = 1; i < numberOfEntries; i++) {
         const date = new Date();
-        date.setDate(date.getDate() - i * Math.round(Math.random() * 4));
+        date.setDate(date.getDate() - i * Math.round(Math.random() * 3));
 
         if (exercise.category === "endurance") {
             // cast to EnduranceExerciseHistoryEntry

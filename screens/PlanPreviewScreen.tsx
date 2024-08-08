@@ -31,7 +31,7 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
     const [plans, setPlans] = useState<PlanItem[]>(
         initialPlans.map((plan) => ({
             ...plan,
-            exercises: plan.exercises.map((exercise) => ({ ...exercise, isSelected: false })),
+            exercises: plan.exercises.map((exercise) => ({ ...exercise, isSelected: true })),
         }))
     );
     const { addExercise, exercises } = useExerciseContext();
