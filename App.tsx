@@ -36,14 +36,14 @@ const Home = () => (
                 tabBarIcon: ({ color, size }) => <Icon name="list" color={color} size={size} />,
             }}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
             name="SuggestedWorkout"
             component={SuggestedWorkoutScreen}
             options={{
                 title: "Suggested Workout",
                 tabBarIcon: ({ color, size }) => <Icon name="barbell" color={color} size={size} />,
             }}
-        />
+        /> */}
         <Tab.Screen
             name="Stats"
             component={StatsScreen}
