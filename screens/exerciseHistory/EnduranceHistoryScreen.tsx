@@ -208,6 +208,9 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             index > 0
                 ? new Date(exerciseHistory[exerciseId][index - 1].date).toLocaleDateString()
                 : null;
+        const paceMinutes = item_.time > 0 ? (item_.time / item_.distance).toFixed(0) : "0";
+        const paceSeconds = item_.time > 0 ? ((item_.time * 60) / item_.distance) % 60 : 0;
+        const pace = `${paceMinutes}\'${paceSeconds < 10 ? "0" : ""}${Math.round(paceSeconds)}\"`;
 
         return (
             <>
@@ -236,6 +239,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                                 0
                             )} min (RPE ${item_.rpe})`}
                             {item_.avgHeartRate && ` @ ${item_.avgHeartRate} bpm`}
+                            {` @ ${pace}`}
                             {item_.notes && (
                                 <Text style={styles.notes}>
                                     {"\n"}
@@ -317,11 +321,13 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const checkForNewWorkouts = () => {
         if (Platform.OS === "ios" && isHealthKitAuthorized) {
             const options: HealthInputOptions = {
-                startDate: new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+                startDate: new Date(new Date().getTime() - 365 * 24 * 60 * 60 * 1000).toISOString(),
                 endDate: new Date().toISOString(),
                 type: AppleHealthKit.Constants.Permissions.Workout,
                 includeManuallyAdded: true,
             };
+
+            console.log("Fetching workouts with options:", JSON.stringify(options));
 
             AppleHealthKit.getAnchoredWorkouts(options, (err, results) => {
                 if (err) {

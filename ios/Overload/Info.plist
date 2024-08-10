@@ -39,6 +39,8 @@
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>LSSupportsOpeningDocumentsInPlace</key>
@@ -52,17 +54,19 @@
     </dict>
     <key>NSDocumentsFolderUsageDescription</key>
     <string>This app needs access to documents for importing training data.</string>
+    <key>NSHealthClinicalHealthRecordsShareUsageDescription</key>
+    <string>This app requires access to your clinical health records to provide comprehensive health insights.</string>
     <key>NSHealthShareUsageDescription</key>
-    <string>Read running workouts</string>
+    <string>This app requires access to your health and fitness data to track your workouts and provide insights.</string>
     <key>NSHealthUpdateUsageDescription</key>
-    <string>Share running workouts</string>
+    <string>This app requires permission to update your health and fitness data for accurate workout tracking and analysis.</string>
     <key>UIFileSharingEnabled</key>
     <true/>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
-      <string>arm64</string>
+      <string>healthkit</string>
     </array>
     <key>UIRequiresFullScreen</key>
     <false/>
