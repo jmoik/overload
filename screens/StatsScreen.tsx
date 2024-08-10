@@ -217,7 +217,7 @@ const StatsScreen = () => {
             ],
             legend: [
                 `Target: ${targetLoad.toFixed(1)}`,
-                `Actual: ${loadData[loadData.length - 1].toFixed(1)}`,
+                `Today: ${loadData[loadData.length - 1].toFixed(1)}`,
                 `MA: ${movingAverage[movingAverage.length - 1].toFixed(1)}`,
             ],
         };

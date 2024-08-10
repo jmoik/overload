@@ -1,5 +1,5 @@
 // EnduranceHistoryScreen.tsx
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { View, TextInput, Text, TouchableOpacity, Alert, Platform } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -10,10 +10,28 @@ import { EnduranceExerciseHistoryEntry, ExerciseHistoryEntry } from "../../model
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
+import AppleHealthKit, {
+    HealthInputOptions,
+    HealthKitPermissions,
+    HKWorkoutQueriedSampleType,
+} from "react-native-health";
 
 interface EnduranceHistoryScreenProps {
     exerciseId: string;
 }
+
+const permissions: HealthKitPermissions = {
+    permissions: {
+        read: [
+            AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
+            AppleHealthKit.Constants.Permissions.Workout,
+            AppleHealthKit.Constants.Permissions.HeartRate,
+            AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
+            AppleHealthKit.Constants.Permissions.StepCount,
+        ],
+        write: [],
+    },
+};
 
 const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exerciseId }) => {
     const { theme } = useTheme();
@@ -28,6 +46,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const [date, setDate] = useState<Date>(new Date());
     const [editingEntry, setEditingEntry] = useState<EnduranceExerciseHistoryEntry | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [isHealthKitAuthorized, setIsHealthKitAuthorized] = useState(false);
 
     const {
         addExerciseToHistory,
@@ -35,9 +54,31 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         deleteExerciseHistoryEntry,
         exerciseHistory,
         meanRpe,
+        exercises,
     } = useExerciseContext();
 
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
+
+    const exercise = exercises.find((e) => e.id === exerciseId);
+    const exerciseName = exercise ? exercise.name : "Endurance";
+
+    useEffect(() => {
+        if (Platform.OS === "ios") {
+            initializeHealthKit();
+        }
+    }, []);
+
+    const initializeHealthKit = () => {
+        AppleHealthKit.initHealthKit(permissions, (error: string) => {
+            if (error) {
+                console.log("[ERROR] Cannot initialize HealthKit:", error);
+            } else {
+                console.log("HealthKit initialized successfully");
+                setIsHealthKitAuthorized(true);
+                checkForNewWorkouts();
+            }
+        });
+    };
 
     const onDateChange = (event: any, selectedDate?: Date) => {
         setShowDatePicker(Platform.OS === "ios");
@@ -191,7 +232,9 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                         onPress={() => handleEditEntry(item_)}
                     >
                         <Text style={styles.text}>
-                            {`${item_.distance} km in ${item_.time} min (RPE ${item_.rpe})`}
+                            {`${item_.distance.toFixed(2)} km in ${item_.time.toFixed(
+                                0
+                            )} min (RPE ${item_.rpe})`}
                             {item_.avgHeartRate && ` @ ${item_.avgHeartRate} bpm`}
                             {item_.notes && (
                                 <Text style={styles.notes}>
@@ -270,6 +313,119 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             setNotes(lastWorkout.notes);
         }
     }, [exerciseHistory, exerciseId]);
+
+    const checkForNewWorkouts = () => {
+        if (Platform.OS === "ios" && isHealthKitAuthorized) {
+            const options: HealthInputOptions = {
+                startDate: new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+                endDate: new Date().toISOString(),
+                type: AppleHealthKit.Constants.Permissions.Workout,
+                includeManuallyAdded: true,
+            };
+
+            AppleHealthKit.getAnchoredWorkouts(options, (err, results) => {
+                if (err) {
+                    console.log("Error fetching workouts:", JSON.stringify(err));
+                    return;
+                }
+
+                console.log("Raw workout data:", JSON.stringify(results, null, 2));
+
+                const runningWorkouts = results.data.filter(
+                    (workout: HKWorkoutQueriedSampleType) => workout.activityName === "Running"
+                );
+
+                const processedWorkouts = runningWorkouts.map((workout) => {
+                    const startDate = new Date(workout.start);
+                    const endDate = new Date(workout.end);
+
+                    return {
+                        startDate,
+                        endDate,
+                        distance: isNaN(workout.distance) ? 0 : workout.distance * 1.60934,
+                        duration: isNaN(workout.duration) ? 0 : workout.duration,
+                        activityName: workout.activityName || "Unknown",
+                    };
+                });
+
+                // print workouts
+                console.log("Workouts:", processedWorkouts);
+
+                const sortedWorkouts = processedWorkouts.sort(
+                    (a, b) => a.startDate.getTime() - b.startDate.getTime()
+                );
+
+                const existingEntries = exerciseHistory[exerciseId] || [];
+                const newWorkouts = sortedWorkouts.filter((workout) => {
+                    const workoutDate = new Date(workout.startDate);
+                    const existingEntry = existingEntries.find((entry) => {
+                        const entryDate = new Date(entry.date);
+                        workoutDate.setHours(0, 0, 0, 0);
+                        return (
+                            entryDate.getTime() === workoutDate.getTime() &&
+                            Math.abs(
+                                (entry as EnduranceExerciseHistoryEntry).distance - workout.distance
+                            ) < 0.1
+                        );
+                    });
+                    return !existingEntry;
+                });
+
+                if (newWorkouts.length > 0) {
+                    const workoutList = newWorkouts
+                        .map(
+                            (workout) =>
+                                `${workout.startDate.toLocaleDateString()}: ${workout.distance.toFixed(
+                                    2
+                                )} km, ${(workout.duration / 60).toFixed(0)} min`
+                        )
+                        .join("\n");
+
+                    Alert.alert(
+                        "Import New Workouts",
+                        `Found ${newWorkouts.length} new ${exerciseName} workouts:\n\n${workoutList}\n\nDo you want to import them?`,
+                        [
+                            { text: "Cancel", style: "cancel" },
+                            {
+                                text: "Import",
+                                onPress: () => importFilteredWorkouts(newWorkouts),
+                            },
+                        ]
+                    );
+                }
+            });
+        }
+    };
+
+    const importFilteredWorkouts = (workouts: any[]) => {
+        workouts.forEach((workout) => {
+            const entry: EnduranceExerciseHistoryEntry = {
+                id: generateEntryId({
+                    date: workout.startDate,
+                    distance: workout.distance,
+                    time: workout.duration / 60,
+                    rpe: meanRpe,
+                    category: "endurance",
+                }),
+                date: workout.startDate,
+                distance: Number(workout.distance.toFixed(3)),
+                time: Math.round(workout.duration / 60),
+                avgHeartRate: isNaN(workout.averageHeartRate)
+                    ? undefined
+                    : Math.round(workout.averageHeartRate),
+                rpe: meanRpe,
+                notes: `Imported from Health app: ${workout.activityName}${
+                    workout.combinedCount > 1
+                        ? ` (Combined from ${workout.combinedCount} workouts)`
+                        : ""
+                }`,
+                category: "endurance",
+            };
+            addExerciseToHistory(exerciseId, entry);
+        });
+
+        Alert.alert("Success", `${workouts.length} new workouts have been imported.`);
+    };
 
     return (
         <BaseHistoryScreen

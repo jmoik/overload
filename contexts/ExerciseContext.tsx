@@ -178,6 +178,8 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, []);
 
     const addExerciseToHistory = useCallback((exerciseId: string, entry: ExerciseHistoryEntry) => {
+        // only need the date for the date entry, no time, therefore set time to start of day always
+        entry.date.setHours(0, 0, 0, 0);
         setExerciseHistory((prevHistory) => ({
             ...prevHistory,
             [exerciseId]: [...(prevHistory[exerciseId] || []), entry],

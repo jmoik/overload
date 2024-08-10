@@ -236,7 +236,9 @@ const AllExercisesScreen = () => {
                     : `${item.weeklySets} sets / interval`;
 
             const setsLeftText =
-                item.category === "endurance" ? `${setsLeft} km left` : `Sets left: ${setsLeft}`;
+                item.category === "endurance"
+                    ? `${setsLeft.toFixed(1)} km left`
+                    : `Sets left: ${setsLeft}`;
 
             return (
                 <Swipeable

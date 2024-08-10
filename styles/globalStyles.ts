@@ -391,6 +391,33 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
         setText: {
             fontSize: 16,
         },
+        workoutItem: {
+            padding: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: "#ccc",
+        },
+        selectedWorkout: {
+            backgroundColor: "#e6f7ff",
+        },
+        workoutDate: {
+            fontSize: 16,
+            fontWeight: "bold",
+        },
+        workoutDetails: {
+            fontSize: 14,
+        },
+        importButton: {
+            backgroundColor: "#007AFF",
+            padding: 15,
+            borderRadius: 5,
+            margin: 10,
+            alignItems: "center",
+        },
+        importButtonText: {
+            color: "white",
+            fontSize: 16,
+            fontWeight: "bold",
+        },
     });
 
 // ExerciseHistoryScreen specific styles

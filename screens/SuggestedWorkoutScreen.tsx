@@ -198,7 +198,7 @@ const SuggestedWorkoutScreen = () => {
                 <Text style={styles.exerciseName}>{item.name}</Text>
                 <Text style={styles.exerciseDetails}>
                     {item.category === "endurance"
-                        ? `${item.suggestedSets} km`
+                        ? `${item.suggestedSets?.toFixed(1)} km`
                         : `${item.suggestedSets} sets`}
                 </Text>
             </TouchableOpacity>
