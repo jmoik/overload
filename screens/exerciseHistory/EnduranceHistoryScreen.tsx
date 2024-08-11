@@ -6,7 +6,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import BaseHistoryScreen from "./BaseHistoryScreen";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import { EnduranceExerciseHistoryEntry, ExerciseHistoryEntry } from "../../models/Exercise";
+import { EnduranceExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contexts/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
@@ -62,12 +62,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const exercise = exercises.find((e) => e.id === exerciseId);
     const exerciseName = exercise ? exercise.name : "Endurance";
 
-    useEffect(() => {
-        if (Platform.OS === "ios") {
-            initializeHealthKit();
-        }
-    }, []);
-
     const initializeHealthKit = () => {
         AppleHealthKit.initHealthKit(permissions, (error: string) => {
             if (error) {
@@ -79,6 +73,10 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             }
         });
     };
+
+    if (Platform.OS === "ios" && !isHealthKitAuthorized) {
+        initializeHealthKit();
+    }
 
     const onDateChange = (event: any, selectedDate?: Date) => {
         setShowDatePicker(Platform.OS === "ios");
@@ -127,14 +125,14 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                     onChangeText={setAvgHeartRate}
                     keyboardType="numeric"
                 />
-                <TextInput
+                {/* <TextInput
                     style={[styles.input, styles.smallInput]}
                     placeholder="RPE"
                     placeholderTextColor={currentTheme.colors.placeholder}
                     value={rpe}
                     onChangeText={setRpe}
                     keyboardType="numeric"
-                />
+                /> */}
             </View>
             <View style={styles.inputRow}>
                 <TextInput
@@ -319,7 +317,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     }, [exerciseHistory, exerciseId]);
 
     const checkForNewWorkouts = () => {
-        if (Platform.OS === "ios" && isHealthKitAuthorized) {
+        if (Platform.OS === "ios") {
             const options: HealthInputOptions = {
                 startDate: new Date(new Date().getTime() - 365 * 24 * 60 * 60 * 1000).toISOString(),
                 endDate: new Date().toISOString(),

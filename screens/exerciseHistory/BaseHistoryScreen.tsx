@@ -3,7 +3,7 @@ import React from "react";
 import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import { ExerciseHistoryEntry } from "../../models/Exercise";
+import { ExerciseHistoryEntry } from "../../contexts/Exercise";
 
 interface BaseHistoryScreenProps {
     exerciseId: string;

@@ -1,7 +1,7 @@
 // src/utils/utils.ts
 
 // import crypto from "crypto";
-import { Exercise, ExerciseHistoryEntry } from "../models/Exercise";
+import { Exercise, ExerciseHistoryEntry } from "../contexts/Exercise";
 
 export function generateExerciseId(exercise: Omit<Exercise, "id">): string {
     const data = JSON.stringify(exercise);

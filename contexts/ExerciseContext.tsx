@@ -10,7 +10,7 @@ import React, {
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Vibration } from "react-native";
-import { Exercise, ExerciseHistoryEntry } from "../models/Exercise";
+import { Exercise, ExerciseHistoryEntry } from "./Exercise";
 
 export type OneRepMaxFormula = "brzycki" | "epley" | "lander";
 

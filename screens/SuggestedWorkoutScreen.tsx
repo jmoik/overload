@@ -8,7 +8,7 @@ import {
     ExerciseHistoryEntry,
     MobilityExerciseHistoryEntry,
     StrengthExerciseHistoryEntry,
-} from "../models/Exercise";
+} from "../contexts/Exercise";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme } from "../styles/globalStyles";
 import { isAfter, subDays } from "date-fns";

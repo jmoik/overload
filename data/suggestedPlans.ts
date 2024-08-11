@@ -1,8 +1,8 @@
 // src/data/suggestedPlans.ts
 
-import { Exercise } from "../models/Exercise";
+import { Exercise } from "../contexts/Exercise";
 import { generateExerciseId } from "../utils/utils";
-import { Set } from "../models/Exercise";
+import { Set } from "../contexts/Exercise";
 
 export interface Plan {
     name: string;

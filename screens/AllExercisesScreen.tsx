@@ -12,7 +12,7 @@ import {
     ExerciseHistoryEntry,
     MobilityExerciseHistoryEntry,
     StrengthExerciseHistoryEntry,
-} from "../models/Exercise";
+} from "../contexts/Exercise";
 import { subDays, isAfter } from "date-fns";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createAllExercisesStyles } from "../styles/globalStyles";

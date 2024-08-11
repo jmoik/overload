@@ -213,24 +213,24 @@ const SettingsScreen = () => {
     };
 
     const settingsOptions: SettingItem[] = [
-        {
-            id: "1",
-            title: "One Rep Max Formula",
-            action: () => navigation.navigate("OneRepMaxFormula"),
-        },
+        // {
+        //     id: "1",
+        //     title: "One Rep Max Formula",
+        //     action: () => navigation.navigate("OneRepMaxFormula"),
+        // },
         { id: "2", title: "Export Data", action: shareExportData },
         { id: "3", title: "Import Data", action: importData },
-        { id: "4", title: "Rest Timer", action: () => navigation.navigate("RestTimer") },
+        // { id: "4", title: "Rest Timer", action: () => navigation.navigate("RestTimer") },
         {
             id: "5",
             title: "Training Interval",
             action: () => navigation.navigate("TrainingInterval"),
         },
-        {
-            id: "6",
-            title: "Default RPE",
-            action: () => navigation.navigate("DefaultRpe"),
-        },
+        // {
+        //     id: "6",
+        //     title: "Default RPE",
+        //     action: () => navigation.navigate("DefaultRpe"),
+        // },
         {
             id: "7",
             title: "Report Bug / Request Feature",

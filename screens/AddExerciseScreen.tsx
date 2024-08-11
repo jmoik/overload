@@ -13,7 +13,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { AddExerciseScreenNavigationProp, AddExerciseScreenRouteProp } from "../types/navigation";
-import { Exercise, Set } from "../models/Exercise";
+import { Exercise, Set } from "../contexts/Exercise";
 import { lightTheme, darkTheme, createAddExerciseStyles } from "../styles/globalStyles";
 import { useTheme } from "../contexts/ThemeContext";
 import { Text } from "react-native";

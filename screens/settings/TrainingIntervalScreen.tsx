@@ -39,7 +39,7 @@ const TrainingIntervalScreen = () => {
     const handleSave = () => {
         setTrainingInterval(selectedInterval);
         if (isSetup) {
-            navigation.navigate("DefaultRpe");
+            navigation.navigate("Home");
         } else {
             navigation.goBack();
         }

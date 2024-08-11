@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import { Set, StrengthExerciseHistoryEntry } from "../../models/Exercise";
+import { Set, StrengthExerciseHistoryEntry } from "../../contexts/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createNsunsExerciseHistoryStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";

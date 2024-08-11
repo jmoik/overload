@@ -6,7 +6,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import BaseHistoryScreen from "./BaseHistoryScreen";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import { MobilityExerciseHistoryEntry, ExerciseHistoryEntry } from "../../models/Exercise";
+import { MobilityExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contexts/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
@@ -155,7 +155,8 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
                         onPress={() => handleEditEntry(item_)}
                     >
                         <Text style={styles.text}>
-                            {`${item_.sets} sets (RPE ${item_.rpe})`}
+                            {/* {`${item_.sets} sets (RPE ${item_.rpe})`} */}
+                            {`${item_.sets} sets`}
                             {item_.notes && (
                                 <Text style={styles.notes}>
                                     {"\n"}

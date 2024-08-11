@@ -1,7 +1,7 @@
 // types/navigation.ts
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { Exercise } from "../models/Exercise";
+import { Exercise } from "../contexts/Exercise";
 
 export type RootStackParamList = {
     Home: undefined;

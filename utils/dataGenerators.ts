@@ -1,5 +1,5 @@
 // utils/dataGenerators.ts
-import { Exercise, ExerciseHistoryEntry } from "../models/Exercise";
+import { Exercise, ExerciseHistoryEntry } from "../contexts/Exercise";
 
 export const generateRandomWorkoutData = (exercise: Exercise): ExerciseHistoryEntry[] => {
     const entries: ExerciseHistoryEntry[] = [];

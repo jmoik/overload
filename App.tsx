@@ -12,16 +12,16 @@ import { ExerciseProvider } from "./contexts/ExerciseContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { RootStackParamList } from "./types/navigation";
 import { navigationTheme } from "./styles/globalStyles";
-import OneRepMaxFormulaScreen from "./screens/settings/OneRepMaxFormulaScreen";
-import RestTimerScreen from "./screens/settings/RestTimerScreen";
+import OneRepMaxFormulaScreen from "./screens/removedScreens/OneRepMaxFormulaScreen";
+import RestTimerScreen from "./screens/removedScreens/RestTimerScreen";
 import TrainingIntervalScreen from "./screens/settings/TrainingIntervalScreen";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PlanPreviewScreen from "./screens/PlanPreviewScreen";
 import StatsScreen from "./screens/StatsScreen";
-import DefaultRpeScreen from "./screens/settings/DefaultRpeScreen";
-import InfoScreen from "./screens/settings/InfoScreen";
-import SuggestedWorkoutScreen from "./screens/SuggestedWorkoutScreen";
+// import DefaultRpeScreen from "./screens/removedScreens/DefaultRpeScreen";
+// import InfoScreen from "./screens/removedScreens/InfoScreen";
+// import SuggestedWorkoutScreen from "./screens/SuggestedWorkoutScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -36,18 +36,6 @@ const Home = () => (
                 tabBarIcon: ({ color, size }) => <Icon name="list" color={color} size={size} />,
             }}
         />
-        {
-            <Tab.Screen
-                name="SuggestedWorkout"
-                component={SuggestedWorkoutScreen}
-                options={{
-                    title: "Suggested Workout",
-                    tabBarIcon: ({ color, size }) => (
-                        <Icon name="barbell" color={color} size={size} />
-                    ),
-                }}
-            />
-        }
         <Tab.Screen
             name="Stats"
             component={StatsScreen}
@@ -121,29 +109,9 @@ const AppContent = () => {
                     options={{ title: "Exercise History" }}
                 />
                 <Stack.Screen
-                    name="OneRepMaxFormula"
-                    component={OneRepMaxFormulaScreen}
-                    options={{ title: "One Rep Max Formula" }}
-                />
-                <Stack.Screen
-                    name="RestTimer"
-                    component={RestTimerScreen}
-                    options={{ title: "Rest Timer" }}
-                />
-                <Stack.Screen
                     name="TrainingInterval"
                     component={TrainingIntervalScreen}
                     options={{ title: "Training Interval" }}
-                />
-                <Stack.Screen
-                    name="DefaultRpe"
-                    component={DefaultRpeScreen}
-                    options={{ title: "Default RPE" }}
-                />
-                <Stack.Screen
-                    name="AppInfo"
-                    component={InfoScreen}
-                    options={{ title: "How to Use the App" }}
                 />
                 <Stack.Screen
                     name="PlanPreview"

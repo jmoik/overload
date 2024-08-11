@@ -12,7 +12,7 @@ import {
     ExerciseHistoryEntry,
     MobilityExerciseHistoryEntry,
     StrengthExerciseHistoryEntry,
-} from "../models/Exercise";
+} from "../contexts/Exercise";
 import ViewPager from "@react-native-community/viewpager";
 
 const calculateMovingAverage = (data: number[], windowSize: number): number[] => {

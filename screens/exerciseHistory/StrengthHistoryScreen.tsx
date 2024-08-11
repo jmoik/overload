@@ -6,7 +6,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import BaseHistoryScreen from "./BaseHistoryScreen";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import { StrengthExerciseHistoryEntry, ExerciseHistoryEntry } from "../../models/Exercise";
+import { StrengthExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contexts/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
@@ -205,7 +205,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         const parsedSets = parseInt(sets);
         const parsedReps = parseInt(reps);
         const parsedWeight = parseFloat(weight.replace(",", "."));
-        const parsedRpe = rpe ? parseInt(rpe) : meanRpe;
+        const parsedRpe = rpe ? parseInt(rpe) : undefined;
 
         if (isNaN(parsedSets) || isNaN(parsedReps) || isNaN(parsedWeight) || isNaN(parsedRpe)) {
             Alert.alert("Error", "Please enter valid numbers for Sets, Reps, Weight, and RPE");
