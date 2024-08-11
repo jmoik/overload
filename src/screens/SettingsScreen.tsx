@@ -6,7 +6,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { SettingsScreenNavigationProp } from "../types/navigation";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { lightTheme, darkTheme, createSettingsStyles } from "../styles/globalStyles";
+import { lightTheme, darkTheme, createSettingsStyles } from "../../styles/globalStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import { generateRandomWorkoutData } from "../utils/dataGenerators";

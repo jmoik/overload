@@ -75,6 +75,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 name: "Deep Squat",
                 description: "60s",
                 weeklySets: 8,
+                category: "mobility",
                 muscleGroup: "Hips",
             }),
             createExercise({
@@ -88,7 +89,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 name: "ATG Split Squat",
                 description: "",
                 weeklySets: 8,
-                category: "mobility",
+                category: "strength",
                 muscleGroup: "Hips",
             }),
             createExercise({
@@ -102,7 +103,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                 name: "Seated Good Morning",
                 description: "",
                 weeklySets: 4,
-                category: "mobility",
+                category: "strength",
                 muscleGroup: "Core",
             }),
             createExercise({

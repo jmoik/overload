@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useExerciseContext } from "../contexts/ExerciseContext";
+import { useExerciseContext } from "../../contexts/ExerciseContext";
 import {
     EnduranceExerciseHistoryEntry,
     Exercise,
     ExerciseHistoryEntry,
     MobilityExerciseHistoryEntry,
     StrengthExerciseHistoryEntry,
-} from "../contexts/Exercise";
-import { useTheme } from "../contexts/ThemeContext";
+} from "../../contexts/Exercise";
+import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme } from "../styles/globalStyles";
 import { isAfter, subDays } from "date-fns";
 import { SwipeListView } from "react-native-swipe-list-view";

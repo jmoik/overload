@@ -1,0 +1,98 @@
+Date : 2024-08-11 12:08:34
+Directory : /Users/julian/Code/ios/training
+Total : 44 files,  21308 codes, 139 comments, 448 blanks, all 21895 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| JSON               |          9 |     16,289 |          0 |          6 |     16,295 |
+| TypeScript JSX     |         22 |      3,674 |         84 |        375 |      4,133 |
+| TypeScript         |          5 |      1,228 |         41 |         42 |      1,311 |
+| XML                |          1 |         51 |          0 |          0 |         51 |
+| Objective-C++      |          1 |         42 |          7 |         14 |         63 |
+| Objective-C        |          1 |          7 |          0 |          4 |         11 |
+| JavaScript         |          1 |          6 |          0 |          1 |          7 |
+| JSON with Comments |          1 |          6 |          0 |          1 |          7 |
+| C++                |          2 |          5 |          3 |          4 |         12 |
+| Swift              |          1 |          0 |          4 |          1 |          5 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                       | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                          |         44 |     21,308 |        139 |        448 |     21,895 |
+| . (Files)                                                                                                  |          7 |     16,356 |          5 |         17 |     16,378 |
+| ios                                                                                                        |         11 |        171 |         14 |         25 |        210 |
+| ios (Files)                                                                                                |          1 |          4 |          0 |          1 |          5 |
+| ios/Overload                                                                                               |         10 |        167 |         14 |         24 |        205 |
+| ios/Overload (Files)                                                                                       |          6 |        105 |         14 |         23 |        142 |
+| ios/Overload/Images.xcassets                                                                               |          4 |         62 |          0 |          1 |         63 |
+| ios/Overload/Images.xcassets (Files)                                                                       |          1 |          6 |          0 |          1 |          7 |
+| ios/Overload/Images.xcassets/AppIcon.appiconset                                                            |          1 |         14 |          0 |          0 |         14 |
+| ios/Overload/Images.xcassets/SplashScreen.imageset                                                         |          1 |         21 |          0 |          0 |         21 |
+| ios/Overload/Images.xcassets/SplashScreenBackground.imageset                                               |          1 |         21 |          0 |          0 |         21 |
+| src                                                                                                        |         25 |      3,984 |        105 |        384 |      4,473 |
+| src/contexts                                                                                               |          3 |        290 |          4 |         40 |        334 |
+| src/data                                                                                                   |          1 |        319 |         17 |          6 |        342 |
+| src/screens                                                                                                |         18 |      3,263 |         75 |        324 |      3,662 |
+| src/screens (Files)                                                                                        |          8 |      1,700 |         63 |        163 |      1,926 |
+| src/screens/exerciseHistory                                                                                |          5 |      1,173 |          7 |        120 |      1,300 |
+| src/screens/removedScreens                                                                                 |          4 |        298 |          4 |         31 |        333 |
+| src/screens/settings                                                                                       |          1 |         92 |          1 |         10 |        103 |
+| src/types                                                                                                  |          1 |         35 |          1 |          5 |         41 |
+| src/utils                                                                                                  |          2 |         77 |          8 |          9 |         94 |
+| styles                                                                                                     |          1 |        797 |         15 |         22 |        834 |
++------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                                                   | language           | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| /Users/julian/Code/ios/training/App.tsx                                                                    | TypeScript JSX     |        121 |          5 |         11 |        137 |
+| /Users/julian/Code/ios/training/app.json                                                                   | JSON               |         47 |          0 |          1 |         48 |
+| /Users/julian/Code/ios/training/babel.config.js                                                            | JavaScript         |          6 |          0 |          1 |          7 |
+| /Users/julian/Code/ios/training/eas.json                                                                   | JSON               |         10 |          0 |          1 |         11 |
+| /Users/julian/Code/ios/training/ios/Overload/AppDelegate.h                                                 | C++                |          5 |          0 |          3 |          8 |
+| /Users/julian/Code/ios/training/ios/Overload/AppDelegate.mm                                                | Objective-C++      |         42 |          7 |         14 |         63 |
+| /Users/julian/Code/ios/training/ios/Overload/Images.xcassets/AppIcon.appiconset/Contents.json              | JSON               |         14 |          0 |          0 |         14 |
+| /Users/julian/Code/ios/training/ios/Overload/Images.xcassets/Contents.json                                 | JSON               |          6 |          0 |          1 |          7 |
+| /Users/julian/Code/ios/training/ios/Overload/Images.xcassets/SplashScreen.imageset/Contents.json           | JSON               |         21 |          0 |          0 |         21 |
+| /Users/julian/Code/ios/training/ios/Overload/Images.xcassets/SplashScreenBackground.imageset/Contents.json | JSON               |         21 |          0 |          0 |         21 |
+| /Users/julian/Code/ios/training/ios/Overload/Overload-Bridging-Header.h                                    | C++                |          0 |          3 |          1 |          4 |
+| /Users/julian/Code/ios/training/ios/Overload/SplashScreen.storyboard                                       | XML                |         51 |          0 |          0 |         51 |
+| /Users/julian/Code/ios/training/ios/Overload/main.m                                                        | Objective-C        |          7 |          0 |          4 |         11 |
+| /Users/julian/Code/ios/training/ios/Overload/noop-file.swift                                               | Swift              |          0 |          4 |          1 |          5 |
+| /Users/julian/Code/ios/training/ios/Podfile.properties.json                                                | JSON               |          4 |          0 |          1 |          5 |
+| /Users/julian/Code/ios/training/package-lock.json                                                          | JSON               |     16,117 |          0 |          1 |     16,118 |
+| /Users/julian/Code/ios/training/package.json                                                               | JSON               |         49 |          0 |          1 |         50 |
+| /Users/julian/Code/ios/training/src/contexts/Exercise.tsx                                                  | TypeScript JSX     |         41 |          1 |          8 |         50 |
+| /Users/julian/Code/ios/training/src/contexts/ExerciseContext.tsx                                           | TypeScript JSX     |        208 |          2 |         21 |        231 |
+| /Users/julian/Code/ios/training/src/contexts/ThemeContext.tsx                                              | TypeScript JSX     |         41 |          1 |         11 |         53 |
+| /Users/julian/Code/ios/training/src/data/suggestedPlans.ts                                                 | TypeScript         |        319 |         17 |          6 |        342 |
+| /Users/julian/Code/ios/training/src/screens/AddExerciseScreen.tsx                                          | TypeScript JSX     |        228 |          1 |         17 |        246 |
+| /Users/julian/Code/ios/training/src/screens/AllExercisesScreen.tsx                                         | TypeScript JSX     |        268 |          5 |         24 |        297 |
+| /Users/julian/Code/ios/training/src/screens/ExerciseHistoryScreen.tsx                                      | TypeScript JSX     |         31 |          1 |          7 |         39 |
+| /Users/julian/Code/ios/training/src/screens/PlanPreviewScreen.tsx                                          | TypeScript JSX     |        209 |          2 |         18 |        229 |
+| /Users/julian/Code/ios/training/src/screens/SettingsScreen.tsx                                             | TypeScript JSX     |        260 |         26 |         22 |        308 |
+| /Users/julian/Code/ios/training/src/screens/StatsScreen.tsx                                                | TypeScript JSX     |        337 |         27 |         34 |        398 |
+| /Users/julian/Code/ios/training/src/screens/SuggestedWorkoutScreen.tsx                                     | TypeScript JSX     |        293 |          0 |         30 |        323 |
+| /Users/julian/Code/ios/training/src/screens/WelcomeScreen.tsx                                              | TypeScript JSX     |         74 |          1 |         11 |         86 |
+| /Users/julian/Code/ios/training/src/screens/exerciseHistory/BaseHistoryScreen.tsx                          | TypeScript JSX     |         74 |          1 |          9 |         84 |
+| /Users/julian/Code/ios/training/src/screens/exerciseHistory/EnduranceHistoryScreen.tsx                     | TypeScript JSX     |        382 |          2 |         41 |        425 |
+| /Users/julian/Code/ios/training/src/screens/exerciseHistory/MobilityHistoryScreen.tsx                      | TypeScript JSX     |        204 |          1 |         22 |        227 |
+| /Users/julian/Code/ios/training/src/screens/exerciseHistory/NSunsHistoryScreen.tsx                         | TypeScript JSX     |        275 |          1 |         26 |        302 |
+| /Users/julian/Code/ios/training/src/screens/exerciseHistory/StrengthHistoryScreen.tsx                      | TypeScript JSX     |        238 |          2 |         22 |        262 |
+| /Users/julian/Code/ios/training/src/screens/removedScreens/DefaultRpeScreen.tsx                            | TypeScript JSX     |         98 |          1 |         12 |        111 |
+| /Users/julian/Code/ios/training/src/screens/removedScreens/InfoScreen.tsx                                  | TypeScript JSX     |         71 |          1 |          7 |         79 |
+| /Users/julian/Code/ios/training/src/screens/removedScreens/OneRepMaxFormulaScreen.tsx                      | TypeScript JSX     |         56 |          1 |          6 |         63 |
+| /Users/julian/Code/ios/training/src/screens/removedScreens/RestTimerScreen.tsx                             | TypeScript JSX     |         73 |          1 |          6 |         80 |
+| /Users/julian/Code/ios/training/src/screens/settings/TrainingIntervalScreen.tsx                            | TypeScript JSX     |         92 |          1 |         10 |        103 |
+| /Users/julian/Code/ios/training/src/types/navigation.ts                                                    | TypeScript         |         35 |          1 |          5 |         41 |
+| /Users/julian/Code/ios/training/src/utils/dataGenerators.ts                                                | TypeScript         |         54 |          5 |          5 |         64 |
+| /Users/julian/Code/ios/training/src/utils/utils.ts                                                         | TypeScript         |         23 |          3 |          4 |         30 |
+| /Users/julian/Code/ios/training/styles/globalStyles.ts                                                     | TypeScript         |        797 |         15 |         22 |        834 |
+| /Users/julian/Code/ios/training/tsconfig.json                                                              | JSON with Comments |          6 |          0 |          1 |          7 |
+| Total                                                                                                      |                    |     21,308 |        139 |        448 |     21,895 |
++------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

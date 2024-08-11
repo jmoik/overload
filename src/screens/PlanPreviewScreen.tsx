@@ -6,7 +6,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../types/navigation";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { lightTheme, darkTheme } from "../styles/globalStyles";
+import { lightTheme, darkTheme } from "../../styles/globalStyles";
 import { Exercise } from "../contexts/Exercise";
 
 type PlanPreviewScreenRouteProp = RouteProp<RootStackParamList, "PlanPreview">;

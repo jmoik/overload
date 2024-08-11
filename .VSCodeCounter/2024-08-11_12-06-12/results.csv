@@ -1,0 +1,46 @@
+"filename", "language", "TypeScript", "JSON", "TypeScript JSX", "JavaScript", "JSON with Comments", "Objective-C++", "Objective-C", "Swift", "XML", "C++", "comment", "blank", "total"
+"/Users/julian/Code/ios/training/App.tsx", "TypeScript JSX", 0, 0, 121, 0, 0, 0, 0, 0, 0, 0, 5, 11, 137
+"/Users/julian/Code/ios/training/app.json", "JSON", 0, 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 48
+"/Users/julian/Code/ios/training/babel.config.js", "JavaScript", 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 1, 7
+"/Users/julian/Code/ios/training/contexts/Exercise.tsx", "TypeScript JSX", 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 1, 8, 50
+"/Users/julian/Code/ios/training/contexts/ExerciseContext.tsx", "TypeScript JSX", 0, 0, 208, 0, 0, 0, 0, 0, 0, 0, 2, 21, 231
+"/Users/julian/Code/ios/training/contexts/ThemeContext.tsx", "TypeScript JSX", 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 1, 11, 53
+"/Users/julian/Code/ios/training/data/suggestedPlans.ts", "TypeScript", 319, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 6, 342
+"/Users/julian/Code/ios/training/eas.json", "JSON", 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 11
+"/Users/julian/Code/ios/training/ios/Overload/AppDelegate.h", "C++", 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 3, 8
+"/Users/julian/Code/ios/training/ios/Overload/AppDelegate.mm", "Objective-C++", 0, 0, 0, 0, 0, 42, 0, 0, 0, 0, 7, 14, 63
+"/Users/julian/Code/ios/training/ios/Overload/Images.xcassets/AppIcon.appiconset/Contents.json", "JSON", 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14
+"/Users/julian/Code/ios/training/ios/Overload/Images.xcassets/Contents.json", "JSON", 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 7
+"/Users/julian/Code/ios/training/ios/Overload/Images.xcassets/SplashScreen.imageset/Contents.json", "JSON", 0, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21
+"/Users/julian/Code/ios/training/ios/Overload/Images.xcassets/SplashScreenBackground.imageset/Contents.json", "JSON", 0, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21
+"/Users/julian/Code/ios/training/ios/Overload/Overload-Bridging-Header.h", "C++", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 4
+"/Users/julian/Code/ios/training/ios/Overload/SplashScreen.storyboard", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 51, 0, 0, 0, 51
+"/Users/julian/Code/ios/training/ios/Overload/main.m", "Objective-C", 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 11
+"/Users/julian/Code/ios/training/ios/Overload/noop-file.swift", "Swift", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 5
+"/Users/julian/Code/ios/training/ios/Podfile.properties.json", "JSON", 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5
+"/Users/julian/Code/ios/training/package-lock.json", "JSON", 0, 16117, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 16118
+"/Users/julian/Code/ios/training/package.json", "JSON", 0, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 50
+"/Users/julian/Code/ios/training/screens/AddExerciseScreen.tsx", "TypeScript JSX", 0, 0, 228, 0, 0, 0, 0, 0, 0, 0, 1, 17, 246
+"/Users/julian/Code/ios/training/screens/AllExercisesScreen.tsx", "TypeScript JSX", 0, 0, 268, 0, 0, 0, 0, 0, 0, 0, 5, 24, 297
+"/Users/julian/Code/ios/training/screens/ExerciseHistoryScreen.tsx", "TypeScript JSX", 0, 0, 31, 0, 0, 0, 0, 0, 0, 0, 1, 7, 39
+"/Users/julian/Code/ios/training/screens/PlanPreviewScreen.tsx", "TypeScript JSX", 0, 0, 209, 0, 0, 0, 0, 0, 0, 0, 2, 18, 229
+"/Users/julian/Code/ios/training/screens/SettingsScreen.tsx", "TypeScript JSX", 0, 0, 260, 0, 0, 0, 0, 0, 0, 0, 26, 22, 308
+"/Users/julian/Code/ios/training/screens/StatsScreen.tsx", "TypeScript JSX", 0, 0, 337, 0, 0, 0, 0, 0, 0, 0, 27, 34, 398
+"/Users/julian/Code/ios/training/screens/SuggestedWorkoutScreen.tsx", "TypeScript JSX", 0, 0, 293, 0, 0, 0, 0, 0, 0, 0, 0, 30, 323
+"/Users/julian/Code/ios/training/screens/WelcomeScreen.tsx", "TypeScript JSX", 0, 0, 74, 0, 0, 0, 0, 0, 0, 0, 1, 11, 86
+"/Users/julian/Code/ios/training/screens/exerciseHistory/BaseHistoryScreen.tsx", "TypeScript JSX", 0, 0, 74, 0, 0, 0, 0, 0, 0, 0, 1, 9, 84
+"/Users/julian/Code/ios/training/screens/exerciseHistory/EnduranceHistoryScreen.tsx", "TypeScript JSX", 0, 0, 382, 0, 0, 0, 0, 0, 0, 0, 2, 41, 425
+"/Users/julian/Code/ios/training/screens/exerciseHistory/MobilityHistoryScreen.tsx", "TypeScript JSX", 0, 0, 204, 0, 0, 0, 0, 0, 0, 0, 1, 22, 227
+"/Users/julian/Code/ios/training/screens/exerciseHistory/NSunsHistoryScreen.tsx", "TypeScript JSX", 0, 0, 275, 0, 0, 0, 0, 0, 0, 0, 1, 26, 302
+"/Users/julian/Code/ios/training/screens/exerciseHistory/StrengthHistoryScreen.tsx", "TypeScript JSX", 0, 0, 238, 0, 0, 0, 0, 0, 0, 0, 2, 22, 262
+"/Users/julian/Code/ios/training/screens/removedScreens/DefaultRpeScreen.tsx", "TypeScript JSX", 0, 0, 98, 0, 0, 0, 0, 0, 0, 0, 1, 12, 111
+"/Users/julian/Code/ios/training/screens/removedScreens/InfoScreen.tsx", "TypeScript JSX", 0, 0, 71, 0, 0, 0, 0, 0, 0, 0, 1, 7, 79
+"/Users/julian/Code/ios/training/screens/removedScreens/OneRepMaxFormulaScreen.tsx", "TypeScript JSX", 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 1, 6, 63
+"/Users/julian/Code/ios/training/screens/removedScreens/RestTimerScreen.tsx", "TypeScript JSX", 0, 0, 73, 0, 0, 0, 0, 0, 0, 0, 1, 6, 80
+"/Users/julian/Code/ios/training/screens/settings/TrainingIntervalScreen.tsx", "TypeScript JSX", 0, 0, 92, 0, 0, 0, 0, 0, 0, 0, 1, 10, 103
+"/Users/julian/Code/ios/training/styles/globalStyles.ts", "TypeScript", 797, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 22, 834
+"/Users/julian/Code/ios/training/tsconfig.json", "JSON with Comments", 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 1, 7
+"/Users/julian/Code/ios/training/types/navigation.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5, 41
+"/Users/julian/Code/ios/training/utils/dataGenerators.ts", "TypeScript", 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 64
+"/Users/julian/Code/ios/training/utils/utils.ts", "TypeScript", 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 30
+"Total", "-", 1228, 16289, 3674, 6, 6, 42, 7, 0, 51, 5, 139, 448, 21895

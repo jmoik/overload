@@ -5,7 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../types/navigation";
 import { useTheme } from "../contexts/ThemeContext";
-import { lightTheme, darkTheme, createWelcomeStyles } from "../styles/globalStyles";
+import { lightTheme, darkTheme, createWelcomeStyles } from "../../styles/globalStyles";
 import { suggestedPlans, Plan } from "../data/suggestedPlans";
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Welcome">;

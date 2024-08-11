@@ -1,0 +1,52 @@
+"filename", "language", "TypeScript JSX", "TypeScript", "comment", "blank", "total"
+"/Users/julian/Code/ios/training/contexts/Exercise.tsx", "TypeScript JSX", -41, 0, -1, -8, -50
+"/Users/julian/Code/ios/training/contexts/ExerciseContext.tsx", "TypeScript JSX", -208, 0, -2, -21, -231
+"/Users/julian/Code/ios/training/contexts/ThemeContext.tsx", "TypeScript JSX", -41, 0, -1, -11, -53
+"/Users/julian/Code/ios/training/data/suggestedPlans.ts", "TypeScript", 0, -319, -17, -6, -342
+"/Users/julian/Code/ios/training/screens/AddExerciseScreen.tsx", "TypeScript JSX", -228, 0, -1, -17, -246
+"/Users/julian/Code/ios/training/screens/AllExercisesScreen.tsx", "TypeScript JSX", -268, 0, -5, -24, -297
+"/Users/julian/Code/ios/training/screens/ExerciseHistoryScreen.tsx", "TypeScript JSX", -31, 0, -1, -7, -39
+"/Users/julian/Code/ios/training/screens/PlanPreviewScreen.tsx", "TypeScript JSX", -209, 0, -2, -18, -229
+"/Users/julian/Code/ios/training/screens/SettingsScreen.tsx", "TypeScript JSX", -260, 0, -26, -22, -308
+"/Users/julian/Code/ios/training/screens/StatsScreen.tsx", "TypeScript JSX", -337, 0, -27, -34, -398
+"/Users/julian/Code/ios/training/screens/SuggestedWorkoutScreen.tsx", "TypeScript JSX", -293, 0, 0, -30, -323
+"/Users/julian/Code/ios/training/screens/WelcomeScreen.tsx", "TypeScript JSX", -74, 0, -1, -11, -86
+"/Users/julian/Code/ios/training/screens/exerciseHistory/BaseHistoryScreen.tsx", "TypeScript JSX", -74, 0, -1, -9, -84
+"/Users/julian/Code/ios/training/screens/exerciseHistory/EnduranceHistoryScreen.tsx", "TypeScript JSX", -382, 0, -2, -41, -425
+"/Users/julian/Code/ios/training/screens/exerciseHistory/MobilityHistoryScreen.tsx", "TypeScript JSX", -204, 0, -1, -22, -227
+"/Users/julian/Code/ios/training/screens/exerciseHistory/NSunsHistoryScreen.tsx", "TypeScript JSX", -275, 0, -1, -26, -302
+"/Users/julian/Code/ios/training/screens/exerciseHistory/StrengthHistoryScreen.tsx", "TypeScript JSX", -238, 0, -2, -22, -262
+"/Users/julian/Code/ios/training/screens/removedScreens/DefaultRpeScreen.tsx", "TypeScript JSX", -98, 0, -1, -12, -111
+"/Users/julian/Code/ios/training/screens/removedScreens/InfoScreen.tsx", "TypeScript JSX", -71, 0, -1, -7, -79
+"/Users/julian/Code/ios/training/screens/removedScreens/OneRepMaxFormulaScreen.tsx", "TypeScript JSX", -56, 0, -1, -6, -63
+"/Users/julian/Code/ios/training/screens/removedScreens/RestTimerScreen.tsx", "TypeScript JSX", -73, 0, -1, -6, -80
+"/Users/julian/Code/ios/training/screens/settings/TrainingIntervalScreen.tsx", "TypeScript JSX", -92, 0, -1, -10, -103
+"/Users/julian/Code/ios/training/src/contexts/Exercise.tsx", "TypeScript JSX", 41, 0, 1, 8, 50
+"/Users/julian/Code/ios/training/src/contexts/ExerciseContext.tsx", "TypeScript JSX", 208, 0, 2, 21, 231
+"/Users/julian/Code/ios/training/src/contexts/ThemeContext.tsx", "TypeScript JSX", 41, 0, 1, 11, 53
+"/Users/julian/Code/ios/training/src/data/suggestedPlans.ts", "TypeScript", 0, 319, 17, 6, 342
+"/Users/julian/Code/ios/training/src/screens/AddExerciseScreen.tsx", "TypeScript JSX", 228, 0, 1, 17, 246
+"/Users/julian/Code/ios/training/src/screens/AllExercisesScreen.tsx", "TypeScript JSX", 268, 0, 5, 24, 297
+"/Users/julian/Code/ios/training/src/screens/ExerciseHistoryScreen.tsx", "TypeScript JSX", 31, 0, 1, 7, 39
+"/Users/julian/Code/ios/training/src/screens/PlanPreviewScreen.tsx", "TypeScript JSX", 209, 0, 2, 18, 229
+"/Users/julian/Code/ios/training/src/screens/SettingsScreen.tsx", "TypeScript JSX", 260, 0, 26, 22, 308
+"/Users/julian/Code/ios/training/src/screens/StatsScreen.tsx", "TypeScript JSX", 337, 0, 27, 34, 398
+"/Users/julian/Code/ios/training/src/screens/SuggestedWorkoutScreen.tsx", "TypeScript JSX", 293, 0, 0, 30, 323
+"/Users/julian/Code/ios/training/src/screens/WelcomeScreen.tsx", "TypeScript JSX", 74, 0, 1, 11, 86
+"/Users/julian/Code/ios/training/src/screens/exerciseHistory/BaseHistoryScreen.tsx", "TypeScript JSX", 74, 0, 1, 9, 84
+"/Users/julian/Code/ios/training/src/screens/exerciseHistory/EnduranceHistoryScreen.tsx", "TypeScript JSX", 382, 0, 2, 41, 425
+"/Users/julian/Code/ios/training/src/screens/exerciseHistory/MobilityHistoryScreen.tsx", "TypeScript JSX", 204, 0, 1, 22, 227
+"/Users/julian/Code/ios/training/src/screens/exerciseHistory/NSunsHistoryScreen.tsx", "TypeScript JSX", 275, 0, 1, 26, 302
+"/Users/julian/Code/ios/training/src/screens/exerciseHistory/StrengthHistoryScreen.tsx", "TypeScript JSX", 238, 0, 2, 22, 262
+"/Users/julian/Code/ios/training/src/screens/removedScreens/DefaultRpeScreen.tsx", "TypeScript JSX", 98, 0, 1, 12, 111
+"/Users/julian/Code/ios/training/src/screens/removedScreens/InfoScreen.tsx", "TypeScript JSX", 71, 0, 1, 7, 79
+"/Users/julian/Code/ios/training/src/screens/removedScreens/OneRepMaxFormulaScreen.tsx", "TypeScript JSX", 56, 0, 1, 6, 63
+"/Users/julian/Code/ios/training/src/screens/removedScreens/RestTimerScreen.tsx", "TypeScript JSX", 73, 0, 1, 6, 80
+"/Users/julian/Code/ios/training/src/screens/settings/TrainingIntervalScreen.tsx", "TypeScript JSX", 92, 0, 1, 10, 103
+"/Users/julian/Code/ios/training/src/types/navigation.ts", "TypeScript", 0, 35, 1, 5, 41
+"/Users/julian/Code/ios/training/src/utils/dataGenerators.ts", "TypeScript", 0, 54, 5, 5, 64
+"/Users/julian/Code/ios/training/src/utils/utils.ts", "TypeScript", 0, 23, 3, 4, 30
+"/Users/julian/Code/ios/training/types/navigation.ts", "TypeScript", 0, -35, -1, -5, -41
+"/Users/julian/Code/ios/training/utils/dataGenerators.ts", "TypeScript", 0, -54, -5, -5, -64
+"/Users/julian/Code/ios/training/utils/utils.ts", "TypeScript", 0, -23, -3, -4, -30
+"Total", "-", 0, 0, 0, 0, 0

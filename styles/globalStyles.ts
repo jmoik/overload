@@ -199,6 +199,21 @@ const createAddExerciseScreenStyles = (theme: typeof lightTheme | typeof darkThe
             // paddingBottom: 20,
             // marginBottom: 20,
         },
+        amrapButton: {
+            backgroundColor: theme.colors.primary,
+            padding: 10,
+            borderRadius: 5,
+            alignItems: "center",
+            marginBottom: 20,
+        },
+        amrapButtonText: {
+            color: "#FFFFFF",
+            fontWeight: "bold",
+        },
+        amrapButtonActive: {
+            backgroundColor: theme.colors.primary,
+        },
+
         deleteAction: {
             backgroundColor: theme.colors.error,
             justifyContent: "center",

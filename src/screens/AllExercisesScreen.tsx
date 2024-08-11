@@ -15,7 +15,7 @@ import {
 } from "../contexts/Exercise";
 import { subDays, isAfter } from "date-fns";
 import { useTheme } from "../contexts/ThemeContext";
-import { lightTheme, darkTheme, createAllExercisesStyles } from "../styles/globalStyles";
+import { lightTheme, darkTheme, createAllExercisesStyles } from "../../styles/globalStyles";
 
 const AllExercisesScreen = () => {
     const { theme } = useTheme();
@@ -230,7 +230,7 @@ const AllExercisesScreen = () => {
 
             const weeklySetsText =
                 item.category === "endurance"
-                    ? `${item.weeklySets * item.distance ?? 0} km / interval`
+                    ? `${item.weeklySets * item.distance!} km / interval`
                     : `${item.weeklySets} sets / interval`;
 
             const setsLeftText =

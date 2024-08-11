@@ -36,9 +36,10 @@ const TrainingIntervalScreen = () => {
         return items;
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setTrainingInterval(selectedInterval);
         if (isSetup) {
+            await AsyncStorage.setItem("alreadySetup", "true");
             navigation.navigate("Home");
         } else {
             navigation.goBack();

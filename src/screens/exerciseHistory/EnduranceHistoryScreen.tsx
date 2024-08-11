@@ -8,7 +8,7 @@ import BaseHistoryScreen from "./BaseHistoryScreen";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
 import { EnduranceExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contexts/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
-import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../styles/globalStyles";
+import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
 import AppleHealthKit, {
     HealthInputOptions,

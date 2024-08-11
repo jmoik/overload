@@ -4,7 +4,7 @@ import { View, Text, ScrollView, Dimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { lightTheme, darkTheme, createStatsStyles } from "../styles/globalStyles";
+import { lightTheme, darkTheme, createStatsStyles } from "../../styles/globalStyles";
 import { subDays, isAfter } from "date-fns";
 import {
     EnduranceExerciseHistoryEntry,
