@@ -114,14 +114,14 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                 />
             </View>
             <View style={styles.inputRow}>
-                <TextInput
+                {/* <TextInput
                     style={[styles.input, styles.smallInput]}
                     placeholder="Avg Heart Rate (bpm)"
                     placeholderTextColor={currentTheme.colors.placeholder}
                     value={avgHeartRate}
                     onChangeText={setAvgHeartRate}
                     keyboardType="numeric"
-                />
+                /> */}
             </View>
             <View style={styles.inputRow}>
                 <TextInput
