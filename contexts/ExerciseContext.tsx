@@ -41,8 +41,6 @@ interface ExerciseContextType {
     stopTimer: () => void;
     trainingInterval: number;
     setTrainingInterval: (interval: number) => void;
-    meanRpe: number;
-    setMeanRpe: (interval: number) => void;
 }
 
 const ExerciseContext = createContext<ExerciseContextType | undefined>(undefined);
@@ -58,7 +56,6 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [timeLeft, setTimeLeft] = useState(restTimerDuration);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const [trainingInterval, setTrainingInterval] = useState<number>(7);
-    const [meanRpe, setMeanRpe] = useState<number>(7);
 
     useEffect(() => {
         if (!timerRunning) {
@@ -104,14 +101,7 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     useEffect(() => {
         saveData();
-    }, [
-        exercises,
-        exerciseHistory,
-        oneRepMaxFormula,
-        restTimerDuration,
-        trainingInterval,
-        meanRpe,
-    ]);
+    }, [exercises, exerciseHistory, oneRepMaxFormula, restTimerDuration, trainingInterval]);
 
     const loadData = async () => {
         try {
@@ -120,10 +110,6 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
             const storedFormula = await AsyncStorage.getItem("oneRepMaxFormula");
             const storedRestTimer = await AsyncStorage.getItem("restTimerDuration");
             const storedTrainingInterval = await AsyncStorage.getItem("trainingInterval");
-            const storedMeanRpe = await AsyncStorage.getItem("meanRpe");
-            if (storedMeanRpe) {
-                setMeanRpe(parseInt(storedMeanRpe, 10));
-            }
             if (storedTrainingInterval) {
                 setTrainingInterval(parseInt(storedTrainingInterval, 10));
             }
@@ -156,18 +142,10 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
             await AsyncStorage.setItem("oneRepMaxFormula", oneRepMaxFormula);
             await AsyncStorage.setItem("restTimerDuration", restTimerDuration.toString());
             await AsyncStorage.setItem("trainingInterval", trainingInterval.toString());
-            await AsyncStorage.setItem("meanRpe", meanRpe.toString());
         } catch (error) {
             console.error("Error saving data:", error);
         }
-    }, [
-        exercises,
-        exerciseHistory,
-        oneRepMaxFormula,
-        restTimerDuration,
-        trainingInterval,
-        meanRpe,
-    ]);
+    }, [exercises, exerciseHistory, oneRepMaxFormula, restTimerDuration, trainingInterval]);
 
     const addExercise = useCallback((exercise: Exercise) => {
         setExercises((prevExercises) => [...prevExercises, exercise]);
@@ -236,8 +214,6 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
                 stopTimer,
                 trainingInterval,
                 setTrainingInterval,
-                meanRpe,
-                setMeanRpe,
             }}
         >
             {children}

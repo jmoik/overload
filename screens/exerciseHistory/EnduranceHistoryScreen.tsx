@@ -41,7 +41,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const [distance, setDistance] = useState("");
     const [time, setTime] = useState("");
     const [avgHeartRate, setAvgHeartRate] = useState("");
-    const [rpe, setRpe] = useState("");
     const [notes, setNotes] = useState("");
     const [date, setDate] = useState<Date>(new Date());
     const [editingEntry, setEditingEntry] = useState<EnduranceExerciseHistoryEntry | null>(null);
@@ -53,7 +52,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         updateExerciseHistoryEntry,
         deleteExerciseHistoryEntry,
         exerciseHistory,
-        meanRpe,
         exercises,
     } = useExerciseContext();
 
@@ -88,7 +86,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const handleEditEntry = (entry: ExerciseHistoryEntry) => {
         const enduranceEntry = entry as EnduranceExerciseHistoryEntry;
         setEditingEntry(enduranceEntry);
-        setRpe(enduranceEntry.rpe.toString());
         setDate(new Date(enduranceEntry.date));
         setNotes(enduranceEntry.notes || "");
         setDistance(enduranceEntry.distance.toString());
@@ -125,14 +122,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                     onChangeText={setAvgHeartRate}
                     keyboardType="numeric"
                 />
-                {/* <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="RPE"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={rpe}
-                    onChangeText={setRpe}
-                    keyboardType="numeric"
-                /> */}
             </View>
             <View style={styles.inputRow}>
                 <TextInput
@@ -167,7 +156,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         setDistance("");
         setTime("");
         setAvgHeartRate("");
-        setRpe("");
         setNotes("");
         setDate(new Date());
         setEditingEntry(null);
@@ -233,9 +221,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                         onPress={() => handleEditEntry(item_)}
                     >
                         <Text style={styles.text}>
-                            {`${item_.distance.toFixed(2)} km in ${item_.time.toFixed(
-                                0
-                            )} min (RPE ${item_.rpe})`}
+                            {`${item_.distance.toFixed(2)} km in ${item_.time.toFixed(0)} min`}
                             {item_.avgHeartRate && ` @ ${item_.avgHeartRate} bpm`}
                             {` @ ${pace}`}
                             {item_.notes && (
@@ -260,18 +246,13 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         const parsedDistance = parseFloat(distance.replace(",", "."));
         const parsedTime = parseFloat(time.replace(",", "."));
         const parsedAvgHeartRate = avgHeartRate ? parseInt(avgHeartRate) : undefined;
-        const parsedRpe = rpe ? parseInt(rpe) : meanRpe;
 
         if (
             isNaN(parsedDistance) ||
             isNaN(parsedTime) ||
-            (parsedAvgHeartRate && isNaN(parsedAvgHeartRate)) ||
-            isNaN(parsedRpe)
+            (parsedAvgHeartRate && isNaN(parsedAvgHeartRate))
         ) {
-            Alert.alert(
-                "Error",
-                "Please enter valid numbers for Distance, Time, Heart Rate, and RPE"
-            );
+            Alert.alert("Error", "Please enter valid numbers for Distance and Time");
             return;
         }
 
@@ -280,7 +261,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             distance: parsedDistance,
             time: parsedTime,
             avgHeartRate: parsedAvgHeartRate,
-            rpe: parsedRpe,
             notes: notes.trim(),
             category: "endurance",
         };
@@ -311,7 +291,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             setDistance(lastWorkout.distance.toString());
             setTime(lastWorkout.time.toString());
             setAvgHeartRate(lastWorkout.avgHeartRate?.toString() || "");
-            setRpe(lastWorkout.rpe.toString());
             setNotes(lastWorkout.notes);
         }
     }, [exerciseHistory, exerciseId]);
@@ -408,7 +387,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                     date: workout.startDate,
                     distance: workout.distance,
                     time: workout.duration / 60,
-                    rpe: meanRpe,
                     category: "endurance",
                 }),
                 date: workout.startDate,
@@ -417,7 +395,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                 avgHeartRate: isNaN(workout.averageHeartRate)
                     ? undefined
                     : Math.round(workout.averageHeartRate),
-                rpe: meanRpe,
                 notes: `Imported from Health app: ${workout.activityName}${
                     workout.combinedCount > 1
                         ? ` (Combined from ${workout.combinedCount} workouts)`

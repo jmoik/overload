@@ -21,7 +21,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
     const styles = createExerciseHistoryStyles(currentTheme);
 
     const [sets, setSets] = useState("");
-    const [rpe, setRpe] = useState("");
     const [notes, setNotes] = useState("");
     const [date, setDate] = useState<Date>(new Date());
     const [editingEntry, setEditingEntry] = useState<MobilityExerciseHistoryEntry | null>(null);
@@ -32,7 +31,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         updateExerciseHistoryEntry,
         deleteExerciseHistoryEntry,
         exerciseHistory,
-        meanRpe,
     } = useExerciseContext();
 
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
@@ -47,7 +45,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
     const handleEditEntry = (entry: ExerciseHistoryEntry) => {
         const mobilityEntry = entry as MobilityExerciseHistoryEntry;
         setEditingEntry(mobilityEntry);
-        setRpe(mobilityEntry.rpe.toString());
         setDate(new Date(mobilityEntry.date));
         setNotes(mobilityEntry.notes || "");
         setSets(mobilityEntry.sets.toString());
@@ -62,14 +59,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
                     placeholderTextColor={currentTheme.colors.placeholder}
                     value={sets}
                     onChangeText={setSets}
-                    keyboardType="numeric"
-                />
-                <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="RPE"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={rpe}
-                    onChangeText={setRpe}
                     keyboardType="numeric"
                 />
             </View>
@@ -155,7 +144,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
                         onPress={() => handleEditEntry(item_)}
                     >
                         <Text style={styles.text}>
-                            {/* {`${item_.sets} sets (RPE ${item_.rpe})`} */}
                             {`${item_.sets} sets`}
                             {item_.notes && (
                                 <Text style={styles.notes}>
@@ -177,16 +165,14 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         }
 
         const parsedSets = parseInt(sets);
-        const parsedRpe = rpe ? parseInt(rpe) : meanRpe;
 
-        if (isNaN(parsedSets) || isNaN(parsedRpe)) {
-            Alert.alert("Error", "Please enter valid numbers for Sets and RPE");
+        if (isNaN(parsedSets)) {
+            Alert.alert("Error", "Please enter valid numbers for Sets");
             return;
         }
 
         const entryWithoutId: Omit<MobilityExerciseHistoryEntry, "id"> = {
             date: date,
-            rpe: parsedRpe,
             notes: notes.trim(),
             category: "mobility",
             sets: parsedSets,
@@ -209,7 +195,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         }
 
         setEditingEntry(null);
-        setRpe("");
         setNotes("");
         setDate(new Date());
         setSets("");
@@ -221,7 +206,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         if (history.length > 0) {
             const lastWorkout = history[0] as MobilityExerciseHistoryEntry;
             setSets(lastWorkout.sets.toString());
-            setRpe(lastWorkout.rpe.toString());
             setNotes(lastWorkout.notes);
         }
     }, [exerciseHistory, exerciseId]);

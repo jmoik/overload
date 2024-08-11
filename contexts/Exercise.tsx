@@ -3,7 +3,6 @@
 export interface BaseExerciseHistoryEntry {
     id: string;
     date: Date;
-    rpe: number;
     notes: string;
 }
 
@@ -43,7 +42,6 @@ export interface Exercise {
     category: "strength" | "endurance" | "mobility" | "nsuns";
     description: string;
     weeklySets: number;
-    targetRPE: number;
     muscleGroup: string;
     distance?: number;
     workout?: Set[]; // Add this line for nSuns exercises

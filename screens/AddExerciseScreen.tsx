@@ -25,14 +25,13 @@ const AddExerciseScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createAddExerciseStyles(currentTheme);
-    const { addExercise, updateExercise, exercises, meanRpe } = useExerciseContext();
+    const { addExercise, updateExercise, exercises } = useExerciseContext();
     const navigation = useNavigation<AddExerciseScreenNavigationProp>();
     const route = useRoute<AddExerciseScreenRouteProp>();
     const exerciseId = route.params?.exerciseId;
 
     const [name, setName] = useState("");
     const [weeklySets, setWeeklySets] = useState("");
-    const [targetRPE, setTargetRPE] = useState("");
     const [category, setCategory] = useState("strength" as Exercise["category"]);
     const [description, setDescription] = useState("");
     const [muscleGroup, setMuscleGroup] = useState("");
@@ -51,7 +50,6 @@ const AddExerciseScreen = () => {
                 setDescription(exercise.description);
                 setMuscleGroup(exercise.muscleGroup);
                 setWeeklySets(exercise.weeklySets.toString());
-                setTargetRPE(exercise.targetRPE.toString());
                 setDistance(exercise.distance?.toString() || "0");
                 if (exercise.category === "nsuns") {
                     setOneRepMax(exercise.oneRepMax?.toString() || "");
@@ -70,7 +68,6 @@ const AddExerciseScreen = () => {
         const exerciseData: Omit<Exercise, "id"> = {
             name,
             weeklySets: category === "endurance" ? 1 : parseInt(weeklySets, 10),
-            targetRPE: parseInt(targetRPE, 10) || meanRpe,
             category,
             description,
             muscleGroup,
@@ -109,7 +106,6 @@ const AddExerciseScreen = () => {
     const handleEditExerciseFromPreview = (exerciseData: Exercise) => {
         setName(exerciseData.name);
         setWeeklySets(exerciseData.weeklySets.toString());
-        setTargetRPE(exerciseData.targetRPE.toString());
         setCategory(exerciseData.category);
         setDescription(exerciseData.description);
         setMuscleGroup(exerciseData.muscleGroup);
@@ -180,14 +176,6 @@ const AddExerciseScreen = () => {
                         keyboardType="numeric"
                     />
                 )}
-                <TextInput
-                    style={styles.input}
-                    placeholder="Target RPE"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={targetRPE}
-                    onChangeText={setTargetRPE}
-                    keyboardType="numeric"
-                />
                 <View style={styles.pickerContainer}>
                     <Text style={styles.placeholderText}>Select Category</Text>
                     <Picker

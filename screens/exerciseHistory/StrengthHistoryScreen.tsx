@@ -26,7 +26,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     const [sets, setSets] = useState("");
     const [reps, setReps] = useState("");
     const [weight, setWeight] = useState("");
-    const [rpe, setRpe] = useState("");
     const [notes, setNotes] = useState("");
 
     const {
@@ -34,7 +33,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         updateExerciseHistoryEntry,
         deleteExerciseHistoryEntry,
         exerciseHistory,
-        meanRpe,
     } = useExerciseContext();
 
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
@@ -49,7 +47,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     const handleEditEntry = (entry: ExerciseHistoryEntry) => {
         const strengthEntry = entry as StrengthExerciseHistoryEntry;
         setEditingEntry(strengthEntry);
-        setRpe(strengthEntry.rpe.toString());
         setDate(new Date(strengthEntry.date));
         setNotes(strengthEntry.notes || "");
         setSets(strengthEntry.sets.toString());
@@ -87,14 +84,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
                         }
                     }}
                     keyboardType="decimal-pad"
-                />
-                <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="RPE"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={rpe}
-                    onChangeText={setRpe}
-                    keyboardType="numeric"
                 />
             </View>
             <View style={styles.inputRow}>
@@ -182,7 +171,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
                         onPress={() => handleEditEntry(item_)}
                     >
                         <Text style={styles.text}>
-                            {`${item_.sets} sets x ${item_.reps} reps @ ${item_.weight} kg (RPE ${item_.rpe})`}
+                            {`${item_.sets} sets x ${item_.reps} reps @ ${item_.weight} kg`}
                             {item_.notes && (
                                 <Text style={styles.notes}>
                                     {"\n"}
@@ -205,16 +194,14 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         const parsedSets = parseInt(sets);
         const parsedReps = parseInt(reps);
         const parsedWeight = parseFloat(weight.replace(",", "."));
-        const parsedRpe = rpe ? parseInt(rpe) : undefined;
 
-        if (isNaN(parsedSets) || isNaN(parsedReps) || isNaN(parsedWeight) || isNaN(parsedRpe)) {
-            Alert.alert("Error", "Please enter valid numbers for Sets, Reps, Weight, and RPE");
+        if (isNaN(parsedSets) || isNaN(parsedReps) || isNaN(parsedWeight)) {
+            Alert.alert("Error", "Please enter valid numbers for Sets, Reps, and Weight");
             return;
         }
 
         const entryWithoutId: Omit<StrengthExerciseHistoryEntry, "id"> = {
             date: date,
-            rpe: parsedRpe,
             notes: notes.trim(),
             sets: parsedSets,
             reps: parsedReps,
@@ -239,7 +226,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         }
 
         setEditingEntry(null);
-        setRpe("");
         setNotes("");
         setDate(new Date());
         setSets("");
@@ -255,7 +241,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
             setSets(lastWorkout.sets.toString());
             setReps(lastWorkout.reps.toString());
             setWeight(lastWorkout.weight.toString());
-            setRpe(lastWorkout.rpe.toString());
             setNotes(lastWorkout.notes);
         }
     }, [exerciseHistory, exerciseId]);

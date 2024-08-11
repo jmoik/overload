@@ -21,8 +21,7 @@ const AllExercisesScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createAllExercisesStyles(currentTheme);
-    const { exercises, deleteExercise, exerciseHistory, trainingInterval, meanRpe } =
-        useExerciseContext();
+    const { exercises, deleteExercise, exerciseHistory, trainingInterval } = useExerciseContext();
     const navigation = useNavigation<RoutineScreenNavigationProp>();
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
     const isFocused = useIsFocused();
@@ -226,7 +225,6 @@ const AllExercisesScreen = () => {
             section: { title: string };
         }) => {
             const remainingTrainingLoad = calculateRemainingSets(item);
-            // const setsLeft = Math.floor(remainingTrainingLoad / item.targetRPE);
             const setsLeft = remainingTrainingLoad;
             const setsLeftColor = setsLeft <= 0 ? "green" : "red";
 

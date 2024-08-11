@@ -84,7 +84,6 @@ const StatsScreen = () => {
                 targetMobilityLoad += exercise.weeklySets;
                 targetMobilitySets += exercise.weeklySets;
             } else {
-                // targetStrengthLoad += exercise.weeklySets * exercise.targetRPE;
                 targetStrengthLoad += exercise.weeklySets;
                 targetStrengthSets += exercise.weeklySets;
             }
@@ -121,7 +120,6 @@ const StatsScreen = () => {
                         actualMobilitySets += mobilityEntry.sets ?? 0;
                     } else {
                         const strengthEntry = entry as StrengthExerciseHistoryEntry;
-                        // const load = strengthEntry.sets * entry.rpe;
                         const load = strengthEntry.sets;
                         strengthLoadByDay[dayIndex] += load;
                         actualStrengthLoad += load;
@@ -149,7 +147,6 @@ const StatsScreen = () => {
                         mobilityLoadByDayForMA[dayIndex] += load;
                     } else {
                         const strengthEntry = entry as StrengthExerciseHistoryEntry;
-                        // const load = (strengthEntry.sets ?? 0) * entry.rpe;
                         const load = strengthEntry.sets ?? 0;
                         strengthLoadByDayForMA[dayIndex] += load;
                     }

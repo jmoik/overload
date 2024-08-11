@@ -30,7 +30,7 @@ const BaseHistoryScreen: React.FC<BaseHistoryScreenProps> = ({
     editingEntry,
     styles,
 }) => {
-    const { exercises, exerciseHistory, timerRunning, timeLeft, startTimer, stopTimer, meanRpe } =
+    const { exercises, exerciseHistory, timerRunning, timeLeft, startTimer, stopTimer } =
         useExerciseContext();
 
     const exercise = exercises.find((e) => e.id === exerciseId);

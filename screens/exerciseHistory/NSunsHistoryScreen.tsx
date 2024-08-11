@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import { Set, StrengthExerciseHistoryEntry } from "../../contexts/Exercise";
+import { Set, StrengthExerciseHistoryEntry } from "../../models/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createNsunsExerciseHistoryStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
@@ -26,7 +26,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
     const styles = createNsunsExerciseHistoryStyles(currentTheme);
     const { exerciseHistory } = useExerciseContext();
 
-    const { exercises, updateExercise, addExerciseToHistory, meanRpe } = useExerciseContext();
+    const { exercises, updateExercise, addExerciseToHistory } = useExerciseContext();
     const [exercise, setExercise] = useState(exercises.find((e) => e.id === exerciseId));
     const [isEditing1RM, setIsEditing1RM] = useState(false);
     const [editedOneRepMax, setEditedOneRepMax] = useState(exercise?.oneRepMax?.toString() || "");
@@ -61,7 +61,6 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
             const reps = set.isAMRAP ? Number(amrapReps[index]) || set.reps : set.reps;
             const entryWithoutId: Omit<StrengthExerciseHistoryEntry, "id"> = {
                 date: currentDate,
-                rpe: meanRpe,
                 notes: `Set ${index + 1} of nSuns workout${set.isAMRAP ? " (AMRAP)" : ""}`,
                 sets: 1,
                 reps: reps,
@@ -225,9 +224,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
                                 : `${historyItem!.reps} reps @ ${historyItem!.weight} kg`}
                         </Text>
                         <Text style={styles.percentText}>
-                            {isCurrentWorkout
-                                ? `${setItem!.relativeWeight.toFixed(0)}% of 1 RM`
-                                : `RPE: ${historyItem!.rpe}`}
+                            {isCurrentWorkout ? `${setItem!.relativeWeight}%` : ""}
                         </Text>
                     </View>
                     <View style={styles.iconContainer}>
