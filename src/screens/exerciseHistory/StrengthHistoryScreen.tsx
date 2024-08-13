@@ -1,5 +1,5 @@
 // StrengthHistoryScreen.tsx
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { View, TextInput, Text, TouchableOpacity, Alert, Platform } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -10,6 +10,7 @@ import { StrengthExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contex
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
+import { useNavigation } from "@react-navigation/native";
 
 interface StrengthHistoryScreenProps {
     exerciseId: string;
@@ -28,14 +29,26 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     const [weight, setWeight] = useState("");
     const [notes, setNotes] = useState("");
 
+    const navigation = useNavigation();
+
     const {
         addExerciseToHistory,
         updateExerciseHistoryEntry,
         deleteExerciseHistoryEntry,
         exerciseHistory,
+        exercises,
     } = useExerciseContext();
 
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
+
+    const exercise = exercises.find((e) => e.id === exerciseId);
+
+    useEffect(() => {
+        if (exercise) {
+            navigation.setOptions({ title: exercise.name });
+        }
+        fillFromLastWorkout();
+    }, [exercise, navigation]);
 
     const onDateChange = (event: any, selectedDate?: Date) => {
         setShowDatePicker(Platform.OS === "ios");
@@ -139,7 +152,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
 
     const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => {
         const item_ = item as StrengthExerciseHistoryEntry;
-        // show date in european format
         const currentDate = new Date(item_.date).toLocaleDateString();
         const previousDate =
             index > 0
@@ -251,7 +263,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
             renderInputFields={renderInputFields}
             renderHistoryItem={renderHistoryItem}
             handleAddOrUpdateEntry={handleAddOrUpdateEntry}
-            fillFromLastWorkout={fillFromLastWorkout}
             editingEntry={editingEntry}
             styles={styles}
         />
