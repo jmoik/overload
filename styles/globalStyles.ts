@@ -1,8 +1,5 @@
-// styles/globalStyles.ts
-
 import { Dimensions, Platform, StyleSheet } from "react-native";
 import { Theme } from "@react-navigation/native";
-import { Icon } from "react-native-elements/dist/icons/Icon";
 
 export const lightTheme = {
     colors: {
@@ -129,10 +126,10 @@ const createAllExercisesScreenStyles = (theme: typeof lightTheme | typeof darkTh
             marginRight: 15,
         },
         exerciseItem: {
-            backgroundColor: "white",
+            backgroundColor: theme.colors.background, // Changed to use theme background color
             padding: 20,
             borderBottomWidth: 1,
-            borderBottomColor: "#ccc",
+            borderBottomColor: theme.colors.border, // Changed to use theme border color
             flexDirection: "row",
             justifyContent: "space-between",
         },
@@ -295,6 +292,7 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
         container: {
             flex: 1,
             padding: 15,
+            backgroundColor: theme.colors.background,
         },
         inputRow: {
             flexDirection: "row",
@@ -304,9 +302,11 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
         smallInput: {
             flex: 1,
             marginRight: 5,
+            color: theme.colors.text, // Ensure text is visible in dark mode
         },
         notesInput: {
             flex: 1,
+            color: theme.colors.text, // Ensure text is visible in dark mode
         },
         dateButton: {
             backgroundColor: theme.colors.card,
@@ -317,12 +317,13 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             flex: 1,
         },
         dateButtonText: {
-            color: theme.colors.text,
+            color: theme.colors.text, // Ensure text is visible in dark mode
         },
         title: {
             fontSize: 24,
             fontWeight: "bold",
             marginBottom: 20,
+            color: theme.colors.text,
         },
         inputContainer: {
             flexDirection: "row",
@@ -331,29 +332,30 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
         input: {
             flex: 1,
             borderWidth: 1,
-            borderColor: "#ccc",
+            borderColor: theme.colors.border,
             padding: 10,
             marginRight: 10,
             borderRadius: 5,
+            color: theme.colors.text, // Ensure text is visible in dark mode
         },
         historyItem: {
             padding: 10,
             borderBottomWidth: 1,
-            borderBottomColor: "#ccc",
+            borderBottomColor: theme.colors.border,
             marginBottom: 10,
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
         },
         deleteButton: {
-            backgroundColor: "#FF3B30",
+            backgroundColor: theme.colors.notification,
             justifyContent: "center",
             alignItems: "center",
             width: 80,
             height: "100%",
         },
         oneRepMax: {
-            color: "#666",
+            color: theme.colors.text,
             fontWeight: "bold",
             textAlign: "right",
         },
@@ -363,7 +365,11 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             alignItems: "center",
             marginBottom: 20,
         },
-        timerText: { fontSize: 20, fontWeight: "bold" },
+        timerText: {
+            fontSize: 20,
+            fontWeight: "bold",
+            color: theme.colors.text,
+        },
         header: {
             flexDirection: "row",
             justifyContent: "space-between",
@@ -378,7 +384,13 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             marginRight: 20,
             marginBottom: 20,
         },
-        sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20, marginBottom: 10 },
+        sectionTitle: {
+            fontSize: 18,
+            fontWeight: "bold",
+            marginTop: 20,
+            marginBottom: 10,
+            color: theme.colors.text,
+        },
         historyGroup: { marginBottom: 20 },
         historyGroupDate: {
             fontSize: 18,
@@ -386,7 +398,11 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             marginBottom: 10,
             color: theme.colors.text,
         },
-        notes: { fontSize: 12, marginTop: 4 },
+        notes: {
+            fontSize: 12,
+            marginTop: 4,
+            color: theme.colors.text,
+        },
         dateHeader: {
             fontSize: 16,
             fontWeight: "bold",
@@ -401,28 +417,31 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             alignItems: "center",
             padding: 10,
             borderBottomWidth: 1,
-            borderBottomColor: "#ccc",
+            borderBottomColor: theme.colors.border,
         },
         setText: {
             fontSize: 16,
+            color: theme.colors.text,
         },
         workoutItem: {
             padding: 10,
             borderBottomWidth: 1,
-            borderBottomColor: "#ccc",
+            borderBottomColor: theme.colors.border,
         },
         selectedWorkout: {
-            backgroundColor: "#e6f7ff",
+            backgroundColor: theme.colors.primary + "33", // Adding some transparency
         },
         workoutDate: {
             fontSize: 16,
             fontWeight: "bold",
+            color: theme.colors.text,
         },
         workoutDetails: {
             fontSize: 14,
+            color: theme.colors.text,
         },
         importButton: {
-            backgroundColor: "#007AFF",
+            backgroundColor: theme.colors.primary,
             padding: 15,
             borderRadius: 5,
             margin: 10,
@@ -434,7 +453,6 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             fontWeight: "bold",
         },
     });
-
 // ExerciseHistoryScreen specific styles
 const createNsunsExerciseHistoryScreen = (theme: typeof lightTheme | typeof darkTheme) =>
     StyleSheet.create({
@@ -800,7 +818,7 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
         },
         statsText: {
             fontSize: 16,
-            color: theme.colors.text,
+            color: theme.colors.text, // Changed to use theme text color
             marginBottom: 12,
             lineHeight: 22,
         },
@@ -838,16 +856,13 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
         statLabel: {
             flex: 1,
             fontSize: 20,
-            // marginHorizontal: 10,
+            color: theme.colors.text, // Changed to use theme text color
         },
         statValue: {
             flex: 1,
             fontSize: 16,
             textAlign: "center",
-        },
-
-        container: {
-            flex: 1,
+            color: theme.colors.text, // Changed to use theme text color
         },
         progressContainer: {
             padding: 16,
@@ -865,6 +880,7 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
             fontSize: 24,
             fontWeight: "bold",
             marginBottom: 16,
+            color: theme.colors.text, // Changed to use theme text color
         },
         pageIndicator: {
             flexDirection: "row",
@@ -876,10 +892,10 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
             width: 10,
             height: 10,
             borderRadius: 5,
-            backgroundColor: "#ccc",
+            backgroundColor: theme.colors.border, // Changed to use theme border color
             marginHorizontal: 5,
         },
         activeDot: {
-            backgroundColor: "#007AFF",
+            backgroundColor: theme.colors.primary,
         },
     });
