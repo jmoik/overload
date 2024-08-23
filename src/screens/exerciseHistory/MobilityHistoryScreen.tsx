@@ -1,5 +1,5 @@
 // MobilityHistoryScreen.tsx
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { View, TextInput, Text, TouchableOpacity, Alert, Platform } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -10,6 +10,7 @@ import { MobilityExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contex
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
+import { useNavigation } from "@react-navigation/native";
 
 interface MobilityHistoryScreenProps {
     exerciseId: string;
@@ -26,14 +27,26 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
     const [editingEntry, setEditingEntry] = useState<MobilityExerciseHistoryEntry | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
 
+    const navigation = useNavigation();
+
     const {
         addExerciseToHistory,
         updateExerciseHistoryEntry,
         deleteExerciseHistoryEntry,
         exerciseHistory,
+        exercises,
     } = useExerciseContext();
 
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
+
+    const exercise = exercises.find((e) => e.id === exerciseId);
+
+    useEffect(() => {
+        if (exercise) {
+            navigation.setOptions({ title: exercise.name });
+        }
+        fillFromLastWorkout();
+    }, [exercise, navigation]);
 
     const onDateChange = (event: any, selectedDate?: Date) => {
         setShowDatePicker(Platform.OS === "ios");
@@ -195,9 +208,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         }
 
         setEditingEntry(null);
-        setNotes("");
-        setDate(new Date());
-        setSets("");
         setShowDatePicker(false);
     };
 
@@ -206,7 +216,7 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         if (history.length > 0) {
             const lastWorkout = history[0] as MobilityExerciseHistoryEntry;
             setSets(lastWorkout.sets.toString());
-            setNotes(lastWorkout.notes);
+            setNotes(lastWorkout.notes || "");
         }
     }, [exerciseHistory, exerciseId]);
 
@@ -216,7 +226,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
             renderInputFields={renderInputFields}
             renderHistoryItem={renderHistoryItem}
             handleAddOrUpdateEntry={handleAddOrUpdateEntry}
-            fillFromLastWorkout={fillFromLastWorkout}
             editingEntry={editingEntry}
             styles={styles}
         />

@@ -845,4 +845,41 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
             fontSize: 16,
             textAlign: "center",
         },
+
+        container: {
+            flex: 1,
+        },
+        progressContainer: {
+            padding: 16,
+        },
+        pagerView: {
+            flex: 1,
+        },
+        pageContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+        },
+        pageTitle: {
+            fontSize: 24,
+            fontWeight: "bold",
+            marginBottom: 16,
+        },
+        pageIndicator: {
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+        },
+        dot: {
+            width: 10,
+            height: 10,
+            borderRadius: 5,
+            backgroundColor: "#ccc",
+            marginHorizontal: 5,
+        },
+        activeDot: {
+            backgroundColor: "#007AFF",
+        },
     });

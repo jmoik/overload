@@ -13,7 +13,7 @@ import {
     MobilityExerciseHistoryEntry,
     StrengthExerciseHistoryEntry,
 } from "../contexts/Exercise";
-import ViewPager from "@react-native-community/viewpager";
+import PagerView from "react-native-pager-view";
 
 const calculateMovingAverage = (data: number[], windowSize: number): number[] => {
     let result = data.map((_, index, array) => {
@@ -28,6 +28,26 @@ const calculateMovingAverage = (data: number[], windowSize: number): number[] =>
         return Array(windowSize).fill(0);
     }
     return result;
+};
+
+const ProgressBar = ({ percentage, color, label }) => {
+    const barWidth = Math.min(percentage, 100); // Cap the visual bar at 100%
+    return (
+        <View style={{ marginBottom: 10 }}>
+            <Text style={{ marginBottom: 5 }}>{label}</Text>
+            <View style={{ height: 20, backgroundColor: "#e0e0e0", borderRadius: 10 }}>
+                <View
+                    style={{
+                        width: `${barWidth}%`,
+                        height: "100%",
+                        backgroundColor: color,
+                        borderRadius: 10,
+                    }}
+                />
+            </View>
+            <Text style={{ alignSelf: "flex-end" }}>{percentage.toFixed(1)}%</Text>
+        </View>
+    );
 };
 
 const StatsScreen = () => {
@@ -177,6 +197,9 @@ const StatsScreen = () => {
             targetMobilitySets,
             actualMobilitySets,
             totalWeeklyEnduranceSets,
+            strengthPercentage: (actualStrengthSets / targetStrengthSets) * 100,
+            endurancePercentage: (actualEnduranceLoad / targetEnduranceLoad) * 100,
+            mobilityPercentage: (actualMobilitySets / targetMobilitySets) * 100,
         };
     };
 
@@ -343,6 +366,25 @@ const StatsScreen = () => {
 
     return (
         <ScrollView style={styles.container}>
+            <View style={{ padding: 16 }}>
+                <Text style={styles.title}>Training Progress</Text>
+                <ProgressBar
+                    percentage={stats.strengthPercentage}
+                    color="#FF6B6B"
+                    label="Strength"
+                />
+                <ProgressBar
+                    percentage={stats.endurancePercentage}
+                    color="#4ECDC4"
+                    label="Endurance"
+                />
+                <ProgressBar
+                    percentage={stats.mobilityPercentage}
+                    color="#45B7D1"
+                    label="Mobility"
+                />
+            </View>
+
             {renderChart(
                 createChartData(
                     stats.strengthLoadData,
@@ -360,8 +402,7 @@ const StatsScreen = () => {
             )}
 
             {renderSeparator()}
-            {/* </View> */}
-            {/* <View key="2"> */}
+
             {renderChart(
                 createChartData(
                     stats.enduranceLoadData,
@@ -377,8 +418,7 @@ const StatsScreen = () => {
             )}
 
             {renderSeparator()}
-            {/* </View> */}
-            {/* <View key="3"> */}
+
             {renderChart(
                 createChartData(
                     stats.mobilityLoadData,
@@ -388,8 +428,6 @@ const StatsScreen = () => {
                 "Mobility"
             )}
             {renderMobilityStats(stats.actualMobilitySets, stats.targetMobilitySets, "Mobility")}
-            {/* </View> */}
-            {/* </ViewPager> */}
         </ScrollView>
     );
 };

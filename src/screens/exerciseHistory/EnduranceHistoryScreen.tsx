@@ -10,6 +10,7 @@ import { EnduranceExerciseHistoryEntry, ExerciseHistoryEntry } from "../../conte
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
+import { useNavigation } from "@react-navigation/native";
 import AppleHealthKit, {
     HealthInputOptions,
     HealthKitPermissions,
@@ -47,6 +48,8 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [isHealthKitAuthorized, setIsHealthKitAuthorized] = useState(false);
 
+    const navigation = useNavigation();
+
     const {
         addExerciseToHistory,
         updateExerciseHistoryEntry,
@@ -59,6 +62,13 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
 
     const exercise = exercises.find((e) => e.id === exerciseId);
     const exerciseName = exercise ? exercise.name : "Endurance";
+
+    useEffect(() => {
+        if (exercise) {
+            navigation.setOptions({ title: exercise.name });
+        }
+        fillFromLastWorkout();
+    }, [exercise, navigation]);
 
     const initializeHealthKit = () => {
         AppleHealthKit.initHealthKit(permissions, (error: string) => {
@@ -112,16 +122,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                     onChangeText={setTime}
                     keyboardType="decimal-pad"
                 />
-            </View>
-            <View style={styles.inputRow}>
-                {/* <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="Avg Heart Rate (bpm)"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={avgHeartRate}
-                    onChangeText={setAvgHeartRate}
-                    keyboardType="numeric"
-                /> */}
             </View>
             <View style={styles.inputRow}>
                 <TextInput
@@ -291,7 +291,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             setDistance(lastWorkout.distance.toString());
             setTime(lastWorkout.time.toString());
             setAvgHeartRate(lastWorkout.avgHeartRate?.toString() || "");
-            setNotes(lastWorkout.notes);
+            setNotes(lastWorkout.notes || "");
         }
     }, [exerciseHistory, exerciseId]);
 
@@ -414,7 +414,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             renderInputFields={renderInputFields}
             renderHistoryItem={renderHistoryItem}
             handleAddOrUpdateEntry={handleAddOrUpdateEntry}
-            fillFromLastWorkout={fillFromLastWorkout}
             editingEntry={editingEntry}
             styles={styles}
         />

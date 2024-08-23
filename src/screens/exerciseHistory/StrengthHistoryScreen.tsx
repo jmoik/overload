@@ -1,4 +1,4 @@
-// StrengthHistoryScreen.tsx
+// MobilityHistoryScreen.tsx
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { View, TextInput, Text, TouchableOpacity, Alert, Platform } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
@@ -6,28 +6,26 @@ import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import BaseHistoryScreen from "./BaseHistoryScreen";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import { StrengthExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contexts/Exercise";
+import { MobilityExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contexts/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
 import { useNavigation } from "@react-navigation/native";
 
-interface StrengthHistoryScreenProps {
+interface MobilityHistoryScreenProps {
     exerciseId: string;
 }
 
-const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseId }) => {
+const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseId }) => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createExerciseHistoryStyles(currentTheme);
-    const [date, setDate] = useState<Date>(new Date());
-    const [editingEntry, setEditingEntry] = useState<StrengthExerciseHistoryEntry | null>(null);
-    const [showDatePicker, setShowDatePicker] = useState(false);
 
     const [sets, setSets] = useState("");
-    const [reps, setReps] = useState("");
-    const [weight, setWeight] = useState("");
     const [notes, setNotes] = useState("");
+    const [date, setDate] = useState<Date>(new Date());
+    const [editingEntry, setEditingEntry] = useState<MobilityExerciseHistoryEntry | null>(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     const navigation = useNavigation();
 
@@ -58,13 +56,11 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     };
 
     const handleEditEntry = (entry: ExerciseHistoryEntry) => {
-        const strengthEntry = entry as StrengthExerciseHistoryEntry;
-        setEditingEntry(strengthEntry);
-        setDate(new Date(strengthEntry.date));
-        setNotes(strengthEntry.notes || "");
-        setSets(strengthEntry.sets.toString());
-        setReps(strengthEntry.reps.toString());
-        setWeight(strengthEntry.weight.toString());
+        const mobilityEntry = entry as MobilityExerciseHistoryEntry;
+        setEditingEntry(mobilityEntry);
+        setDate(new Date(mobilityEntry.date));
+        setNotes(mobilityEntry.notes || "");
+        setSets(mobilityEntry.sets.toString());
     };
 
     const renderInputFields = () => (
@@ -77,26 +73,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
                     value={sets}
                     onChangeText={setSets}
                     keyboardType="numeric"
-                />
-                <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="Reps"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={reps}
-                    onChangeText={setReps}
-                    keyboardType="numeric"
-                />
-                <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="Weight"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={weight}
-                    onChangeText={(text) => {
-                        if (/^\d*[.,]?\d*$/.test(text)) {
-                            setWeight(text);
-                        }
-                    }}
-                    keyboardType="decimal-pad"
                 />
             </View>
             <View style={styles.inputRow}>
@@ -151,13 +127,11 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     );
 
     const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => {
-        const item_ = item as StrengthExerciseHistoryEntry;
+        const item_ = item as MobilityExerciseHistoryEntry;
         const currentDate = new Date(item_.date).toLocaleDateString();
         const previousDate =
             index > 0
-                ? new Date(exerciseHistory[exerciseId][index - 1].date)
-                      .toLocaleDateString()
-                      .split("T")[0]
+                ? new Date(exerciseHistory[exerciseId][index - 1].date).toLocaleDateString()
                 : null;
 
         return (
@@ -183,7 +157,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
                         onPress={() => handleEditEntry(item_)}
                     >
                         <Text style={styles.text}>
-                            {`${item_.sets} sets x ${item_.reps} reps @ ${item_.weight} kg`}
+                            {`${item_.sets} sets`}
                             {item_.notes && (
                                 <Text style={styles.notes}>
                                     {"\n"}
@@ -198,30 +172,26 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     };
 
     const handleAddOrUpdateEntry = () => {
-        if (!sets.trim() || !reps.trim() || !weight.trim()) {
-            Alert.alert("Error", "Please fill in all required fields (Sets, Reps, and Weight)");
+        if (!sets.trim()) {
+            Alert.alert("Error", "Please fill in the Sets field");
             return;
         }
 
         const parsedSets = parseInt(sets);
-        const parsedReps = parseInt(reps);
-        const parsedWeight = parseFloat(weight.replace(",", "."));
 
-        if (isNaN(parsedSets) || isNaN(parsedReps) || isNaN(parsedWeight)) {
-            Alert.alert("Error", "Please enter valid numbers for Sets, Reps, and Weight");
+        if (isNaN(parsedSets)) {
+            Alert.alert("Error", "Please enter valid numbers for Sets");
             return;
         }
 
-        const entryWithoutId: Omit<StrengthExerciseHistoryEntry, "id"> = {
+        const entryWithoutId: Omit<MobilityExerciseHistoryEntry, "id"> = {
             date: date,
             notes: notes.trim(),
+            category: "mobility",
             sets: parsedSets,
-            reps: parsedReps,
-            weight: parsedWeight,
-            category: "strength",
         };
 
-        const entry: StrengthExerciseHistoryEntry = {
+        const entry: MobilityExerciseHistoryEntry = {
             ...entryWithoutId,
             id: editingEntry ? editingEntry.id : generateEntryId(entryWithoutId),
         };
@@ -238,22 +208,14 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         }
 
         setEditingEntry(null);
-        setNotes("");
-        setDate(new Date());
-        setSets("");
-        setReps("");
-        setWeight("");
-        setShowDatePicker(false);
     };
 
     const fillFromLastWorkout = useCallback(() => {
         const history = exerciseHistory[exerciseId] || [];
         if (history.length > 0) {
-            const lastWorkout = history[0] as StrengthExerciseHistoryEntry;
+            const lastWorkout = history[0] as MobilityExerciseHistoryEntry;
             setSets(lastWorkout.sets.toString());
-            setReps(lastWorkout.reps.toString());
-            setWeight(lastWorkout.weight.toString());
-            setNotes(lastWorkout.notes);
+            setNotes(lastWorkout.notes || "");
         }
     }, [exerciseHistory, exerciseId]);
 
@@ -269,4 +231,4 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     );
 };
 
-export default StrengthHistoryScreen;
+export default MobilityHistoryScreen;

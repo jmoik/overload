@@ -1,6 +1,6 @@
 {
     "expo": {
-        "name": "Overload",
+        "name": "Overload-dev",
         "slug": "training",
         "version": "1.0.0",
         "orientation": "portrait",
@@ -14,7 +14,7 @@
         },
         "ios": {
             "supportsTablet": true,
-            "bundleIdentifier": "com.julian256.overload",
+            "bundleIdentifier": "com.julian256.overload-dev",
             "infoPlist": {
                 "UIFileSharingEnabled": true,
                 "LSSupportsOpeningDocumentsInPlace": true,

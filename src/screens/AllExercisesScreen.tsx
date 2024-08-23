@@ -25,7 +25,7 @@ const AllExercisesScreen = () => {
     const navigation = useNavigation<RoutineScreenNavigationProp>();
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
     const isFocused = useIsFocused();
-    const [sortBySetsLeft, setSortBySetsLeft] = useState(false);
+    const [sortBySetsLeft, setSortBySetsLeft] = useState(true);
     const [groupBy, setGroupBy] = useState<"category" | "muscleGroup" | "none">("category");
 
     useLayoutEffect(() => {
