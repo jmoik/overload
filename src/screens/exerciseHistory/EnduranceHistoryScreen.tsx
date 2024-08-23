@@ -10,12 +10,12 @@ import { EnduranceExerciseHistoryEntry, ExerciseHistoryEntry } from "../../conte
 import { useTheme } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
-import { useNavigation } from "@react-navigation/native";
 import AppleHealthKit, {
     HealthInputOptions,
     HealthKitPermissions,
     HKWorkoutQueriedSampleType,
 } from "react-native-health";
+import { useNavigation } from "@react-navigation/native";
 
 interface EnduranceHistoryScreenProps {
     exerciseId: string;
@@ -38,6 +38,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createExerciseHistoryStyles(currentTheme);
+    const navigation = useNavigation();
 
     const [distance, setDistance] = useState("");
     const [time, setTime] = useState("");
@@ -45,10 +46,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const [notes, setNotes] = useState("");
     const [date, setDate] = useState<Date>(new Date());
     const [editingEntry, setEditingEntry] = useState<EnduranceExerciseHistoryEntry | null>(null);
-    const [showDatePicker, setShowDatePicker] = useState(false);
     const [isHealthKitAuthorized, setIsHealthKitAuthorized] = useState(false);
-
-    const navigation = useNavigation();
 
     const {
         addExerciseToHistory,
@@ -62,13 +60,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
 
     const exercise = exercises.find((e) => e.id === exerciseId);
     const exerciseName = exercise ? exercise.name : "Endurance";
-
-    useEffect(() => {
-        if (exercise) {
-            navigation.setOptions({ title: exercise.name });
-        }
-        fillFromLastWorkout();
-    }, [exercise, navigation]);
 
     const initializeHealthKit = () => {
         AppleHealthKit.initHealthKit(permissions, (error: string) => {
@@ -86,8 +77,14 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         initializeHealthKit();
     }
 
+    useEffect(() => {
+        if (exercise) {
+            navigation.setOptions({ title: exercise.name });
+        }
+        fillFromLastWorkout();
+    }, [exercise, navigation]);
+
     const onDateChange = (event: any, selectedDate?: Date) => {
-        setShowDatePicker(Platform.OS === "ios");
         if (selectedDate) {
             setDate(selectedDate);
         }
@@ -133,21 +130,13 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                     multiline
                 />
             </View>
-            <View style={styles.inputRow}>
-                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
-                    <Text style={styles.dateButtonText}>
-                        {editingEntry ? "Change Date: " : "Date: "}
-                        {date.toLocaleDateString()}
-                    </Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                    <DateTimePicker
-                        value={date}
-                        mode="date"
-                        display="default"
-                        onChange={onDateChange}
-                    />
-                )}
+            <View>
+                <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                />
             </View>
         </View>
     );
@@ -159,7 +148,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         setNotes("");
         setDate(new Date());
         setEditingEntry(null);
-        setShowDatePicker(false);
     };
 
     const handleDeleteEntry = useCallback(
@@ -291,7 +279,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             setDistance(lastWorkout.distance.toString());
             setTime(lastWorkout.time.toString());
             setAvgHeartRate(lastWorkout.avgHeartRate?.toString() || "");
-            setNotes(lastWorkout.notes || "");
+            setNotes(lastWorkout.notes);
         }
     }, [exerciseHistory, exerciseId]);
 

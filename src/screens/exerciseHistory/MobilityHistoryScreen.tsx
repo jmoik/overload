@@ -20,14 +20,12 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createExerciseHistoryStyles(currentTheme);
+    const navigation = useNavigation();
 
     const [sets, setSets] = useState("");
     const [notes, setNotes] = useState("");
     const [date, setDate] = useState<Date>(new Date());
     const [editingEntry, setEditingEntry] = useState<MobilityExerciseHistoryEntry | null>(null);
-    const [showDatePicker, setShowDatePicker] = useState(false);
-
-    const navigation = useNavigation();
 
     const {
         addExerciseToHistory,
@@ -38,8 +36,13 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
     } = useExerciseContext();
 
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
-
     const exercise = exercises.find((e) => e.id === exerciseId);
+
+    const onDateChange = (event: any, selectedDate?: Date) => {
+        if (selectedDate) {
+            setDate(selectedDate);
+        }
+    };
 
     useEffect(() => {
         if (exercise) {
@@ -47,13 +50,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         }
         fillFromLastWorkout();
     }, [exercise, navigation]);
-
-    const onDateChange = (event: any, selectedDate?: Date) => {
-        setShowDatePicker(Platform.OS === "ios");
-        if (selectedDate) {
-            setDate(selectedDate);
-        }
-    };
 
     const handleEditEntry = (entry: ExerciseHistoryEntry) => {
         const mobilityEntry = entry as MobilityExerciseHistoryEntry;
@@ -85,21 +81,13 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
                     multiline
                 />
             </View>
-            <View style={styles.inputRow}>
-                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
-                    <Text style={styles.dateButtonText}>
-                        {editingEntry ? "Change Date: " : "Date: "}
-                        {date.toLocaleDateString()}
-                    </Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                    <DateTimePicker
-                        value={date}
-                        mode="date"
-                        display="default"
-                        onChange={onDateChange}
-                    />
-                )}
+            <View>
+                <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                />
             </View>
         </View>
     );
@@ -208,7 +196,6 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         }
 
         setEditingEntry(null);
-        setShowDatePicker(false);
     };
 
     const fillFromLastWorkout = useCallback(() => {
@@ -216,7 +203,7 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         if (history.length > 0) {
             const lastWorkout = history[0] as MobilityExerciseHistoryEntry;
             setSets(lastWorkout.sets.toString());
-            setNotes(lastWorkout.notes || "");
+            setNotes(lastWorkout.notes);
         }
     }, [exerciseHistory, exerciseId]);
 
