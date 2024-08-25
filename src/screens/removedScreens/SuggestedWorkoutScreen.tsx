@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
 import {
@@ -10,7 +10,7 @@ import {
     StrengthExerciseHistoryEntry,
 } from "../../contexts/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
-import { lightTheme, darkTheme } from "../styles/globalStyles";
+import { lightTheme, darkTheme } from "../../../styles/globalStyles";
 import { isAfter, subDays } from "date-fns";
 import { SwipeListView } from "react-native-swipe-list-view";
 
@@ -30,6 +30,29 @@ const SuggestedWorkoutScreen = () => {
     const styles = useMemo(() => createStyles(currentTheme), [currentTheme]);
     const swipeListRef = useRef(null);
 
+    // New state for user preferences
+    const [selectedCategories, setSelectedCategories] = useState({
+        strength: false,
+        endurance: false,
+        mobility: false,
+        nsuns: false,
+    });
+
+    const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<{ [key: string]: boolean }>(
+        {}
+    );
+
+    useEffect(() => {
+        // Initialize muscle groups based on available exercises
+        const muscleGroups = exercises.reduce((groups, exercise) => {
+            if (!groups[exercise.muscleGroup]) {
+                groups[exercise.muscleGroup] = false;
+            }
+            return groups;
+        }, {} as { [key: string]: boolean });
+        setSelectedMuscleGroups(muscleGroups);
+    }, [exercises]);
+
     const calculateRemainingSets = useCallback(
         (exercise: Exercise) => {
             const today = new Date();
@@ -38,7 +61,7 @@ const SuggestedWorkoutScreen = () => {
             const history = exerciseHistory[exercise.id] || [];
             const setsDoneInInterval = history.reduce((total, entry: ExerciseHistoryEntry) => {
                 if (isAfter(new Date(entry.date), intervalStart)) {
-                    if (entry.category === "strength" || entry.category === "nsuns") {
+                    if (entry.category === "strength") {
                         return total + (entry as StrengthExerciseHistoryEntry).sets;
                     } else if (entry.category === "mobility") {
                         return total + (entry as MobilityExerciseHistoryEntry).sets;
@@ -82,7 +105,10 @@ const SuggestedWorkoutScreen = () => {
             exercises
                 .filter(
                     (exercise) =>
-                        exercise.category === category && calculateRemainingSets(exercise) > 0
+                        exercise.category === category &&
+                        calculateRemainingSets(exercise) > 0 &&
+                        selectedCategories[exercise.category] &&
+                        selectedMuscleGroups[exercise.muscleGroup]
                 )
                 .sort((a, b) => calculateRemainingSets(b) - calculateRemainingSets(a))
                 .map((exercise) => ({
@@ -115,11 +141,13 @@ const SuggestedWorkoutScreen = () => {
             Strength: strengthExercises.slice(4),
             Mobility: mobilityExercises.slice(4),
         });
-    }, [exercises, calculateRemainingSets, calculateSuggestedSets]);
-
-    useEffect(() => {
-        generateWorkout();
-    }, [generateWorkout]);
+    }, [
+        exercises,
+        calculateRemainingSets,
+        calculateSuggestedSets,
+        selectedCategories,
+        selectedMuscleGroups,
+    ]);
 
     const removeExercise = useCallback(
         (exerciseId: string) => {
@@ -224,9 +252,42 @@ const SuggestedWorkoutScreen = () => {
         [styles]
     );
 
+    const renderPreferences = () => (
+        <View style={styles.preferencesContainer}>
+            <Text style={styles.preferencesTitle}>Exercise Categories</Text>
+            {Object.keys(selectedCategories).map((category) => (
+                <View key={category} style={styles.preferenceItem}>
+                    <Text style={styles.preferenceText}>{capitalize(category)}</Text>
+                    <Switch
+                        value={selectedCategories[category]}
+                        onValueChange={(value) =>
+                            setSelectedCategories((prev) => ({ ...prev, [category]: value }))
+                        }
+                    />
+                </View>
+            ))}
+            <Text style={styles.preferencesTitle}>Muscle Groups</Text>
+            {Object.keys(selectedMuscleGroups).map((muscleGroup) => (
+                <View key={muscleGroup} style={styles.preferenceItem}>
+                    <Text style={styles.preferenceText}>{muscleGroup}</Text>
+                    <Switch
+                        value={selectedMuscleGroups[muscleGroup]}
+                        onValueChange={(value) =>
+                            setSelectedMuscleGroups((prev) => ({ ...prev, [muscleGroup]: value }))
+                        }
+                    />
+                </View>
+            ))}
+        </View>
+    );
+
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <Text style={styles.title}>Suggested Workout</Text>
+            {renderPreferences()}
+            <TouchableOpacity style={styles.generateButton} onPress={generateWorkout}>
+                <Text style={styles.generateButtonText}>Generate Workout</Text>
+            </TouchableOpacity>
             {suggestedWorkout.length > 0 ? (
                 <SwipeListView
                     useSectionList
@@ -236,7 +297,6 @@ const SuggestedWorkoutScreen = () => {
                     rightOpenValue={-75}
                     disableRightSwipe
                     onSwipeValueChange={onSwipeValueChange}
-                    renderSectionHeader={renderSectionHeader}
                     keyExtractor={keyExtractor}
                     ref={swipeListRef}
                     useAnimatedList={true}
@@ -244,12 +304,11 @@ const SuggestedWorkoutScreen = () => {
                     recalculateHiddenLayout={true}
                 />
             ) : (
-                <Text style={styles.noWorkoutText}>No workout suggested at this time.</Text>
+                <Text style={styles.noWorkoutText}>
+                    No workout generated yet. Select your preferences and generate a workout.
+                </Text>
             )}
-            <TouchableOpacity style={styles.regenerateButton} onPress={generateWorkout}>
-                <Text style={styles.regenerateButtonText}>Regenerate Workout</Text>
-            </TouchableOpacity>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -294,14 +353,15 @@ const createStyles = (theme: typeof lightTheme) =>
             marginTop: 20,
             color: theme.colors.text,
         },
-        regenerateButton: {
+        generateButton: {
             backgroundColor: theme.colors.primary,
             padding: 16,
             borderRadius: 8,
             alignItems: "center",
             marginTop: 20,
+            marginBottom: 20,
         },
-        regenerateButtonText: {
+        generateButtonText: {
             fontSize: 18,
             fontWeight: "bold",
             color: theme.colors.background,
@@ -316,6 +376,26 @@ const createStyles = (theme: typeof lightTheme) =>
         },
         backRightBtnText: {
             color: "#FFF",
+        },
+        preferencesContainer: {
+            marginBottom: 20,
+        },
+        preferencesTitle: {
+            fontSize: 20,
+            fontWeight: "bold",
+            marginTop: 16,
+            marginBottom: 8,
+            color: theme.colors.text,
+        },
+        preferenceItem: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+        },
+        preferenceText: {
+            fontSize: 16,
+            color: theme.colors.text,
         },
     });
 

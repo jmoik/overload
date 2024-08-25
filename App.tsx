@@ -17,6 +17,7 @@ import WelcomeScreen from "./src/screens/WelcomeScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PlanPreviewScreen from "./src/screens/PlanPreviewScreen";
 import StatsScreen from "./src/screens/StatsScreen";
+import SuggestedWorkoutScreen from "./src/screens/removedScreens/SuggestedWorkoutScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -39,6 +40,14 @@ const Home = () => (
                 tabBarIcon: ({ color, size }) => (
                     <Icon name="stats-chart" color={color} size={size} />
                 ),
+            }}
+        />
+        <Tab.Screen
+            name="Today"
+            component={SuggestedWorkoutScreen}
+            options={{
+                title: "Today",
+                tabBarIcon: ({ color, size }) => <Icon name="today" color={color} size={size} />,
             }}
         />
         <Tab.Screen
@@ -89,7 +98,6 @@ const AppContent = () => {
                     options={{ headerShown: false }}
                 />
                 <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
-
                 <Stack.Screen
                     name="AddExercise"
                     component={AddExerciseScreen}

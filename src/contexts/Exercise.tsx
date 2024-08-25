@@ -44,6 +44,6 @@ export interface Exercise {
     weeklySets: number;
     muscleGroup: string;
     distance?: number;
-    workout?: Set[]; // Add this line for nSuns exercises
+    workout?: Set[];
     oneRepMax?: number;
 }

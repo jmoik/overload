@@ -174,7 +174,7 @@ const SettingsScreen = () => {
     };
 
     const handleEmailPress = () => {
-        Linking.openURL("mailto:@opals.poet0m@icloud.com?subject=Feedback for Workout App");
+        Linking.openURL("mailto:@opals.poet0m@icloud.com?subject=Feedback");
     };
 
     const handleAppStoreRating = () => {
@@ -251,6 +251,12 @@ const SettingsScreen = () => {
             title: "Delete All Data",
             action: handleDeleteAllData,
         },
+        {
+            id: "11",
+            title: "Dark Mode",
+            action: toggleTheme,
+            isSwitch: true,
+        },
         // {
         //     id: "11",
         //     title: "Info",
@@ -262,12 +268,6 @@ const SettingsScreen = () => {
                       id: "12",
                       title: "Populate Random Workout Data",
                       action: populateRandomWorkoutData,
-                  },
-                  {
-                      id: "13",
-                      title: "Dark Mode",
-                      action: toggleTheme,
-                      isSwitch: true,
                   },
               ]
             : []),
