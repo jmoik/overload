@@ -62,7 +62,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         setNotes(strengthEntry.notes || "");
         setSets(strengthEntry.sets.toString());
         setReps(strengthEntry.reps.toString());
-        setWeight(strengthEntry.weight.toString());
+        setWeight(strengthEntry.weight > 0 ? strengthEntry.weight.toString() : "");
     };
 
     const renderInputFields = () => (
@@ -173,7 +173,9 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
                         onPress={() => handleEditEntry(item_)}
                     >
                         <Text style={styles.text}>
-                            {`${item_.sets} sets x ${item_.reps} reps @ ${item_.weight} kg`}
+                            {`${item_.sets} sets x ${item_.reps} reps @ ${
+                                item_.weight > 0 ? item_.weight + " kg" : "BW"
+                            }`}
                             {item_.notes && (
                                 <Text style={styles.notes}>
                                     {"\n"}
@@ -188,17 +190,20 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     };
 
     const handleAddOrUpdateEntry = () => {
-        if (!sets.trim() || !reps.trim() || !weight.trim()) {
-            Alert.alert("Error", "Please fill in all required fields (Sets, Reps, and Weight)");
+        if (!sets.trim() || !reps.trim()) {
+            Alert.alert("Error", "Please fill in Sets and Reps");
             return;
         }
 
         const parsedSets = parseInt(sets);
         const parsedReps = parseInt(reps);
-        const parsedWeight = parseFloat(weight.replace(",", "."));
+        const parsedWeight = weight.trim() ? parseFloat(weight.replace(",", ".")) : 0;
 
         if (isNaN(parsedSets) || isNaN(parsedReps) || isNaN(parsedWeight)) {
-            Alert.alert("Error", "Please enter valid numbers for Sets, Reps, and Weight");
+            Alert.alert(
+                "Error",
+                "Please enter valid numbers for Sets, Reps, and Weight (if provided)"
+            );
             return;
         }
 
@@ -228,6 +233,10 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         }
 
         setEditingEntry(null);
+        setSets("");
+        setReps("");
+        setWeight("");
+        setNotes("");
     };
 
     const fillFromLastWorkout = useCallback(() => {
@@ -236,7 +245,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
             const lastWorkout = history[0] as StrengthExerciseHistoryEntry;
             setSets(lastWorkout.sets.toString());
             setReps(lastWorkout.reps.toString());
-            setWeight(lastWorkout.weight.toString());
+            setWeight(lastWorkout.weight > 0 ? lastWorkout.weight.toString() : "");
             setNotes(lastWorkout.notes);
         }
     }, [exerciseHistory, exerciseId]);
