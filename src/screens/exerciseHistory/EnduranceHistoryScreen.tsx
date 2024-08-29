@@ -182,7 +182,8 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             index > 0
                 ? new Date(exerciseHistory[exerciseId][index - 1].date).toLocaleDateString()
                 : null;
-        const paceMinutes = item_.time > 0 ? (item_.time / item_.distance).toFixed(0) : "0";
+        const paceMinutes =
+            item_.time > 0 ? Math.floor(item_.time / item_.distance).toFixed(0) : "0";
         const paceSeconds = item_.time > 0 ? ((item_.time * 60) / item_.distance) % 60 : 0;
         const pace = `${paceMinutes}\'${paceSeconds < 10 ? "0" : ""}${Math.round(paceSeconds)}\"`;
 

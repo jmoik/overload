@@ -10,7 +10,7 @@ import { generateEntryId } from "./utils";
 
 export const generateRandomWorkoutData = (exercise: Exercise): ExerciseHistoryEntry[] => {
     const entries: ExerciseHistoryEntry[] = [];
-    const numberOfEntries = Math.floor(Math.random() * 10) + 5; // Generate 5-14 entries
+    const numberOfEntries = Math.floor(Math.random() * 3) + 5;
 
     for (let i = 1; i < numberOfEntries; i++) {
         const date = new Date();
