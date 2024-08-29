@@ -233,10 +233,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         }
 
         setEditingEntry(null);
-        setSets("");
-        setReps("");
-        setWeight("");
-        setNotes("");
     };
 
     const fillFromLastWorkout = useCallback(() => {
