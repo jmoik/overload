@@ -23,7 +23,7 @@ export function generateEntryId(entry: Omit<ExerciseHistoryEntry, "id">): string
         const char = data.charCodeAt(i);
         hash = (hash << 5) - hash + char;
         hash = hash & hash; // Convert to 32-bit integer
-        hash += Math.floor(Math.random() * 100);
+        hash += Math.floor(Math.random() * 10000);
     }
     return hash.toString(36); // Convert to base 36 (numbers + letters)
 }
