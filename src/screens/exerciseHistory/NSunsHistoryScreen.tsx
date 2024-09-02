@@ -161,41 +161,60 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
         return <Text>Exercise not found</Text>;
     }
 
+    type WorkoutSection = {
+        title: string;
+        data: StrengthExerciseHistoryEntry[] | Set[];
+        isHistory: boolean;
+        date: Date;
+        isHistoryTitle?: boolean;
+    };
+
     const allWorkouts = useMemo(() => {
         const history = exerciseHistory[exerciseId] || [];
         const groupedHistory = history.reduce((acc, entry) => {
-            const date = new Date(entry.date).toLocaleDateString();
-            if (!acc[date]) {
-                acc[date] = [];
+            const date = new Date(entry.date);
+            const dateKey = date.toISOString().split("T")[0]; // Use ISO date string for consistent sorting
+            if (!acc[dateKey]) {
+                acc[dateKey] = [];
             }
             if (entry.category === "strength") {
-                acc[date].push(entry as StrengthExerciseHistoryEntry);
+                acc[dateKey].push(entry as StrengthExerciseHistoryEntry);
             }
             return acc;
         }, {} as Record<string, StrengthExerciseHistoryEntry[]>);
 
-        const historySections = Object.entries(groupedHistory).map(([date, entries]) => ({
-            title: date,
-            data: entries,
-            isHistory: true,
-        }));
+        const historySections: WorkoutSection[] = Object.entries(groupedHistory).map(
+            ([dateKey, entries]) => ({
+                title: new Date(dateKey).toLocaleDateString(), // Format for display
+                data: entries,
+                isHistory: true,
+                date: new Date(dateKey),
+            })
+        );
 
-        const currentWorkout = {
+        const currentWorkout: WorkoutSection = {
             title: "Current Workout",
             data: workout,
             isHistory: false,
+            date: new Date(),
         };
 
-        const historyTitle = {
+        const historyTitle: WorkoutSection = {
             title: "History",
             data: [],
             isHistory: true,
             isHistoryTitle: true,
+            date: new Date(0),
         };
 
-        return [currentWorkout, historyTitle, ...historySections].sort((a, b) =>
-            a.isHistory === b.isHistory ? b.title.localeCompare(a.title) : a.isHistory ? 1 : -1
-        );
+        return [currentWorkout, ...historySections, historyTitle].sort((a, b) => {
+            if (a.isHistory === b.isHistory) {
+                if (a.isHistoryTitle) return 1;
+                if (b.isHistoryTitle) return -1;
+                return b.date.getTime() - a.date.getTime(); // This will now correctly sort by full date
+            }
+            return a.isHistory ? 1 : -1;
+        });
     }, [exerciseHistory, exerciseId, workout]);
 
     const renderItem = useCallback(
