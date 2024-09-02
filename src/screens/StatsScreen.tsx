@@ -31,10 +31,12 @@ const calculateMovingAverage = (data: number[], windowSize: number): number[] =>
 };
 
 const ProgressBar = ({ percentage, color, label }) => {
+    const { theme } = useTheme();
+    const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const barWidth = Math.min(percentage, 100); // Cap the visual bar at 100%
     return (
         <View style={{ marginBottom: 10 }}>
-            <Text style={{ marginBottom: 5 }}>{label}</Text>
+            <Text style={{ marginBottom: 5, color: currentTheme.colors.text }}>{label}</Text>
             <View style={{ height: 20, backgroundColor: "#e0e0e0", borderRadius: 10 }}>
                 <View
                     style={{
@@ -45,7 +47,9 @@ const ProgressBar = ({ percentage, color, label }) => {
                     }}
                 />
             </View>
-            <Text style={{ alignSelf: "flex-end" }}>{percentage.toFixed(1)}%</Text>
+            <Text style={{ alignSelf: "flex-end", color: currentTheme.colors.text }}>
+                {percentage.toFixed(1)}%
+            </Text>
         </View>
     );
 };
