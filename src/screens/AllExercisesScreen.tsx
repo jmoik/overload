@@ -27,32 +27,45 @@ const AllExercisesScreen = () => {
     const isFocused = useIsFocused();
     const [sortBySetsLeft, setSortBySetsLeft] = useState(true);
     const [groupBy, setGroupBy] = useState<"category" | "muscleGroup" | "none">("category");
+    const [hideCompleted, setHideCompleted] = useState(false);
 
     useLayoutEffect(() => {
         navigation.setOptions({
             headerLeft: () => (
-                <TouchableOpacity
-                    onPress={() =>
-                        setGroupBy((prev) => {
-                            if (prev === "category") return "muscleGroup";
-                            if (prev === "muscleGroup") return "none";
-                            return "category";
-                        })
-                    }
-                    style={styles.headerButton}
-                >
-                    <Icon
-                        name={
-                            groupBy === "category"
-                                ? "pricetag"
-                                : groupBy === "muscleGroup"
-                                ? "body"
-                                : "layers"
+                <View style={styles.headerButtons}>
+                    <TouchableOpacity
+                        onPress={() =>
+                            setGroupBy((prev) => {
+                                if (prev === "category") return "muscleGroup";
+                                if (prev === "muscleGroup") return "none";
+                                return "category";
+                            })
                         }
-                        size={styles.icon.fontSize}
-                        color={currentTheme.colors.primary}
-                    />
-                </TouchableOpacity>
+                        style={styles.headerButton}
+                    >
+                        <Icon
+                            name={
+                                groupBy === "category"
+                                    ? "pricetag"
+                                    : groupBy === "muscleGroup"
+                                    ? "body"
+                                    : "layers"
+                            }
+                            size={styles.icon.fontSize}
+                            color={currentTheme.colors.primary}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setHideCompleted(!hideCompleted)}
+                        style={styles.headerButton}
+                    >
+                        <Icon
+                            name={hideCompleted ? "eye-off" : "eye"}
+                            size={styles.icon.fontSize}
+                            color={currentTheme.colors.primary}
+                        />
+                    </TouchableOpacity>
+                </View>
             ),
             headerRight: () => (
                 <View style={styles.headerButtons}>
@@ -79,7 +92,7 @@ const AllExercisesScreen = () => {
                 </View>
             ),
         });
-    }, [navigation, sortBySetsLeft, groupBy, currentTheme.colors.primary]);
+    }, [navigation, sortBySetsLeft, groupBy, hideCompleted, currentTheme.colors.primary]);
 
     useEffect(() => {
         if (isFocused) {
@@ -175,8 +188,15 @@ const AllExercisesScreen = () => {
     );
 
     const groupedAndSortedExercises = React.useMemo(() => {
+        let filteredExercises = exercises;
+        if (hideCompleted) {
+            filteredExercises = exercises.filter(
+                (exercise) => calculateRemainingSets(exercise) > 0
+            );
+        }
+
         if (groupBy === "none") {
-            const sortedExercises = [...exercises].sort((a, b) => {
+            const sortedExercises = [...filteredExercises].sort((a, b) => {
                 if (sortBySetsLeft) {
                     return calculateRemainingSets(b) - calculateRemainingSets(a);
                 } else {
@@ -186,7 +206,7 @@ const AllExercisesScreen = () => {
             return [{ title: "", data: sortedExercises, key: "none" }];
         }
 
-        const grouped = exercises.reduce((acc, exercise) => {
+        const grouped = filteredExercises.reduce((acc, exercise) => {
             const key = groupBy === "category" ? exercise.category : exercise.muscleGroup;
             if (!acc[key]) {
                 acc[key] = [];
@@ -210,9 +230,9 @@ const AllExercisesScreen = () => {
         return sortedKeys.map((key) => ({
             title: key,
             data: grouped[key],
-            key: `${groupBy}-${key}`, // Add a unique key for each section
+            key: `${groupBy}-${key}`,
         }));
-    }, [exercises, groupBy, sortBySetsLeft, calculateRemainingSets]);
+    }, [exercises, groupBy, sortBySetsLeft, calculateRemainingSets, hideCompleted]);
 
     const renderExerciseItem = useCallback(
         ({
