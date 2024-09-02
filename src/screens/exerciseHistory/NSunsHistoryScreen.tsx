@@ -19,6 +19,7 @@ import {
     createNsunsExerciseHistoryStyles,
 } from "../../../styles/globalStyles";
 import { generateEntryId } from "../../utils/utils";
+import { Swipeable } from "react-native-gesture-handler";
 
 interface NSunsHistoryScreenProps {
     exerciseId: string;
@@ -28,7 +29,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createNsunsExerciseHistoryStyles(currentTheme);
-    const { exerciseHistory } = useExerciseContext();
+    const { exerciseHistory, deleteExerciseHistoryEntry } = useExerciseContext();
 
     const { exercises, updateExercise, addExerciseToHistory } = useExerciseContext();
     const [exercise, setExercise] = useState(exercises.find((e) => e.id === exerciseId));
@@ -42,6 +43,8 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
     const [completedSets, setCompletedSets] = useState<boolean[]>(() =>
         new Array(workout.length).fill(false)
     );
+
+    const swipeableRefs = useRef<(Swipeable | null)[]>([]);
 
     const handleEdit1RM = () => {
         setIsEditing1RM(true);
@@ -108,7 +111,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
                 ],
                 "plain-text",
                 amrapReps[index],
-                "numeric" // This sets the keyboard type to numeric
+                "numeric"
             );
         } else {
             setCompletedSets((prev) => {
@@ -150,12 +153,31 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
 
     const calculateSetWeight = (set: Set) => {
         let weight = (set.relativeWeight * (exercise?.oneRepMax || 1)) / 100;
-
-        // round to nearest 2.5kg
         weight = Math.floor(weight / 2.5) * 2.5;
-
         return weight;
     };
+
+    const handleDeleteEntry = useCallback(
+        (entryToDelete: StrengthExerciseHistoryEntry) => {
+            Alert.alert("Delete Entry", "Are you sure you want to delete this entry?", [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    onPress: () => {
+                        const index = exerciseHistory[exerciseId].findIndex(
+                            (item) => item.id === entryToDelete.id
+                        );
+                        if (index !== -1) {
+                            deleteExerciseHistoryEntry(exerciseId, index);
+                        }
+                        swipeableRefs.current.forEach((ref) => ref?.close());
+                    },
+                    style: "destructive",
+                },
+            ]);
+        },
+        [deleteExerciseHistoryEntry, exerciseId, exerciseHistory]
+    );
 
     if (!exercise) {
         return <Text>Exercise not found</Text>;
@@ -173,7 +195,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
         const history = exerciseHistory[exerciseId] || [];
         const groupedHistory = history.reduce((acc, entry) => {
             const date = new Date(entry.date);
-            const dateKey = date.toISOString().split("T")[0]; // Use ISO date string for consistent sorting
+            const dateKey = date.toISOString().split("T")[0];
             if (!acc[dateKey]) {
                 acc[dateKey] = [];
             }
@@ -185,7 +207,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
 
         const historySections: WorkoutSection[] = Object.entries(groupedHistory).map(
             ([dateKey, entries]) => ({
-                title: new Date(dateKey).toLocaleDateString(), // Format for display
+                title: new Date(dateKey).toLocaleDateString(),
                 data: entries,
                 isHistory: true,
                 date: new Date(dateKey),
@@ -211,7 +233,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
             if (a.isHistory === b.isHistory) {
                 if (a.isHistoryTitle) return 1;
                 if (b.isHistoryTitle) return -1;
-                return b.date.getTime() - a.date.getTime(); // This will now correctly sort by full date
+                return b.date.getTime() - a.date.getTime();
             }
             return a.isHistory ? 1 : -1;
         });
@@ -221,49 +243,82 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
         ({
             item,
             section,
+            index,
         }: {
             item: Set | StrengthExerciseHistoryEntry;
             section: { isHistory: boolean };
+            index: number;
         }) => {
             const isCurrentWorkout = !section.isHistory;
             const setItem = isCurrentWorkout ? (item as Set) : null;
             const historyItem = !isCurrentWorkout ? (item as StrengthExerciseHistoryEntry) : null;
 
-            return (
-                <TouchableOpacity
-                    style={styles.setItem}
-                    onPress={() => (isCurrentWorkout ? toggleSet(workout.indexOf(setItem!)) : null)}
-                >
-                    <View>
-                        <Text style={styles.setText}>
-                            {isCurrentWorkout
-                                ? setItem!.isAMRAP && amrapReps[workout.indexOf(setItem!)]
-                                    ? `${
-                                          amrapReps[workout.indexOf(setItem!)]
-                                      } reps @ ${calculateSetWeight(setItem!)} kg`
-                                    : `${setItem!.reps}${
-                                          setItem!.isAMRAP ? "+" : ""
-                                      } reps @ ${calculateSetWeight(setItem!)} kg`
-                                : `${historyItem!.reps} reps @ ${historyItem!.weight} kg`}
-                        </Text>
-                        <Text style={styles.percentText}>
-                            {isCurrentWorkout ? `${setItem!.relativeWeight}%` : ""}
-                        </Text>
-                    </View>
-                    <View style={styles.iconContainer}>
-                        {(isCurrentWorkout && completedSets[workout.indexOf(setItem!)]) ||
-                        !isCurrentWorkout ? (
-                            <Icon
-                                name="checkmark-circle"
-                                size={24}
-                                color={currentTheme.colors.primary}
-                            />
-                        ) : (
-                            <View style={styles.placeholderIcon} />
-                        )}
-                    </View>
-                </TouchableOpacity>
+            const content = (
+                <View>
+                    <Text style={styles.setText}>
+                        {isCurrentWorkout
+                            ? setItem!.isAMRAP && amrapReps[workout.indexOf(setItem!)]
+                                ? `${
+                                      amrapReps[workout.indexOf(setItem!)]
+                                  } reps @ ${calculateSetWeight(setItem!)} kg`
+                                : `${setItem!.reps}${
+                                      setItem!.isAMRAP ? "+" : ""
+                                  } reps @ ${calculateSetWeight(setItem!)} kg`
+                            : `${historyItem!.reps} reps @ ${historyItem!.weight} kg`}
+                    </Text>
+                    <Text style={styles.percentText}>
+                        {isCurrentWorkout ? `${setItem!.relativeWeight}%` : ""}
+                    </Text>
+                </View>
             );
+
+            if (isCurrentWorkout) {
+                return (
+                    <TouchableOpacity
+                        style={styles.setItem}
+                        onPress={() => toggleSet(workout.indexOf(setItem!))}
+                    >
+                        {content}
+                        <View style={styles.iconContainer}>
+                            {completedSets[workout.indexOf(setItem!)] ? (
+                                <Icon
+                                    name="checkmark-circle"
+                                    size={24}
+                                    color={currentTheme.colors.primary}
+                                />
+                            ) : (
+                                <View style={styles.placeholderIcon} />
+                            )}
+                        </View>
+                    </TouchableOpacity>
+                );
+            } else {
+                return (
+                    <Swipeable
+                        ref={(el) => (swipeableRefs.current[index] = el)}
+                        renderRightActions={() => (
+                            <TouchableOpacity
+                                style={styles.deleteButton}
+                                onPress={() => handleDeleteEntry(historyItem!)}
+                            >
+                                <Icon name="trash-outline" size={24} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        )}
+                        rightThreshold={40}
+                    >
+                        <View style={styles.setItem}>
+                            {content}
+                            <View style={styles.iconContainer}>
+                                <Icon
+                                    name="checkmark-circle"
+                                    size={24}
+                                    color={currentTheme.colors.primary}
+                                />
+                            </View>
+                        </View>
+                    </Swipeable>
+                );
+            }
         },
         [
             currentTheme.colors.primary,
@@ -272,6 +327,7 @@ const NSunsHistoryScreen: React.FC<NSunsHistoryScreenProps> = ({ exerciseId }) =
             toggleSet,
             calculateSetWeight,
             workout,
+            handleDeleteEntry,
         ]
     );
 
