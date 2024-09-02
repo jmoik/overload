@@ -42,14 +42,14 @@ const Home = () => (
                 ),
             }}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
             name="Today"
             component={SuggestedWorkoutScreen}
             options={{
                 title: "Today",
                 tabBarIcon: ({ color, size }) => <Icon name="today" color={color} size={size} />,
             }}
-        />
+        /> */}
         <Tab.Screen
             name="Settings"
             component={SettingsScreen}
