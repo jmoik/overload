@@ -1,4 +1,3 @@
-// BaseHistoryScreen.tsx
 import React from "react";
 import { View, Button, FlatList, StyleSheet } from "react-native";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
@@ -28,25 +27,26 @@ const BaseHistoryScreen: React.FC<BaseHistoryScreenProps> = ({
     styles,
 }) => {
     const { exerciseHistory } = useExerciseContext();
-
     const history = exerciseHistory[exerciseId] || [];
 
     return (
         <View style={styles.container}>
-            {renderInputFields()}
-
-            <Button
-                title={editingEntry ? "Update Entry" : "Add to History"}
-                onPress={handleAddOrUpdateEntry}
-            />
-
             <FlatList
+                style={styles.historyList}
                 data={history.sort(
                     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
                 )}
                 renderItem={({ item, index }) => renderHistoryItem({ item, index })}
                 keyExtractor={(item) => item.id}
             />
+            <View style={styles.separator} />
+            <View style={styles.inputSection}>
+                {renderInputFields()}
+                <Button
+                    title={editingEntry ? "Update Entry" : "Add to History"}
+                    onPress={handleAddOrUpdateEntry}
+                />
+            </View>
         </View>
     );
 };

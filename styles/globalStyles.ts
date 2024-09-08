@@ -289,15 +289,49 @@ const createAddExerciseScreenStyles = (theme: typeof lightTheme | typeof darkThe
 // ExerciseHistoryScreen specific styles
 const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     StyleSheet.create({
+        historyList: {
+            flex: 1,
+        },
+        separator: {
+            height: 2,
+            backgroundColor: "#aaa",
+            marginVertical: 20,
+        },
+        inputSection: {
+            padding: 10,
+            marginRight: -10,
+        },
         container: {
             flex: 1,
             padding: 15,
+            paddingBottom: 45,
             backgroundColor: theme.colors.background,
         },
         inputRow: {
             flexDirection: "row",
             justifyContent: "space-between",
             marginBottom: 10,
+        },
+        dateRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 10,
+        },
+        inputRowInputFields: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 10,
+            marginLeft: -5,
+            marginRight: 5,
+        },
+        notesAndDateRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+        },
+        datePickerContainer: {
+            width: 120, // Adjust this value based on your date picker's width
         },
         smallInput: {
             flex: 1,
@@ -315,6 +349,7 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             alignItems: "center",
             justifyContent: "center",
             flex: 1,
+            marginRight: -50,
         },
         dateButtonText: {
             color: theme.colors.text, // Ensure text is visible in dark mode
@@ -404,12 +439,11 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             color: theme.colors.text,
         },
         dateHeader: {
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: "bold",
             backgroundColor: theme.colors.background,
             color: theme.colors.text,
             padding: 10,
-            marginTop: 10,
         },
         setItem: {
             flexDirection: "row",
@@ -451,6 +485,29 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             color: "white",
             fontSize: 16,
             fontWeight: "bold",
+        },
+        container2: {
+            flexDirection: "row",
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 5,
+            overflow: "hidden",
+            marginHorizontal: 5,
+        },
+        inputt: {
+            width: 40,
+            textAlign: "center",
+            fontSize: 18,
+            color: theme.colors.text,
+        },
+        button: {
+            padding: 10,
+        },
+        buttonText: {
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "#333",
         },
     });
 // ExerciseHistoryScreen specific styles
@@ -776,13 +833,6 @@ export const createNsunsExerciseHistoryStyles = (theme: typeof lightTheme | type
     ...createNsunsExerciseHistoryScreen(theme),
 });
 
-export type GlobalStyles = ReturnType<typeof createGlobalStyles>;
-export type AllExercisesStyles = ReturnType<typeof createAllExercisesStyles>;
-export type AddExerciseStyles = ReturnType<typeof createAddExerciseStyles>;
-export type ExerciseHistoryStyles = ReturnType<typeof createExerciseHistoryStyles>;
-export type SettingsStyles = ReturnType<typeof createSettingsStyles>;
-export type WelcomStyles = ReturnType<typeof createWelcomeStyles>;
-
 export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     StyleSheet.create({
         container: {
@@ -899,3 +949,51 @@ export const createStatsStyles = (theme: typeof lightTheme | typeof darkTheme) =
             backgroundColor: theme.colors.primary,
         },
     });
+
+export const createTrainingIntervalStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.colors.background,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        title: {
+            fontSize: 20,
+            fontWeight: "bold",
+            marginBottom: 20,
+            color: theme.colors.text,
+        },
+        pickerContainer: {
+            width: "80%",
+            height: 200,
+            justifyContent: "center",
+            overflow: "hidden",
+            backgroundColor: theme.colors.card,
+            borderRadius: 10,
+        },
+        picker: {
+            width: "100%",
+            color: theme.colors.text,
+        },
+        saveButton: {
+            marginTop: 20,
+            backgroundColor: theme.colors.primary,
+            paddingVertical: 10,
+            paddingHorizontal: 20,
+            borderRadius: 5,
+        },
+        saveButtonText: {
+            color: "white",
+            fontSize: 16,
+            fontWeight: "bold",
+        },
+    });
+
+export type GlobalStyles = ReturnType<typeof createGlobalStyles>;
+export type AllExercisesStyles = ReturnType<typeof createAllExercisesStyles>;
+export type AddExerciseStyles = ReturnType<typeof createAddExerciseStyles>;
+export type ExerciseHistoryStyles = ReturnType<typeof createExerciseHistoryStyles>;
+export type SettingsStyles = ReturnType<typeof createSettingsStyles>;
+export type WelcomStyles = ReturnType<typeof createWelcomeStyles>;
+export type TrainingIntervalStyles = ReturnType<typeof createTrainingIntervalStyles>;

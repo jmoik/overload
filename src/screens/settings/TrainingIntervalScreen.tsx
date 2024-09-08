@@ -3,10 +3,12 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../../contexts/ThemeContext";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../types/navigation";
+import { lightTheme, darkTheme, createTrainingIntervalStyles } from "../../../styles/globalStyles";
 
 type TrainingIntervalScreenNavigationProp = StackNavigationProp<
     RootStackParamList,
@@ -18,6 +20,9 @@ const TrainingIntervalScreen = () => {
     const { trainingInterval, setTrainingInterval } = useExerciseContext();
     const [selectedInterval, setSelectedInterval] = useState(trainingInterval);
     const [isSetup, setIsSetup] = useState(false);
+    const { theme } = useTheme();
+    const currentTheme = theme === "light" ? lightTheme : darkTheme;
+    const styles = createTrainingIntervalStyles(currentTheme);
 
     useEffect(() => {
         checkIfSetup();
@@ -31,7 +36,14 @@ const TrainingIntervalScreen = () => {
     const generatePickerItems = () => {
         const items = [];
         for (let i = 1; i <= 30; i++) {
-            items.push(<Picker.Item key={i} label={`${i} days`} value={i} />);
+            items.push(
+                <Picker.Item
+                    key={i}
+                    label={`${i} days`}
+                    value={i}
+                    color={currentTheme.colors.text}
+                />
+            );
         }
         return items;
     };
@@ -54,6 +66,7 @@ const TrainingIntervalScreen = () => {
                     selectedValue={selectedInterval}
                     onValueChange={(itemValue) => setSelectedInterval(itemValue)}
                     style={styles.picker}
+                    dropdownIconColor={currentTheme.colors.text}
                 >
                     {generatePickerItems()}
                 </Picker>
@@ -64,40 +77,5 @@ const TrainingIntervalScreen = () => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#f0f0f0",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: "bold",
-        marginBottom: 20,
-    },
-    pickerContainer: {
-        width: "80%",
-        height: 200,
-        justifyContent: "center",
-        overflow: "hidden",
-    },
-    picker: {
-        width: "100%",
-    },
-    saveButton: {
-        marginTop: 20,
-        backgroundColor: "#007AFF",
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 5,
-    },
-    saveButtonText: {
-        color: "white",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
-});
 
 export default TrainingIntervalScreen;

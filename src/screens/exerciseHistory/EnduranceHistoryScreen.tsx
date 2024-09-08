@@ -100,27 +100,53 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         setAvgHeartRate(enduranceEntry.avgHeartRate?.toString() || "");
     };
 
+    const renderInputWithButtons = (
+        value: string,
+        setter: React.Dispatch<React.SetStateAction<string>>,
+        placeholder: string,
+        keyboardType: "numeric" | "decimal-pad" = "numeric"
+    ) => (
+        <View style={styles.container2}>
+            <TouchableOpacity style={styles.button} onPress={() => decrementValue(setter, value)}>
+                <Text style={styles.buttonText}>-</Text>
+            </TouchableOpacity>
+            <TextInput
+                style={styles.inputt}
+                placeholder={placeholder}
+                placeholderTextColor={currentTheme.colors.placeholder}
+                value={value}
+                onChangeText={setter}
+                keyboardType={keyboardType}
+            />
+            <TouchableOpacity style={styles.button} onPress={() => incrementValue(setter, value)}>
+                <Text style={styles.buttonText}>+</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const incrementValue = (
+        setter: React.Dispatch<React.SetStateAction<string>>,
+        value: string
+    ) => {
+        const newValue = parseFloat(value) + 1;
+        setter(newValue.toString());
+    };
+
+    const decrementValue = (
+        setter: React.Dispatch<React.SetStateAction<string>>,
+        value: string
+    ) => {
+        const newValue = Math.max(0, parseFloat(value) - 1);
+        setter(newValue.toString());
+    };
+
     const renderInputFields = () => (
         <View>
-            <View style={styles.inputRow}>
-                <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="Distance (km)"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={distance}
-                    onChangeText={setDistance}
-                    keyboardType="decimal-pad"
-                />
-                <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="Time (minutes)"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={time}
-                    onChangeText={setTime}
-                    keyboardType="decimal-pad"
-                />
+            <View style={styles.inputRowInputFields}>
+                {renderInputWithButtons(distance, setDistance, "Distance (km)", "decimal-pad")}
+                {renderInputWithButtons(time, setTime, "Time (min)", "decimal-pad")}
             </View>
-            <View style={styles.inputRow}>
+            <View style={styles.notesAndDateRow}>
                 <TextInput
                     style={[styles.input, styles.notesInput]}
                     placeholder="Notes"
@@ -129,14 +155,14 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                     onChangeText={setNotes}
                     multiline
                 />
-            </View>
-            <View>
-                <DateTimePicker
-                    value={date}
-                    mode="date"
-                    display="default"
-                    onChange={onDateChange}
-                />
+                <View style={styles.datePickerContainer}>
+                    <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                    />
+                </View>
             </View>
         </View>
     );

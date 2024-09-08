@@ -65,39 +65,54 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         setWeight(strengthEntry.weight > 0 ? strengthEntry.weight.toString() : "");
     };
 
+    const incrementValue = (
+        setter: React.Dispatch<React.SetStateAction<string>>,
+        value: string
+    ) => {
+        const newValue = parseFloat(value) + 1;
+        setter(newValue.toString());
+    };
+
+    const decrementValue = (
+        setter: React.Dispatch<React.SetStateAction<string>>,
+        value: string
+    ) => {
+        const newValue = Math.max(0, parseFloat(value) - 1);
+        setter(newValue.toString());
+    };
+
+    const renderInputWithButtons = (
+        value: string,
+        setter: React.Dispatch<React.SetStateAction<string>>,
+        placeholder: string,
+        keyboardType: "numeric" | "decimal-pad" = "numeric"
+    ) => (
+        <View style={styles.container2}>
+            <TouchableOpacity style={styles.button} onPress={() => decrementValue(setter, value)}>
+                <Text style={styles.buttonText}>-</Text>
+            </TouchableOpacity>
+            <TextInput
+                style={styles.inputt}
+                placeholder={placeholder}
+                placeholderTextColor={currentTheme.colors.placeholder}
+                value={value}
+                onChangeText={setter}
+                keyboardType={keyboardType}
+            />
+            <TouchableOpacity style={styles.button} onPress={() => incrementValue(setter, value)}>
+                <Text style={styles.buttonText}>+</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
     const renderInputFields = () => (
         <View>
-            <View style={styles.inputRow}>
-                <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="Sets"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={sets}
-                    onChangeText={setSets}
-                    keyboardType="numeric"
-                />
-                <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="Reps"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={reps}
-                    onChangeText={setReps}
-                    keyboardType="numeric"
-                />
-                <TextInput
-                    style={[styles.input, styles.smallInput]}
-                    placeholder="Weight"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={weight}
-                    onChangeText={(text) => {
-                        if (/^\d*[.,]?\d*$/.test(text)) {
-                            setWeight(text);
-                        }
-                    }}
-                    keyboardType="decimal-pad"
-                />
+            <View style={styles.inputRowInputFields}>
+                {renderInputWithButtons(sets, setSets, "Sets")}
+                {renderInputWithButtons(reps, setReps, "Reps")}
+                {renderInputWithButtons(weight, setWeight, "Weight", "decimal-pad")}
             </View>
-            <View style={styles.inputRow}>
+            <View style={styles.notesAndDateRow}>
                 <TextInput
                     style={[styles.input, styles.notesInput]}
                     placeholder="Notes"
@@ -106,14 +121,14 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
                     onChangeText={setNotes}
                     multiline
                 />
-            </View>
-            <View>
-                <DateTimePicker
-                    value={date}
-                    mode="date"
-                    display="default"
-                    onChange={onDateChange}
-                />
+                <View style={styles.datePickerContainer}>
+                    <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                    />
+                </View>
             </View>
         </View>
     );
