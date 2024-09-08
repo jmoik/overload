@@ -352,7 +352,6 @@ const StatsScreen = () => {
     return (
         <ScrollView style={styles.container}>
             <View style={{ padding: 16 }}>
-                <Text style={styles.title}>Training Progress</Text>
                 <ProgressBar
                     percentage={stats.strengthPercentage}
                     color="#FF6B6B"
