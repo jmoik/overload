@@ -37,20 +37,13 @@ const WelcomeScreen = () => {
         <SafeAreaView
             style={[styles.container, { backgroundColor: currentTheme.colors.background }]}
         >
-            <View style={styles.header}>
-                <Text style={[styles.headerText, { color: currentTheme.colors.text }]}>
-                    Workout App
-                </Text>
-            </View>
             <ScrollView
                 contentContainerStyle={styles.contentContainer}
                 showsVerticalScrollIndicator={false}
             >
-                <Text style={[styles.title, { color: currentTheme.colors.text }]}>
-                    Welcome to the Workout App!
-                </Text>
+                <Text style={[styles.title, { color: currentTheme.colors.text }]}>Welcome</Text>
                 <Text style={[styles.subtitle, { color: currentTheme.colors.text }]}>
-                    Choose your starting program(s):
+                    Choose any combination of programs:
                 </Text>
 
                 {Object.keys(suggestedPlans).map((planKey) => (

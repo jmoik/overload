@@ -1,15 +1,6 @@
 // screens/AddExerciseScreen.tsx
-import React, { useState, useEffect, useCallback } from "react";
-import {
-    View,
-    TextInput,
-    Button,
-    Alert,
-    TouchableOpacity,
-    Modal,
-    FlatList,
-    ScrollView,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, TextInput, Button, Alert, TouchableOpacity, ScrollView } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { AddExerciseScreenNavigationProp, AddExerciseScreenRouteProp } from "../types/navigation";

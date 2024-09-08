@@ -220,6 +220,11 @@ const SettingsScreen = () => {
         // },
         { id: "2", title: "Export Data", action: shareExportData },
         { id: "3", title: "Import Data", action: importData },
+        {
+            id: "4",
+            title: "Delete Data",
+            action: handleDeleteAllData,
+        },
         // { id: "4", title: "Rest Timer", action: () => navigation.navigate("RestTimer") },
         {
             id: "5",
@@ -245,11 +250,6 @@ const SettingsScreen = () => {
             id: "9",
             title: "Go to Setup Screen",
             action: goToWelcomeScreen,
-        },
-        {
-            id: "10",
-            title: "Delete All Data",
-            action: handleDeleteAllData,
         },
         {
             id: "11",

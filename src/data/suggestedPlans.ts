@@ -336,7 +336,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
         ],
     },
     no_program: {
-        name: "No Program",
+        name: "I create my own exercises",
         exercises: [],
     },
 };

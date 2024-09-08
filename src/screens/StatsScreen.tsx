@@ -1,11 +1,11 @@
 // screens/StatsScreen.tsx
-import React, { useMemo } from "react";
+import React from "react";
 import { View, Text, ScrollView, Dimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createStatsStyles } from "../../styles/globalStyles";
-import { subDays, isAfter } from "date-fns";
+import { subDays } from "date-fns";
 import {
     EnduranceExerciseHistoryEntry,
     Exercise,
@@ -13,7 +13,6 @@ import {
     MobilityExerciseHistoryEntry,
     StrengthExerciseHistoryEntry,
 } from "../contexts/Exercise";
-import PagerView from "react-native-pager-view";
 
 const calculateMovingAverage = (data: number[], windowSize: number): number[] => {
     let result = data.map((_, index, array) => {
@@ -30,13 +29,15 @@ const calculateMovingAverage = (data: number[], windowSize: number): number[] =>
     return result;
 };
 
-const ProgressBar = ({ percentage, color, label }) => {
+const ProgressBar = ({ percentage, color, label, actualSets, targetSets }) => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const barWidth = Math.min(percentage, 100); // Cap the visual bar at 100%
     return (
         <View style={{ marginBottom: 10 }}>
-            <Text style={{ marginBottom: 5, color: currentTheme.colors.text }}>{label}</Text>
+            <Text style={{ marginBottom: 5, color: currentTheme.colors.text }}>
+                {label} ({actualSets}/{targetSets})
+            </Text>
             <View style={{ height: 20, backgroundColor: "#e0e0e0", borderRadius: 10 }}>
                 <View
                     style={{
@@ -113,22 +114,12 @@ const StatsScreen = () => {
             }
 
             history.forEach((entry: ExerciseHistoryEntry) => {
-                // dayIndex = [-trainingInterval+1, -trainingInterval+2, ..., 0 (today)]
-                // dayIndex = [-10+1, -10+2, ..., 0 (today)]
-                // dayIndex = [-9, -8, ..., 0 (today)] => 10 days
-
                 const today = new Date();
                 const entryDate = new Date(entry.date);
                 const daysAgo = Math.floor(
                     (today.getTime() - entryDate.getTime()) / (1000 * 3600 * 24)
                 );
                 const dayIndex = trainingInterval - daysAgo - 1;
-
-                // console.log("Day Index: ", dayIndex);
-                // console.log("Days Ago: ", daysAgo);
-                // console.log("Entry name: ", exercise.name);
-                // console.log("Entry date: ", new Date(entry.date).getDate());
-                // console.log("Today: ", today.getDate());
 
                 if (dayIndex >= 0 && dayIndex < trainingInterval) {
                     if (isEndurance) {
@@ -178,11 +169,6 @@ const StatsScreen = () => {
             });
         });
 
-        // log
-        // console.log("Strength Load By Day: ", strengthLoadByDay);
-        // console.log("Endurance Load By Day: ", enduranceLoadByDay);
-        // console.log("Mobility Load By Day: ", mobilityLoadByDay);
-
         return {
             strengthLoadData: strengthLoadByDay.map((load) => Math.max(load, 0)),
             enduranceLoadData: enduranceLoadByDay.map((load) => Math.max(load, 0)),
@@ -213,6 +199,10 @@ const StatsScreen = () => {
         loadData = loadData.map((value) => (isNaN(value) ? 0 : value));
         const movingAverage = calculateMovingAverage(dataForMA, trainingInterval);
 
+        // Normalize data to percentages
+        const normalizedLoadData = loadData.map((load) => (load / targetLoad) * 100);
+        const normalizedMovingAverage = movingAverage.map((load) => (load / targetLoad) * 100);
+
         const result = {
             labels: Array.from(
                 { length: loadData.length },
@@ -220,32 +210,29 @@ const StatsScreen = () => {
             ),
             datasets: [
                 {
-                    data: Array(trainingInterval).fill(targetLoad),
-                    color: (opacity = 1) => "rgba(255, 0, 0, 0.8)",
-                    strokeWidth: 2,
-                    withDots: false,
-                },
-                {
-                    data: loadData,
+                    data: normalizedLoadData,
                     color: (opacity = 1) => currentTheme.colors.primary,
                     strokeWidth: 2,
                     withDots: true,
                 },
-
                 {
-                    data: movingAverage,
+                    data: normalizedMovingAverage,
                     color: (opacity = 1) => "rgba(0, 255, 0, 0.8)",
+                    strokeWidth: 2,
+                    withDots: false,
+                },
+                {
+                    data: Array(trainingInterval).fill(100),
+                    color: (opacity = 1) => "rgba(255, 0, 0, 0.8)",
                     strokeWidth: 2,
                     withDots: false,
                 },
             ],
             legend: [
-                `Target: ${targetLoad.toFixed(1)}`,
-                `Today: ${loadData[loadData.length - 1].toFixed(1)}`,
-                `MA: ${movingAverage[movingAverage.length - 1].toFixed(1)}`,
+                `Daily: ${normalizedLoadData[normalizedLoadData.length - 1].toFixed(1)}%`,
+                `MA: ${normalizedMovingAverage[normalizedMovingAverage.length - 1].toFixed(1)}%`,
             ],
         };
-        // console.log("Datasets: ", result.datasets);
 
         if (
             result.datasets[0].data.some((load: number) => isNaN(load)) ||
@@ -254,9 +241,6 @@ const StatsScreen = () => {
             result.datasets[0].data.length != trainingInterval ||
             result.datasets[2].data.length != trainingInterval
         ) {
-            console.log(result.datasets[0].data);
-            console.log(result.datasets[1].data);
-            console.log(result.datasets[2].data);
             console.log("Invalid data for chart");
         }
         return result;
@@ -278,24 +262,25 @@ const StatsScreen = () => {
                         width={screenWidth - 16}
                         height={220}
                         yAxisLabel=""
+                        yAxisSuffix="%"
                         chartConfig={{
                             backgroundColor: currentTheme.colors.background,
                             backgroundGradientFrom: currentTheme.colors.background,
                             backgroundGradientTo: currentTheme.colors.background,
-                            decimalPlaces: 1, // Set decimal places to 2 for more precision
+                            decimalPlaces: 1,
                             color: (opacity = 1) => currentTheme.colors.text,
                             labelColor: (opacity = 1) => currentTheme.colors.text,
                             propsForBackgroundLines: {
-                                strokeDasharray: "", // Solid gridlines
-                                stroke: currentTheme.colors.text, // Ensure gridlines are visible and consistent
+                                strokeDasharray: "",
+                                stroke: currentTheme.colors.text,
                             },
                             propsForDots: {
                                 r: "3",
                                 strokeWidth: "1",
                                 stroke: currentTheme.colors.text,
                             },
-                            strokeWidth: 2, // Width of the line
-                            useShadowColorFromDataset: false, // Do not use shadow color from dataset
+                            strokeWidth: 2,
+                            useShadowColorFromDataset: false,
                             propsForLabels: {
                                 fontSize: 12,
                                 fontWeight: "bold",
@@ -303,9 +288,9 @@ const StatsScreen = () => {
                         }}
                         bezier
                         style={styles.chart}
-                        formatYLabel={(value) => parseFloat(value).toFixed(1)} // Ensure y-axis labels are not rounded to integers
-                        // verticalLabelRotation={30} // Adjusts rotation of x-axis labels for better readability
-                        fromZero={true} // Ensures y-axis starts from zero
+                        formatYLabel={(value) => parseFloat(value).toFixed(0)}
+                        fromZero={true}
+                        yAxisInterval={25} // This will show 0%, 25%, 50%, 75%, 100% on the y-axis
                     />
                 ) : (
                     <Text style={styles.noDataText}>
@@ -325,10 +310,6 @@ const StatsScreen = () => {
     ) => (
         <View style={styles.statsContainer}>
             <Text style={styles.statsTitle}>{title} Interval Statistics</Text>
-            {/* <Text style={styles.statLabel}>
-                Load: {actualLoad.toFixed(1)} / {targetLoad.toFixed(1)}
-                {"\n"}
-            </Text> */}
             <Text style={styles.statLabel}>
                 Sets: {actualSets} / {targetSets}
             </Text>
@@ -376,16 +357,22 @@ const StatsScreen = () => {
                     percentage={stats.strengthPercentage}
                     color="#FF6B6B"
                     label="Strength"
+                    actualSets={stats.actualStrengthLoad}
+                    targetSets={stats.targetStrengthLoad}
                 />
                 <ProgressBar
                     percentage={stats.endurancePercentage}
                     color="#4ECDC4"
                     label="Endurance"
+                    actualSets={stats.actualEnduranceLoad}
+                    targetSets={stats.targetEnduranceLoad}
                 />
                 <ProgressBar
                     percentage={stats.mobilityPercentage}
                     color="#45B7D1"
                     label="Mobility"
+                    actualSets={stats.actualMobilityLoad}
+                    targetSets={stats.targetMobilityLoad}
                 />
             </View>
 
