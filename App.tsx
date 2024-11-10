@@ -155,11 +155,9 @@ const AppContent = () => {
 const App = () => {
     return (
         <ThemeProvider>
-            <RoutineProvider>
-                <ExerciseProvider>
-                    <AppContent />
-                </ExerciseProvider>
-            </RoutineProvider>
+            <ExerciseProvider>
+                <AppContent />
+            </ExerciseProvider>
         </ThemeProvider>
     );
 };
