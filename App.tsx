@@ -17,7 +17,10 @@ import WelcomeScreen from "./src/screens/WelcomeScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PlanPreviewScreen from "./src/screens/PlanPreviewScreen";
 import StatsScreen from "./src/screens/StatsScreen";
-import SuggestedWorkoutScreen from "./src/screens/removedScreens/SuggestedWorkoutScreen";
+import { RoutineProvider } from "./src/contexts/RoutineContext";
+import RoutinesScreen from "./src/screens/RoutinesScreen";
+import RoutineDetailScreen from "./src/screens/RoutineDetailScreen";
+import AddRoutineScreen from "./src/screens/AddRoutineScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -32,6 +35,16 @@ const Home = () => (
                 tabBarIcon: ({ color, size }) => <Icon name="list" color={color} size={size} />,
             }}
         />
+        {/* <Tab.Screen
+            name="Routines"
+            component={RoutinesScreen}
+            options={{
+                title: "Routines",
+                tabBarIcon: ({ color, size }) => (
+                    <Icon name="list-circle" color={color} size={size} />
+                ),
+            }}
+        /> */}
         <Tab.Screen
             name="Stats"
             component={StatsScreen}
@@ -121,6 +134,19 @@ const AppContent = () => {
                     component={PlanPreviewScreen}
                     options={{ title: "Plan Preview" }}
                 />
+                <Stack.Screen
+                    name="RoutineDetail"
+                    component={RoutineDetailScreen}
+                    options={{ title: "Routine Details" }}
+                />
+                <Stack.Screen
+                    name="AddRoutine"
+                    component={AddRoutineScreen}
+                    options={{
+                        presentation: "modal",
+                        title: "Add Routine",
+                    }}
+                />
             </Stack.Navigator>
         </NavigationContainer>
     );
@@ -129,9 +155,11 @@ const AppContent = () => {
 const App = () => {
     return (
         <ThemeProvider>
-            <ExerciseProvider>
-                <AppContent />
-            </ExerciseProvider>
+            <RoutineProvider>
+                <ExerciseProvider>
+                    <AppContent />
+                </ExerciseProvider>
+            </RoutineProvider>
         </ThemeProvider>
     );
 };

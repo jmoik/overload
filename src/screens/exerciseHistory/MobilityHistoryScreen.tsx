@@ -63,7 +63,8 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         setter: React.Dispatch<React.SetStateAction<string>>,
         value: string
     ) => {
-        const newValue = parseFloat(value) + 1;
+        const currentValue = value.trim() === "" ? 0 : parseFloat(value);
+        const newValue = isNaN(currentValue) ? 1 : currentValue + 1;
         setter(newValue.toString());
     };
 
@@ -71,7 +72,8 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
         setter: React.Dispatch<React.SetStateAction<string>>,
         value: string
     ) => {
-        const newValue = Math.max(0, parseFloat(value) - 1);
+        const currentValue = value.trim() === "" ? 2 : parseFloat(value);
+        const newValue = isNaN(currentValue) ? 1 : Math.max(1, currentValue - 1);
         setter(newValue.toString());
     };
 

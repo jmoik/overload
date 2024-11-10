@@ -1,6 +1,16 @@
-// StrengthHistoryScreen.tsx
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { View, TextInput, Text, TouchableOpacity, Alert, Platform } from "react-native";
+import {
+    View,
+    TextInput,
+    Text,
+    TouchableOpacity,
+    Alert,
+    Platform,
+    KeyboardAvoidingView,
+    ScrollView,
+    Keyboard,
+    TouchableWithoutFeedback,
+} from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -69,7 +79,8 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         setter: React.Dispatch<React.SetStateAction<string>>,
         value: string
     ) => {
-        const newValue = parseFloat(value) + 1;
+        const currentValue = value.trim() === "" ? 0 : parseFloat(value);
+        const newValue = isNaN(currentValue) ? 1 : currentValue + 1;
         setter(newValue.toString());
     };
 
@@ -77,7 +88,8 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         setter: React.Dispatch<React.SetStateAction<string>>,
         value: string
     ) => {
-        const newValue = Math.max(0, parseFloat(value) - 1);
+        const currentValue = value.trim() === "" ? 2 : parseFloat(value);
+        const newValue = isNaN(currentValue) ? 1 : Math.max(1, currentValue - 1);
         setter(newValue.toString());
     };
 
@@ -98,6 +110,8 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
                 value={value}
                 onChangeText={setter}
                 keyboardType={keyboardType}
+                returnKeyType="done"
+                onSubmitEditing={Keyboard.dismiss}
             />
             <TouchableOpacity style={styles.button} onPress={() => incrementValue(setter, value)}>
                 <Text style={styles.buttonText}>+</Text>
@@ -106,31 +120,47 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     );
 
     const renderInputFields = () => (
-        <View>
-            <View style={styles.inputRowInputFields}>
-                {renderInputWithButtons(sets, setSets, "Sets")}
-                {renderInputWithButtons(reps, setReps, "Reps")}
-                {renderInputWithButtons(weight, setWeight, "Weight", "decimal-pad")}
-            </View>
-            <View style={styles.notesAndDateRow}>
-                <TextInput
-                    style={[styles.input, styles.notesInput]}
-                    placeholder="Notes"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={notes}
-                    onChangeText={setNotes}
-                    multiline
-                />
-                <View style={styles.datePickerContainer}>
-                    <DateTimePicker
-                        value={date}
-                        mode="date"
-                        display="default"
-                        onChange={onDateChange}
-                    />
-                </View>
-            </View>
-        </View>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View>
+                        <View style={styles.inputRowInputFields}>
+                            {renderInputWithButtons(sets, setSets, "Sets")}
+                            {renderInputWithButtons(reps, setReps, "Reps")}
+                            {renderInputWithButtons(weight, setWeight, "Weight", "decimal-pad")}
+                        </View>
+                        <View style={styles.notesAndDateRow}>
+                            <TextInput
+                                style={[styles.input, styles.notesInput]}
+                                placeholder="Notes"
+                                placeholderTextColor={currentTheme.colors.placeholder}
+                                value={notes}
+                                onChangeText={setNotes}
+                                multiline
+                                returnKeyType="done"
+                                onSubmitEditing={Keyboard.dismiss}
+                            />
+                            <View style={styles.datePickerContainer}>
+                                <DateTimePicker
+                                    value={date}
+                                    mode="date"
+                                    display="default"
+                                    onChange={onDateChange}
+                                />
+                            </View>
+                        </View>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 
     const handleDeleteEntry = useCallback(
@@ -248,6 +278,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         }
 
         setEditingEntry(null);
+        Keyboard.dismiss();
     };
 
     const fillFromLastWorkout = useCallback(() => {
@@ -262,14 +293,20 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     }, [exerciseHistory, exerciseId]);
 
     return (
-        <BaseHistoryScreen
-            exerciseId={exerciseId}
-            renderInputFields={renderInputFields}
-            renderHistoryItem={renderHistoryItem}
-            handleAddOrUpdateEntry={handleAddOrUpdateEntry}
-            editingEntry={editingEntry}
-            styles={styles}
-        />
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+        >
+            <BaseHistoryScreen
+                exerciseId={exerciseId}
+                renderInputFields={renderInputFields}
+                renderHistoryItem={renderHistoryItem}
+                handleAddOrUpdateEntry={handleAddOrUpdateEntry}
+                editingEntry={editingEntry}
+                styles={styles}
+            />
+        </KeyboardAvoidingView>
     );
 };
 
