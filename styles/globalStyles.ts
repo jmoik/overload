@@ -289,30 +289,29 @@ const createAddExerciseScreenStyles = (theme: typeof lightTheme | typeof darkThe
 // ExerciseHistoryScreen specific styles
 const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     StyleSheet.create({
-        historyList: {
-            flex: 1,
-        },
-        separator: {
-            height: 2,
-            backgroundColor: "#aaa",
-            marginVertical: 20,
-        },
-        inputSection: {
-            padding: 10,
-            marginRight: -10,
-        },
         container: {
             flex: 1,
-            padding: 15,
-            paddingBottom: 45,
             backgroundColor: theme.colors.background,
         },
-        inputRow: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 10,
+        historyListContainer: {
+            flex: 1,
+            padding: 15,
         },
-        dateRow: {
+        inputSection: {
+            backgroundColor: theme.colors.background,
+            padding: 15,
+            borderTopWidth: 1,
+            borderTopColor: theme.colors.border,
+            shadowColor: "#000",
+            shadowOffset: {
+                width: 0,
+                height: -2,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 3,
+            elevation: 5,
+        },
+        inputRow: {
             flexDirection: "row",
             justifyContent: "space-between",
             marginBottom: 10,
@@ -329,40 +328,17 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             justifyContent: "space-between",
             alignItems: "center",
             marginBottom: 10,
+            borderRadius: 5,
         },
         datePickerContainer: {
-            width: 120, // Adjust this value based on your date picker's width
-        },
-        smallInput: {
-            flex: 1,
-            marginRight: 5,
-            color: theme.colors.text, // Ensure text is visible in dark mode
+            width: 123,
+            borderWidth: 0,
+            borderRadius: 5,
         },
         notesInput: {
             flex: 1,
-            color: theme.colors.text, // Ensure text is visible in dark mode
-        },
-        dateButton: {
-            backgroundColor: theme.colors.card,
-            padding: 10,
-            borderRadius: 5,
-            alignItems: "center",
-            justifyContent: "center",
-            flex: 1,
-            marginRight: -50,
-        },
-        dateButtonText: {
-            color: theme.colors.text, // Ensure text is visible in dark mode
-        },
-        title: {
-            fontSize: 24,
-            fontWeight: "bold",
-            marginBottom: 20,
             color: theme.colors.text,
-        },
-        inputContainer: {
-            flexDirection: "row",
-            marginBottom: 20,
+            borderRadius: 5,
         },
         input: {
             flex: 1,
@@ -371,7 +347,7 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             padding: 10,
             marginRight: 10,
             borderRadius: 5,
-            color: theme.colors.text, // Ensure text is visible in dark mode
+            color: theme.colors.text,
         },
         historyItem: {
             padding: 10,
@@ -389,55 +365,6 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             width: 80,
             height: "100%",
         },
-        oneRepMax: {
-            color: theme.colors.text,
-            fontWeight: "bold",
-            textAlign: "right",
-        },
-        timerContainer: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 20,
-        },
-        timerText: {
-            fontSize: 20,
-            fontWeight: "bold",
-            color: theme.colors.text,
-        },
-        header: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 10,
-        },
-        headerButtons: {
-            flexDirection: "row",
-            alignItems: "center",
-        },
-        fillButton: {
-            marginRight: 20,
-            marginBottom: 20,
-        },
-        sectionTitle: {
-            fontSize: 18,
-            fontWeight: "bold",
-            marginTop: 20,
-            marginBottom: 10,
-            color: theme.colors.text,
-        },
-        historyGroup: { marginBottom: 20 },
-        historyGroupDate: {
-            fontSize: 18,
-            fontWeight: "bold",
-            marginBottom: 10,
-            color: theme.colors.text,
-        },
-        notes: {
-            fontSize: 12,
-            marginTop: 4,
-            color: theme.colors.text,
-        },
         dateHeader: {
             fontSize: 18,
             fontWeight: "bold",
@@ -445,55 +372,15 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             color: theme.colors.text,
             padding: 10,
         },
-        setItem: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: 10,
-            borderBottomWidth: 1,
-            borderBottomColor: theme.colors.border,
-        },
-        setText: {
-            fontSize: 16,
-            color: theme.colors.text,
-        },
-        workoutItem: {
-            padding: 10,
-            borderBottomWidth: 1,
-            borderBottomColor: theme.colors.border,
-        },
-        selectedWorkout: {
-            backgroundColor: theme.colors.primary + "33", // Adding some transparency
-        },
-        workoutDate: {
-            fontSize: 16,
-            fontWeight: "bold",
-            color: theme.colors.text,
-        },
-        workoutDetails: {
-            fontSize: 14,
-            color: theme.colors.text,
-        },
-        importButton: {
-            backgroundColor: theme.colors.primary,
-            padding: 15,
-            borderRadius: 5,
-            margin: 10,
-            alignItems: "center",
-        },
-        importButtonText: {
-            color: "white",
-            fontSize: 16,
-            fontWeight: "bold",
-        },
         container2: {
             flexDirection: "row",
             alignItems: "center",
             borderWidth: 1,
-            borderColor: "#ccc",
-            borderRadius: 5,
+            borderColor: theme.colors.border,
+            borderRadius: 20,
             overflow: "hidden",
             marginHorizontal: 5,
+            backgroundColor: theme.colors.card,
         },
         inputt: {
             width: 40,
@@ -502,12 +389,47 @@ const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof dar
             color: theme.colors.text,
         },
         button: {
+            padding: 12,
+            backgroundColor: theme.colors.primary,
+            borderRadius: 20,
+            justifyContent: "center",
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 2,
+            elevation: 3,
+            marginBottom: 20,
+        },
+        incrementButton: {
             padding: 10,
+            width: 34,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: theme.colors.card,
+            borderRadius: 0,
+        },
+        incrementButtonText: {
+            fontSize: 20,
+            fontWeight: "600",
+            color: theme.colors.primary,
         },
         buttonText: {
-            fontSize: 18,
-            fontWeight: "bold",
-            color: "#333",
+            fontSize: 16,
+            fontWeight: "600",
+            color: "#FFFFFF",
+        },
+        text: {
+            color: theme.colors.text,
+        },
+        notes: {
+            fontSize: 12,
+            marginTop: 4,
+            color: theme.colors.text,
+            borderRadius: 5,
         },
     });
 // ExerciseHistoryScreen specific styles

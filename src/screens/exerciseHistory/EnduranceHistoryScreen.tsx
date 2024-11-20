@@ -1,10 +1,18 @@
-// EnduranceHistoryScreen.tsx
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { View, TextInput, Text, TouchableOpacity, Alert, Platform } from "react-native";
+import {
+    View,
+    TextInput,
+    Text,
+    TouchableOpacity,
+    Alert,
+    Platform,
+    ScrollView,
+    KeyboardAvoidingView,
+    Keyboard,
+} from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import BaseHistoryScreen from "./BaseHistoryScreen";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
 import { EnduranceExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contexts/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -19,6 +27,10 @@ import { useNavigation } from "@react-navigation/native";
 
 interface EnduranceHistoryScreenProps {
     exerciseId: string;
+}
+
+interface GroupedEntries {
+    [date: string]: EnduranceExerciseHistoryEntry[];
 }
 
 const permissions: HealthKitPermissions = {
@@ -73,16 +85,18 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         });
     };
 
-    if (Platform.OS === "ios" && !isHealthKitAuthorized) {
-        initializeHealthKit();
-    }
+    useEffect(() => {
+        if (Platform.OS === "ios") {
+            initializeHealthKit();
+        }
+    }, []);
 
     useEffect(() => {
         if (exercise) {
             navigation.setOptions({ title: exercise.name });
         }
         fillFromLastWorkout();
-    }, [exercise, navigation]);
+    }, [exercise]);
 
     const onDateChange = (event: any, selectedDate?: Date) => {
         if (selectedDate) {
@@ -99,30 +113,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         setTime(enduranceEntry.time.toString());
         setAvgHeartRate(enduranceEntry.avgHeartRate?.toString() || "");
     };
-
-    const renderInputWithButtons = (
-        value: string,
-        setter: React.Dispatch<React.SetStateAction<string>>,
-        placeholder: string,
-        keyboardType: "numeric" | "decimal-pad" = "numeric"
-    ) => (
-        <View style={styles.container2}>
-            <TouchableOpacity style={styles.button} onPress={() => decrementValue(setter, value)}>
-                <Text style={styles.buttonText}>-</Text>
-            </TouchableOpacity>
-            <TextInput
-                style={styles.inputt}
-                placeholder={placeholder}
-                placeholderTextColor={currentTheme.colors.placeholder}
-                value={value}
-                onChangeText={setter}
-                keyboardType={keyboardType}
-            />
-            <TouchableOpacity style={styles.button} onPress={() => incrementValue(setter, value)}>
-                <Text style={styles.buttonText}>+</Text>
-            </TouchableOpacity>
-        </View>
-    );
 
     const incrementValue = (
         setter: React.Dispatch<React.SetStateAction<string>>,
@@ -142,41 +132,37 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         setter(newValue.toString());
     };
 
-    const renderInputFields = () => (
-        <View>
-            <View style={styles.inputRowInputFields}>
-                {renderInputWithButtons(distance, setDistance, "Distance (km)", "decimal-pad")}
-                {renderInputWithButtons(time, setTime, "Time (min)", "decimal-pad")}
-            </View>
-            <View style={styles.notesAndDateRow}>
-                <TextInput
-                    style={[styles.input, styles.notesInput]}
-                    placeholder="Notes"
-                    placeholderTextColor={currentTheme.colors.placeholder}
-                    value={notes}
-                    onChangeText={setNotes}
-                    multiline
-                />
-                <View style={styles.datePickerContainer}>
-                    <DateTimePicker
-                        value={date}
-                        mode="date"
-                        display="default"
-                        onChange={onDateChange}
-                    />
-                </View>
-            </View>
+    const renderInputWithButtons = (
+        value: string,
+        setter: React.Dispatch<React.SetStateAction<string>>,
+        placeholder: string,
+        keyboardType: "numeric" | "decimal-pad" = "numeric"
+    ) => (
+        <View style={styles.container2}>
+            <TouchableOpacity
+                style={styles.incrementButton}
+                onPress={() => decrementValue(setter, value)}
+            >
+                <Text style={styles.incrementButtonText}>-</Text>
+            </TouchableOpacity>
+            <TextInput
+                style={styles.inputt}
+                placeholder={placeholder}
+                placeholderTextColor={currentTheme.colors.placeholder}
+                value={value}
+                onChangeText={setter}
+                keyboardType={keyboardType}
+                returnKeyType="done"
+                onSubmitEditing={Keyboard.dismiss}
+            />
+            <TouchableOpacity
+                style={styles.incrementButton}
+                onPress={() => incrementValue(setter, value)}
+            >
+                <Text style={styles.incrementButtonText}>+</Text>
+            </TouchableOpacity>
         </View>
     );
-
-    const resetForm = () => {
-        setDistance("");
-        setTime("");
-        setAvgHeartRate("");
-        setNotes("");
-        setDate(new Date());
-        setEditingEntry(null);
-    };
 
     const handleDeleteEntry = useCallback(
         (entryToDelete: ExerciseHistoryEntry) => {
@@ -186,13 +172,10 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                     text: "Delete",
                     onPress: () => {
                         const index = exerciseHistory[exerciseId].findIndex(
-                            (item) => item.id === entryToDelete.id
+                            (item) => item === entryToDelete
                         );
                         if (index !== -1) {
                             deleteExerciseHistoryEntry(exerciseId, index);
-                            if (editingEntry && editingEntry.id === entryToDelete.id) {
-                                resetForm();
-                            }
                         }
                         swipeableRefs.current.forEach((ref) => ref?.close());
                     },
@@ -200,57 +183,53 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                 },
             ]);
         },
-        [deleteExerciseHistoryEntry, exerciseId, exerciseHistory, editingEntry]
+        [deleteExerciseHistoryEntry, exerciseId, exerciseHistory]
     );
 
-    const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => {
-        const item_ = item as EnduranceExerciseHistoryEntry;
-        const currentDate = new Date(item_.date).toLocaleDateString();
-        const previousDate =
-            index > 0
-                ? new Date(exerciseHistory[exerciseId][index - 1].date).toLocaleDateString()
-                : null;
-        const paceMinutes =
-            item_.time > 0 ? Math.floor(item_.time / item_.distance).toFixed(0) : "0";
-        const paceSeconds = item_.time > 0 ? ((item_.time * 60) / item_.distance) % 60 : 0;
+    const groupEntriesByDate = (entries: ExerciseHistoryEntry[]): GroupedEntries => {
+        return entries.reduce((groups: GroupedEntries, entry) => {
+            const date = new Date(entry.date).toLocaleDateString();
+            if (!groups[date]) {
+                groups[date] = [];
+            }
+            groups[date].push(entry as EnduranceExerciseHistoryEntry);
+            return groups;
+        }, {});
+    };
+
+    const renderHistoryItem = (item: EnduranceExerciseHistoryEntry, index: number) => {
+        const paceMinutes = item.time > 0 ? Math.floor(item.time / item.distance).toFixed(0) : "0";
+        const paceSeconds = item.time > 0 ? ((item.time * 60) / item.distance) % 60 : 0;
         const pace = `${paceMinutes}\'${paceSeconds < 10 ? "0" : ""}${Math.round(paceSeconds)}\"`;
 
         return (
-            <>
-                {(index === 0 || currentDate !== previousDate) && (
-                    <Text style={styles.dateHeader}>{currentDate}</Text>
-                )}
-                <Swipeable
-                    ref={(el) => (swipeableRefs.current[index] = el)}
-                    key={item_.id}
-                    renderRightActions={() => (
-                        <TouchableOpacity
-                            style={styles.deleteButton}
-                            onPress={() => handleDeleteEntry(item_)}
-                        >
-                            <Icon name="trash-outline" size={24} color="#FFFFFF" />
-                        </TouchableOpacity>
-                    )}
-                    rightThreshold={40}
-                >
+            <Swipeable
+                ref={(el) => (swipeableRefs.current[index] = el)}
+                key={item.id}
+                renderRightActions={() => (
                     <TouchableOpacity
-                        style={styles.historyItem}
-                        onPress={() => handleEditEntry(item_)}
+                        style={styles.deleteButton}
+                        onPress={() => handleDeleteEntry(item)}
                     >
-                        <Text style={styles.text}>
-                            {`${item_.distance.toFixed(2)} km in ${item_.time.toFixed(0)} min`}
-                            {item_.avgHeartRate && ` @ ${item_.avgHeartRate} bpm`}
-                            {` @ ${pace}`}
-                            {item_.notes && (
-                                <Text style={styles.notes}>
-                                    {"\n"}
-                                    {item_.notes}
-                                </Text>
-                            )}
-                        </Text>
+                        <Icon name="trash-outline" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
-                </Swipeable>
-            </>
+                )}
+                rightThreshold={40}
+            >
+                <TouchableOpacity style={styles.historyItem} onPress={() => handleEditEntry(item)}>
+                    <Text style={styles.text}>
+                        {`${item.distance.toFixed(2)} km in ${item.time.toFixed(0)} min`}
+                        {item.avgHeartRate && ` @ ${item.avgHeartRate} bpm`}
+                        {` @ ${pace}`}
+                        {item.notes && (
+                            <Text style={styles.notes}>
+                                {"\n"}
+                                {item.notes}
+                            </Text>
+                        )}
+                    </Text>
+                </TouchableOpacity>
+            </Swipeable>
         );
     };
 
@@ -298,7 +277,8 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             addExerciseToHistory(exerciseId, entry);
         }
 
-        resetForm();
+        setEditingEntry(null);
+        Keyboard.dismiss();
     };
 
     const fillFromLastWorkout = useCallback(() => {
@@ -311,6 +291,67 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             setNotes(lastWorkout.notes);
         }
     }, [exerciseHistory, exerciseId]);
+
+    const renderInputFields = () => (
+        <View style={styles.inputSection}>
+            <View style={styles.inputRowInputFields}>
+                {renderInputWithButtons(distance, setDistance, "Distance (km)", "decimal-pad")}
+                {renderInputWithButtons(time, setTime, "Time (min)", "decimal-pad")}
+            </View>
+            <View style={styles.notesAndDateRow}>
+                <TextInput
+                    style={styles.notesInput}
+                    placeholder="Notes"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={notes}
+                    onChangeText={setNotes}
+                    multiline
+                    returnKeyType="done"
+                    onSubmitEditing={Keyboard.dismiss}
+                />
+                <View
+                    style={[
+                        styles.datePickerContainer,
+                        theme === "dark" && { backgroundColor: "#444444" }, // or any other dark gray color
+                    ]}
+                >
+                    <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                    />
+                </View>
+            </View>
+            <TouchableOpacity
+                style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
+                onPress={handleAddOrUpdateEntry}
+            >
+                <Text style={[styles.buttonText, { color: "#fff" }]}>
+                    {editingEntry ? "Update Entry" : "Add Entry"}
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const renderHistoryList = () => {
+        const sortedHistory = [...(exerciseHistory[exerciseId] || [])].sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+
+        const groupedEntries = groupEntriesByDate(sortedHistory);
+
+        return (
+            <ScrollView style={styles.historyListContainer}>
+                {Object.entries(groupedEntries).map(([date, entries]) => (
+                    <View key={date}>
+                        <Text style={styles.dateHeader}>{date}</Text>
+                        {entries.map((entry, index) => renderHistoryItem(entry, index))}
+                    </View>
+                ))}
+            </ScrollView>
+        );
+    };
 
     const checkForNewWorkouts = () => {
         if (Platform.OS === "ios") {
@@ -348,7 +389,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                     };
                 });
 
-                // print workouts
                 console.log("Workouts:", processedWorkouts);
 
                 const sortedWorkouts = processedWorkouts.sort(
@@ -425,15 +465,25 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         Alert.alert("Success", `${workouts.length} new workouts have been imported.`);
     };
 
+    const resetForm = () => {
+        setEditingEntry(null);
+        setDistance("");
+        setTime("");
+        setAvgHeartRate("");
+        setNotes("");
+        setDate(new Date());
+        Keyboard.dismiss();
+    };
+
     return (
-        <BaseHistoryScreen
-            exerciseId={exerciseId}
-            renderInputFields={renderInputFields}
-            renderHistoryItem={renderHistoryItem}
-            handleAddOrUpdateEntry={handleAddOrUpdateEntry}
-            editingEntry={editingEntry}
-            styles={styles}
-        />
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+        >
+            {renderHistoryList()}
+            {renderInputFields()}
+        </KeyboardAvoidingView>
     );
 };
 

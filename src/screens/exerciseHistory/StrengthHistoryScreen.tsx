@@ -14,7 +14,6 @@ import {
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import BaseHistoryScreen from "./BaseHistoryScreen";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
 import { StrengthExerciseHistoryEntry, ExerciseHistoryEntry } from "../../contexts/Exercise";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -24,6 +23,10 @@ import { useNavigation } from "@react-navigation/native";
 
 interface StrengthHistoryScreenProps {
     exerciseId: string;
+}
+
+interface GroupedEntries {
+    [date: string]: StrengthExerciseHistoryEntry[];
 }
 
 const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseId }) => {
@@ -39,6 +42,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     const [notes, setNotes] = useState("");
 
     const navigation = useNavigation();
+    const swipeableRefs = useRef<(Swipeable | null)[]>([]);
 
     const {
         addExerciseToHistory,
@@ -47,8 +51,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         exerciseHistory,
         exercises,
     } = useExerciseContext();
-
-    const swipeableRefs = useRef<(Swipeable | null)[]>([]);
 
     const exercise = exercises.find((e) => e.id === exerciseId);
 
@@ -100,8 +102,11 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         keyboardType: "numeric" | "decimal-pad" = "numeric"
     ) => (
         <View style={styles.container2}>
-            <TouchableOpacity style={styles.button} onPress={() => decrementValue(setter, value)}>
-                <Text style={styles.buttonText}>-</Text>
+            <TouchableOpacity
+                style={styles.incrementButton}
+                onPress={() => decrementValue(setter, value)}
+            >
+                <Text style={styles.incrementButtonText}>-</Text>
             </TouchableOpacity>
             <TextInput
                 style={styles.inputt}
@@ -113,54 +118,13 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
                 returnKeyType="done"
                 onSubmitEditing={Keyboard.dismiss}
             />
-            <TouchableOpacity style={styles.button} onPress={() => incrementValue(setter, value)}>
-                <Text style={styles.buttonText}>+</Text>
+            <TouchableOpacity
+                style={styles.incrementButton}
+                onPress={() => incrementValue(setter, value)}
+            >
+                <Text style={styles.incrementButtonText}>+</Text>
             </TouchableOpacity>
         </View>
-    );
-
-    const renderInputFields = () => (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
-        >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <ScrollView
-                    contentContainerStyle={{ flexGrow: 1 }}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                >
-                    <View>
-                        <View style={styles.inputRowInputFields}>
-                            {renderInputWithButtons(sets, setSets, "Sets")}
-                            {renderInputWithButtons(reps, setReps, "Reps")}
-                            {renderInputWithButtons(weight, setWeight, "Weight", "decimal-pad")}
-                        </View>
-                        <View style={styles.notesAndDateRow}>
-                            <TextInput
-                                style={[styles.input, styles.notesInput]}
-                                placeholder="Notes"
-                                placeholderTextColor={currentTheme.colors.placeholder}
-                                value={notes}
-                                onChangeText={setNotes}
-                                multiline
-                                returnKeyType="done"
-                                onSubmitEditing={Keyboard.dismiss}
-                            />
-                            <View style={styles.datePickerContainer}>
-                                <DateTimePicker
-                                    value={date}
-                                    mode="date"
-                                    display="default"
-                                    onChange={onDateChange}
-                                />
-                            </View>
-                        </View>
-                    </View>
-                </ScrollView>
-            </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
     );
 
     const handleDeleteEntry = useCallback(
@@ -184,55 +148,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         },
         [deleteExerciseHistoryEntry, exerciseId, exerciseHistory]
     );
-
-    const renderHistoryItem = ({ item, index }: { item: ExerciseHistoryEntry; index: number }) => {
-        const item_ = item as StrengthExerciseHistoryEntry;
-        const currentDate = new Date(item_.date).toLocaleDateString();
-        const previousDate =
-            index > 0
-                ? new Date(exerciseHistory[exerciseId][index - 1].date)
-                      .toLocaleDateString()
-                      .split("T")[0]
-                : null;
-
-        return (
-            <>
-                {(index === 0 || currentDate !== previousDate) && (
-                    <Text style={styles.dateHeader}>{currentDate}</Text>
-                )}
-                <Swipeable
-                    ref={(el) => (swipeableRefs.current[index] = el)}
-                    key={item_.id}
-                    renderRightActions={() => (
-                        <TouchableOpacity
-                            style={styles.deleteButton}
-                            onPress={() => handleDeleteEntry(item_)}
-                        >
-                            <Icon name="trash-outline" size={24} color="#FFFFFF" />
-                        </TouchableOpacity>
-                    )}
-                    rightThreshold={40}
-                >
-                    <TouchableOpacity
-                        style={styles.historyItem}
-                        onPress={() => handleEditEntry(item_)}
-                    >
-                        <Text style={styles.text}>
-                            {`${item_.sets} sets x ${item_.reps} reps @ ${
-                                item_.weight > 0 ? item_.weight + " kg" : "BW"
-                            }`}
-                            {item_.notes && (
-                                <Text style={styles.notes}>
-                                    {"\n"}
-                                    {item_.notes}
-                                </Text>
-                            )}
-                        </Text>
-                    </TouchableOpacity>
-                </Swipeable>
-            </>
-        );
-    };
 
     const handleAddOrUpdateEntry = () => {
         if (!sets.trim() || !reps.trim()) {
@@ -292,20 +207,119 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         }
     }, [exerciseHistory, exerciseId]);
 
+    const renderInputFields = () => (
+        <View style={styles.inputSection}>
+            <View style={styles.inputRowInputFields}>
+                {renderInputWithButtons(sets, setSets, "Sets")}
+                {renderInputWithButtons(reps, setReps, "Reps")}
+                {renderInputWithButtons(weight, setWeight, "Weight", "decimal-pad")}
+            </View>
+            <View style={styles.notesAndDateRow}>
+                <TextInput
+                    style={styles.notesInput}
+                    placeholder="Notes"
+                    placeholderTextColor={currentTheme.colors.placeholder}
+                    value={notes}
+                    onChangeText={setNotes}
+                    multiline
+                    returnKeyType="done"
+                    onSubmitEditing={Keyboard.dismiss}
+                />
+                <View
+                    style={[
+                        styles.datePickerContainer,
+                        theme === "dark" && { backgroundColor: "#444444" }, // or any other dark gray color
+                    ]}
+                >
+                    <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                    />
+                </View>
+            </View>
+            <TouchableOpacity
+                style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
+                onPress={handleAddOrUpdateEntry}
+            >
+                <Text style={[styles.buttonText, { color: "#fff" }]}>
+                    {editingEntry ? "Update Entry" : "Add Entry"}
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const groupEntriesByDate = (entries: ExerciseHistoryEntry[]): GroupedEntries => {
+        return entries.reduce((groups: GroupedEntries, entry) => {
+            const date = new Date(entry.date).toLocaleDateString();
+            if (!groups[date]) {
+                groups[date] = [];
+            }
+            groups[date].push(entry as StrengthExerciseHistoryEntry);
+            return groups;
+        }, {});
+    };
+
+    const renderHistoryItem = (item: StrengthExerciseHistoryEntry, index: number) => {
+        return (
+            <Swipeable
+                ref={(el) => (swipeableRefs.current[index] = el)}
+                key={item.id}
+                renderRightActions={() => (
+                    <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => handleDeleteEntry(item)}
+                    >
+                        <Icon name="trash-outline" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
+                )}
+                rightThreshold={40}
+            >
+                <TouchableOpacity style={styles.historyItem} onPress={() => handleEditEntry(item)}>
+                    <Text style={styles.text}>
+                        {`${item.sets} sets x ${item.reps} reps @ ${
+                            item.weight > 0 ? item.weight + " kg" : "BW"
+                        }`}
+                        {item.notes && (
+                            <Text style={styles.notes}>
+                                {"\n"}
+                                {item.notes}
+                            </Text>
+                        )}
+                    </Text>
+                </TouchableOpacity>
+            </Swipeable>
+        );
+    };
+
+    const renderHistoryList = () => {
+        const sortedHistory = [...(exerciseHistory[exerciseId] || [])].sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+
+        const groupedEntries = groupEntriesByDate(sortedHistory);
+
+        return (
+            <ScrollView style={styles.historyListContainer}>
+                {Object.entries(groupedEntries).map(([date, entries]) => (
+                    <View key={date}>
+                        <Text style={styles.dateHeader}>{date}</Text>
+                        {entries.map((entry, index) => renderHistoryItem(entry, index))}
+                    </View>
+                ))}
+            </ScrollView>
+        );
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1 }}
+            style={styles.container}
             keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
         >
-            <BaseHistoryScreen
-                exerciseId={exerciseId}
-                renderInputFields={renderInputFields}
-                renderHistoryItem={renderHistoryItem}
-                handleAddOrUpdateEntry={handleAddOrUpdateEntry}
-                editingEntry={editingEntry}
-                styles={styles}
-            />
+            {renderHistoryList()}
+            {renderInputFields()}
         </KeyboardAvoidingView>
     );
 };

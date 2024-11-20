@@ -36,7 +36,7 @@ const ProgressBar = ({ percentage, color, label, actualSets, targetSets }) => {
     return (
         <View style={{ marginBottom: 10 }}>
             <Text style={{ marginBottom: 5, color: currentTheme.colors.text }}>
-                {label} ({actualSets}/{targetSets})
+                {label} ({Math.round(actualSets)}/{targetSets})
             </Text>
             <View style={{ height: 20, backgroundColor: "#e0e0e0", borderRadius: 10 }}>
                 <View
