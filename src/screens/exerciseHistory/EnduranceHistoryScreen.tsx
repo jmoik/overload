@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import {
     View,
     TextInput,
@@ -67,6 +67,15 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         exerciseHistory,
         exercises,
     } = useExerciseContext();
+
+    const scrollViewRef = useRef<ScrollView>(null);
+    useLayoutEffect(() => {
+        if (exerciseHistory[exerciseId]?.length) {
+            setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({ animated: false });
+            }, 100);
+        }
+    }, [exerciseHistory, exerciseId]);
 
     const swipeableRefs = useRef<(Swipeable | null)[]>([]);
 
@@ -342,7 +351,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         const groupedEntries = groupEntriesByDate(sortedHistory);
 
         return (
-            <ScrollView style={styles.historyListContainer}>
+            <ScrollView ref={scrollViewRef} style={styles.historyListContainer}>
                 {Object.entries(groupedEntries).map(([date, entries]) => (
                     <View key={date}>
                         <Text style={styles.dateHeader}>{date}</Text>
