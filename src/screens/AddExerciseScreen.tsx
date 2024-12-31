@@ -1,5 +1,5 @@
 // screens/AddExerciseScreen.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { View, TextInput, Button, Alert, TouchableOpacity, ScrollView } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useExerciseContext } from "../contexts/ExerciseContext";
@@ -16,7 +16,7 @@ const AddExerciseScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createAddExerciseStyles(currentTheme);
-    const { addExercise, updateExercise, exercises } = useExerciseContext();
+    const { addExercise, deleteExercise, updateExercise, exercises } = useExerciseContext();
     const navigation = useNavigation<AddExerciseScreenNavigationProp>();
     const route = useRoute<AddExerciseScreenRouteProp>();
     const exerciseId = route.params?.exerciseId;
@@ -77,6 +77,36 @@ const AddExerciseScreen = () => {
 
         navigation.goBack();
     };
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () =>
+                exerciseId ? (
+                    <TouchableOpacity
+                        onPress={() => {
+                            Alert.alert(
+                                "Delete Exercise",
+                                "Are you sure you want to delete this exercise?",
+                                [
+                                    { text: "Cancel", style: "cancel" },
+                                    {
+                                        text: "Delete",
+                                        style: "destructive",
+                                        onPress: () => {
+                                            deleteExercise(exerciseId);
+                                            navigation.goBack();
+                                        },
+                                    },
+                                ]
+                            );
+                        }}
+                        style={{ marginRight: 15 }}
+                    >
+                        <Icon name="delete" size={24} color="#FF0000" />
+                    </TouchableOpacity>
+                ) : undefined,
+        });
+    }, [navigation, exerciseId, deleteExercise, currentTheme.colors.primary]);
 
     const handleAddSet = () => {
         setWorkout([...workout, { reps: 0, relativeWeight: 0, isAMRAP: false }]);

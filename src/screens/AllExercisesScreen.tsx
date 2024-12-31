@@ -15,6 +15,7 @@ import {
 import { subDays, isAfter } from "date-fns";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createAllExercisesStyles } from "../../styles/globalStyles";
+import { generateEntryId } from "../utils/utils";
 
 type CategoryFilter = "all" | "strength" | "mobility" | "endurance";
 
@@ -22,9 +23,10 @@ const AllExercisesScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createAllExercisesStyles(currentTheme);
-    const { exercises, deleteExercise, exerciseHistory, trainingInterval } = useExerciseContext();
+    const { exercises, addExerciseToHistory, deleteExercise, exerciseHistory, trainingInterval } =
+        useExerciseContext();
     const navigation = useNavigation<RoutineScreenNavigationProp>();
-    const swipeableRefs = useRef<(Swipeable | null)[]>([]);
+    const swipeableRefs = useRef(new Map<string, Swipeable | null>());
     const isFocused = useIsFocused();
     const [sortBySetsLeft, setSortBySetsLeft] = useState(true);
     const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
@@ -76,34 +78,85 @@ const AllExercisesScreen = () => {
     );
 
     const handleEditExercise = useCallback(
-        (exerciseId: string, index: number) => {
+        (exerciseId: string) => {
             navigation.navigate("AddExercise", { exerciseId });
-            swipeableRefs.current[index]?.close();
+            const ref = swipeableRefs.current.get(exerciseId);
+            if (ref) {
+                ref.close();
+            }
         },
         [navigation]
     );
 
-    const renderRightActions = useCallback(
-        (exerciseId: string, exerciseName: string) => {
-            return (
-                <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => handleDeleteExercise(exerciseId, exerciseName)}
-                >
-                    <Icon name="trash-outline" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-            );
-        },
-        [handleDeleteExercise]
-    );
-
-    const renderLeftActions = useCallback(() => {
+    const renderRightActions = useCallback(() => {
         return (
             <View style={styles.editButton}>
                 <Icon name="create-outline" size={24} color="#FFFFFF" />
             </View>
         );
     }, []);
+
+    const handleLogSet = useCallback(
+        (exercise: Exercise) => {
+            let entryWithoutId;
+
+            switch (exercise.category) {
+                case "strength":
+                    entryWithoutId = {
+                        date: new Date(),
+                        category: "strength" as const,
+                        sets: 1,
+                        reps: 0,
+                        weight: 0,
+                        notes: "auto logged",
+                    };
+                    break;
+                case "mobility":
+                    entryWithoutId = {
+                        date: new Date(),
+                        category: "mobility" as const,
+                        sets: 1,
+                        notes: "auto logged",
+                    };
+                    break;
+                case "endurance":
+                    entryWithoutId = {
+                        date: new Date(),
+                        category: "endurance" as const,
+                        distance: 1,
+                        time: 0,
+                        notes: "auto logged",
+                    };
+                    break;
+                default:
+                    entryWithoutId = {
+                        date: new Date(),
+                        category: "strength" as const,
+                        sets: 1,
+                        reps: 0,
+                        weight: 0,
+                        notes: "",
+                    };
+            }
+
+            const entry = {
+                ...entryWithoutId,
+                id: generateEntryId(entryWithoutId),
+            };
+
+            addExerciseToHistory(exercise.id, entry);
+        },
+        [addExerciseToHistory]
+    );
+
+    const renderLeftActions = useCallback(() => {
+        return (
+            <TouchableOpacity style={[styles.editButton, { backgroundColor: "#4CAF50" }]}>
+                <Icon name="checkmark-circle-outline" size={24} color="#FFFFFF" />
+                <Text style={{ color: "#FFFFFF" }}>Log Set</Text>
+            </TouchableOpacity>
+        );
+    }, [handleLogSet]);
 
     const calculateRemainingSets = useCallback(
         (exercise: Exercise) => {
@@ -161,10 +214,24 @@ const AllExercisesScreen = () => {
             return (
                 <Swipeable
                     key={item.id}
-                    ref={(el) => (swipeableRefs.current[index] = el)}
-                    renderRightActions={() => renderRightActions(item.id, item.name)}
-                    renderLeftActions={renderLeftActions}
-                    onSwipeableLeftOpen={() => handleEditExercise(item.id, index)}
+                    ref={(el) => swipeableRefs.current.set(item.id, el)}
+                    renderRightActions={() => renderRightActions()}
+                    renderLeftActions={() => renderLeftActions()}
+                    onSwipeableLeftWillOpen={() => {
+                        try {
+                            handleLogSet(item);
+                            const ref = swipeableRefs.current.get(item.id);
+                            if (ref) {
+                                ref.close();
+                                // requestAnimationFrame(() => {
+                                //     ref?.close();
+                                // });
+                            }
+                        } catch (error) {
+                            console.error("Error closing swipeable:", error);
+                        }
+                    }}
+                    onSwipeableRightOpen={() => handleEditExercise(item.id)}
                     rightThreshold={40}
                     leftThreshold={40}
                 >
@@ -275,21 +342,18 @@ const AllExercisesScreen = () => {
     const groupedAndSortedExercises = React.useMemo(() => {
         let filteredExercises = exercises;
 
-        // First apply category filter
         if (categoryFilter !== "all") {
             filteredExercises = exercises.filter(
                 (exercise) => exercise.category === categoryFilter
             );
         }
 
-        // Then apply completed filter
         if (hideCompleted) {
             filteredExercises = filteredExercises.filter(
                 (exercise) => calculateRemainingSets(exercise) > 0
             );
         }
 
-        // Group by muscle group
         const grouped = filteredExercises.reduce((acc, exercise) => {
             const key = exercise.muscleGroup;
             if (!acc[key]) {
@@ -299,7 +363,6 @@ const AllExercisesScreen = () => {
             return acc;
         }, {} as Record<string, Exercise[]>);
 
-        // Sort exercises within each muscle group
         Object.keys(grouped).forEach((key) => {
             grouped[key].sort((a, b) => {
                 if (sortBySetsLeft) {
@@ -310,7 +373,6 @@ const AllExercisesScreen = () => {
             });
         });
 
-        // Create sections sorted alphabetically by muscle group
         const sections = Object.keys(grouped)
             .sort()
             .map((muscleGroup) => {
@@ -339,7 +401,6 @@ const AllExercisesScreen = () => {
         calculateTotalSetsForGroup,
     ]);
 
-    // Update the renderSectionHeader to include the total sets
     const renderSectionHeader = useCallback(
         ({ section: { title, totalSets } }) => (
             <Text style={styles.sectionHeader}>
