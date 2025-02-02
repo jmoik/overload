@@ -21,6 +21,7 @@ import { RoutineProvider } from "./src/contexts/RoutineContext";
 import RoutinesScreen from "./src/screens/RoutinesScreen";
 import RoutineDetailScreen from "./src/screens/RoutineDetailScreen";
 import AddRoutineScreen from "./src/screens/AddRoutineScreen";
+import { HealthKitProvider } from "./src/contexts/HealthKitContext";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -155,9 +156,11 @@ const AppContent = () => {
 const App = () => {
     return (
         <ThemeProvider>
-            <ExerciseProvider>
-                <AppContent />
-            </ExerciseProvider>
+            <HealthKitProvider>
+                <ExerciseProvider>
+                    <AppContent />
+                </ExerciseProvider>
+            </HealthKitProvider>
         </ThemeProvider>
     );
 };

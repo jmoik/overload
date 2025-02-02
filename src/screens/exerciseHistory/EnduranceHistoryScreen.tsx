@@ -20,10 +20,10 @@ import { lightTheme, darkTheme, createExerciseHistoryStyles } from "../../../sty
 import { generateEntryId } from "../../utils/utils";
 import AppleHealthKit, {
     HealthInputOptions,
-    HealthKitPermissions,
     HKWorkoutQueriedSampleType,
 } from "react-native-health";
 import { useNavigation } from "@react-navigation/native";
+import { useHealthKit } from "../../contexts/HealthKitContext";
 
 interface EnduranceHistoryScreenProps {
     exerciseId: string;
@@ -33,20 +33,8 @@ interface GroupedEntries {
     [date: string]: EnduranceExerciseHistoryEntry[];
 }
 
-const permissions: HealthKitPermissions = {
-    permissions: {
-        read: [
-            AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
-            AppleHealthKit.Constants.Permissions.Workout,
-            AppleHealthKit.Constants.Permissions.HeartRate,
-            AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
-            AppleHealthKit.Constants.Permissions.StepCount,
-        ],
-        write: [],
-    },
-};
-
 const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exerciseId }) => {
+    const { isHealthKitAuthorized } = useHealthKit();
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createExerciseHistoryStyles(currentTheme);
@@ -58,7 +46,6 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const [notes, setNotes] = useState("");
     const [date, setDate] = useState<Date>(new Date());
     const [editingEntry, setEditingEntry] = useState<EnduranceExerciseHistoryEntry | null>(null);
-    const [isHealthKitAuthorized, setIsHealthKitAuthorized] = useState(false);
 
     const {
         addExerciseToHistory,
@@ -82,23 +69,11 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const exercise = exercises.find((e) => e.id === exerciseId);
     const exerciseName = exercise ? exercise.name : "Endurance";
 
-    const initializeHealthKit = () => {
-        AppleHealthKit.initHealthKit(permissions, (error: string) => {
-            if (error) {
-                console.log("[ERROR] Cannot initialize HealthKit:", error);
-            } else {
-                console.log("HealthKit initialized successfully");
-                setIsHealthKitAuthorized(true);
-                checkForNewWorkouts();
-            }
-        });
-    };
-
     useEffect(() => {
-        if (Platform.OS === "ios") {
-            initializeHealthKit();
+        if (Platform.OS === "ios" && isHealthKitAuthorized) {
+            checkForNewWorkouts();
         }
-    }, []);
+    }, [isHealthKitAuthorized]);
 
     useEffect(() => {
         if (exercise) {
