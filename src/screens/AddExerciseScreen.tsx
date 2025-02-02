@@ -1,4 +1,3 @@
-// screens/AddExerciseScreen.tsx
 import React, { useState, useEffect, useLayoutEffect } from "react";
 import { View, TextInput, Button, Alert, TouchableOpacity, ScrollView } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -8,7 +7,7 @@ import { Exercise, Set } from "../contexts/Exercise";
 import { lightTheme, darkTheme, createAddExerciseStyles } from "../../styles/globalStyles";
 import { useTheme } from "../contexts/ThemeContext";
 import { Text } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import DropDownPicker from "react-native-dropdown-picker";
 import { Swipeable } from "react-native-gesture-handler";
 import { Icon } from "react-native-elements";
 
@@ -29,6 +28,35 @@ const AddExerciseScreen = () => {
     const [distance, setDistance] = useState("");
     const [oneRepMax, setOneRepMax] = useState("");
     const [workout, setWorkout] = useState<Set[]>([]);
+
+    // Dropdown state
+    const [open, setOpen] = useState(false);
+    const [items] = useState([
+        { label: "Strength", value: "strength" },
+        { label: "Endurance", value: "endurance" },
+        { label: "Mobility", value: "mobility" },
+        { label: "nSuns", value: "nsuns" },
+    ]);
+
+    useEffect(() => {
+        if (route.params?.exerciseData) {
+            handleEditExerciseFromPreview(route.params.exerciseData);
+        } else if (exerciseId) {
+            const exercise = exercises.find((e) => e.id === exerciseId);
+            if (exercise) {
+                setName(exercise.name);
+                setCategory(exercise.category);
+                setDescription(exercise.description);
+                setMuscleGroup(exercise.muscleGroup);
+                setWeeklySets(exercise.weeklySets.toString());
+                setDistance(exercise.distance?.toString() || "0");
+                if (exercise.category === "nsuns") {
+                    setOneRepMax(exercise.oneRepMax?.toString() || "");
+                    setWorkout(exercise.workout || []);
+                }
+            }
+        }
+    }, [exerciseId, exercises]);
 
     useEffect(() => {
         if (route.params?.exerciseData) {
@@ -197,20 +225,29 @@ const AddExerciseScreen = () => {
                         keyboardType="numeric"
                     />
                 )}
-                <View style={styles.pickerContainer}>
-                    <Text style={styles.placeholderText}>Select Category</Text>
-                    <Picker
-                        style={styles.picker}
-                        selectedValue={category}
-                        onValueChange={(itemValue) =>
-                            setCategory(itemValue as Exercise["category"])
-                        }
-                    >
-                        <Picker.Item label="Strength" value="strength" />
-                        <Picker.Item label="Endurance" value="endurance" />
-                        <Picker.Item label="Mobility" value="mobility" />
-                        <Picker.Item label="nSuns" value="nsuns" />
-                    </Picker>
+
+                <View style={styles.dropdownContainer}>
+                    <DropDownPicker
+                        open={open}
+                        value={category}
+                        items={items}
+                        setOpen={setOpen}
+                        setValue={setCategory}
+                        theme={theme === "dark" ? "DARK" : "LIGHT"}
+                        style={{
+                            backgroundColor: currentTheme.colors.surface,
+                            borderColor: currentTheme.colors.border,
+                        }}
+                        textStyle={{
+                            color: currentTheme.colors.text,
+                        }}
+                        dropDownContainerStyle={{
+                            backgroundColor: currentTheme.colors.surface,
+                            borderColor: currentTheme.colors.border,
+                        }}
+                        zIndex={3000}
+                        zIndexInverse={1000}
+                    />
                 </View>
                 <TextInput
                     style={styles.input}

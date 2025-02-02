@@ -284,8 +284,42 @@ const createAddExerciseScreenStyles = (theme: typeof lightTheme | typeof darkThe
             paddingHorizontal: 10,
             color: theme.colors.text,
         },
+        dropdownContainer: {
+            marginBottom: 10,
+            zIndex: 1000, // Required for dropdown to show above other elements
+        },
+        dropdownStyle: {
+            backgroundColor: theme.colors.surface,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            borderRadius: 5,
+        },
+        dropdownTextStyle: {
+            fontSize: 16,
+            color: theme.colors.text,
+            padding: 10,
+        },
+        dropdownListContainer: {
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.border,
+            borderWidth: 1,
+            borderRadius: 5,
+            marginTop: 1,
+        },
+        dropdownItemStyle: {
+            borderBottomColor: theme.colors.border,
+            borderBottomWidth: 1,
+            padding: 10,
+        },
+        dropdownItemText: {
+            color: theme.colors.text,
+            fontSize: 16,
+        },
+        dropdownPlaceholder: {
+            color: theme.colors.placeholder,
+            fontSize: 16,
+        },
     });
-
 // ExerciseHistoryScreen specific styles
 const createExerciseHistoryScreenStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     StyleSheet.create({
@@ -722,6 +756,37 @@ const createWelcomeStylesScreenStyles = (theme: typeof lightTheme | typeof darkT
         buttonText: {
             fontSize: 18,
             fontWeight: "bold",
+        },
+        introContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 20,
+        },
+        introIcon: {
+            marginBottom: 20,
+        },
+        introTitle: {
+            fontSize: 24,
+            fontWeight: "bold",
+            textAlign: "center",
+            marginBottom: 10,
+        },
+        introDescription: {
+            fontSize: 16,
+            textAlign: "center",
+            marginBottom: 30,
+            lineHeight: 24,
+        },
+        introDots: {
+            flexDirection: "row",
+            marginBottom: 30,
+        },
+        dot: {
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            marginHorizontal: 4,
         },
     });
 
