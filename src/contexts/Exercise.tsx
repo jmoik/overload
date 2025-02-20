@@ -41,6 +41,7 @@ export interface Exercise {
     name: string;
     category: "strength" | "endurance" | "mobility" | "nsuns";
     description: string;
+    priority: number;
     weeklySets: number;
     muscleGroup: string;
     distance?: number;

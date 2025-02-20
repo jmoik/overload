@@ -13,11 +13,11 @@ import {
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useRoutineContext } from "../contexts/RoutineContext";
-import { useExerciseContext } from "../contexts/ExerciseContext";
-import { useTheme } from "../contexts/ThemeContext";
-import { Exercise } from "../contexts/Exercise";
-import { lightTheme, darkTheme } from "../../styles/globalStyles";
+import { useRoutineContext } from "../../contexts/RoutineContext";
+import { useExerciseContext } from "../../contexts/ExerciseContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import { Exercise } from "../../contexts/Exercise";
+import { lightTheme, darkTheme } from "../../../styles/globalStyles";
 
 const createStyles = (theme: typeof lightTheme) =>
     StyleSheet.create({

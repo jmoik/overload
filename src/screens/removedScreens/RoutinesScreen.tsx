@@ -4,10 +4,10 @@ import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Swipeable } from "react-native-gesture-handler";
-import { useTheme } from "../contexts/ThemeContext";
-import { lightTheme, darkTheme } from "../../styles/globalStyles";
-import { Routine } from "../contexts/Routine";
-import { useRoutineContext } from "../contexts/RoutineContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import { lightTheme, darkTheme } from "../../../styles/globalStyles";
+import { Routine } from "../../contexts/Routine";
+import { useRoutineContext } from "../../contexts/RoutineContext";
 
 const createRoutinesStyles = (theme: typeof lightTheme) => ({
     container: {

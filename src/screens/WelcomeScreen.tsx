@@ -10,6 +10,7 @@ import { lightTheme, darkTheme, createWelcomeStyles } from "../../styles/globalS
 import { healthKitPermissions } from "../utils/healthKitPermissions";
 import { useHealthKit } from "../contexts/HealthKitContext";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { suggestedPlans } from "../data/suggestedPlans";
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Welcome">;
 
@@ -55,7 +56,16 @@ const WelcomeScreen = () => {
                 } else {
                     console.log("HealthKit initialized successfully");
                     setIsHealthKitAuthorized(true);
-                    navigation.navigate("Home");
+
+                    // Import suggestedPlans
+                    const { suggestedPlans } = require("../data/suggestedPlans");
+
+                    // Convert the object to an array
+                    const plansArray = Object.values(suggestedPlans);
+
+                    navigation.navigate("PlanPreview", {
+                        plans: plansArray,
+                    });
                 }
             });
         }

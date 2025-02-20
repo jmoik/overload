@@ -16,6 +16,7 @@ import { subDays, isAfter } from "date-fns";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createAllExercisesStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../utils/utils";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 type CategoryFilter = "all" | "strength" | "mobility" | "endurance";
 
@@ -262,6 +263,32 @@ const AllExercisesScreen = () => {
         ]
     );
 
+    const navigateToPreview = useCallback(() => {
+        // Group exercises by muscle group to create suggested plans
+        const exercisesByMuscle = exercises.reduce((acc, exercise) => {
+            if (!acc[exercise.muscleGroup]) {
+                acc[exercise.muscleGroup] = [];
+            }
+            acc[exercise.muscleGroup].push(exercise);
+            return acc;
+        }, {} as Record<string, Exercise[]>);
+
+        // Create a plan for each muscle group
+        const suggestedPlans = Object.entries(exercisesByMuscle).map(
+            ([muscleGroup, exercises]) => ({
+                name: `${muscleGroup.charAt(0).toUpperCase() + muscleGroup.slice(1)} Plan`,
+                exercises: exercises.map((exercise) => ({
+                    ...exercise,
+                    priority: exercise.priority,
+                })),
+            })
+        );
+
+        navigation.navigate("PlanPreview", {
+            plans: suggestedPlans,
+        });
+    }, [navigation, exercises]);
+
     useLayoutEffect(() => {
         navigation.setOptions({
             headerLeft: () => (
@@ -315,10 +342,7 @@ const AllExercisesScreen = () => {
                             color={currentTheme.colors.primary}
                         />
                     </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate("AddExercise")}
-                        style={styles.headerButton}
-                    >
+                    <TouchableOpacity onPress={navigateToPreview} style={styles.headerButton}>
                         <Icon
                             name="add-circle"
                             size={styles.icon.fontSize}
@@ -328,7 +352,14 @@ const AllExercisesScreen = () => {
                 </View>
             ),
         });
-    }, [navigation, sortBySetsLeft, categoryFilter, hideCompleted, currentTheme.colors.primary]);
+    }, [
+        navigation,
+        sortBySetsLeft,
+        categoryFilter,
+        hideCompleted,
+        currentTheme.colors.primary,
+        navigateToPreview,
+    ]);
 
     const calculateTotalSetsForGroup = useCallback((exercises: Exercise[]) => {
         return exercises.reduce((total, exercise) => {

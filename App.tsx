@@ -17,10 +17,6 @@ import WelcomeScreen from "./src/screens/WelcomeScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PlanPreviewScreen from "./src/screens/PlanPreviewScreen";
 import StatsScreen from "./src/screens/StatsScreen";
-import { RoutineProvider } from "./src/contexts/RoutineContext";
-import RoutinesScreen from "./src/screens/RoutinesScreen";
-import RoutineDetailScreen from "./src/screens/RoutineDetailScreen";
-import AddRoutineScreen from "./src/screens/AddRoutineScreen";
 import { HealthKitProvider } from "./src/contexts/HealthKitContext";
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -135,19 +131,19 @@ const AppContent = () => {
                     component={PlanPreviewScreen}
                     options={{ title: "Plan Preview" }}
                 />
-                <Stack.Screen
+                {/* <Stack.Screen
                     name="RoutineDetail"
                     component={RoutineDetailScreen}
                     options={{ title: "Routine Details" }}
-                />
-                <Stack.Screen
+                /> */}
+                {/* <Stack.Screen
                     name="AddRoutine"
                     component={AddRoutineScreen}
                     options={{
                         presentation: "modal",
                         title: "Add Routine",
                     }}
-                />
+                /> */}
             </Stack.Navigator>
         </NavigationContainer>
     );
