@@ -7,7 +7,7 @@ import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme } from "../../styles/globalStyles";
 import { Exercise } from "../contexts/Exercise";
-import { weeklyVolumePerMuscleGroup } from "../data/suggestedPlans";
+import { recalculateWeeklySets, weeklyVolumePerMuscleGroup } from "../data/suggestedPlans";
 
 type PlanPreviewScreenRouteProp = RouteProp<RootStackParamList, "PlanPreview">;
 type PlanPreviewScreenNavigationProp = StackNavigationProp<RootStackParamList, "PlanPreview">;
@@ -66,39 +66,41 @@ const PrioritySelector = ({
 
 const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
     const { plans: initialPlans } = route.params;
-    const [plans, setPlans] = useState<PlanItem[]>(
-        initialPlans.map((plan) => ({
-            ...plan,
-            exercises: plan.exercises.map((exercise) => ({
+    const [plans, setPlans] = useState<PlanItem[]>(() => {
+        // Initialize plans with recalculated weekly sets for each muscle group
+        return initialPlans.map((plan) => {
+            // First map exercises with isSelected property
+            const exercisesWithSelection = plan.exercises.map((exercise) => ({
                 ...exercise,
                 isSelected: true,
                 priority: exercise.priority,
-            })),
-        }))
-    );
+            }));
+
+            // Group exercises by muscle group
+            const exercisesByMuscleGroup = exercisesWithSelection.reduce((acc, exercise) => {
+                if (!acc[exercise.muscleGroup]) {
+                    acc[exercise.muscleGroup] = [];
+                }
+                acc[exercise.muscleGroup].push(exercise);
+                return acc;
+            }, {} as Record<string, (Exercise & { isSelected: boolean })[]>);
+
+            // Recalculate weekly sets for each muscle group
+            const updatedExercises = Object.entries(exercisesByMuscleGroup).flatMap(
+                ([muscleGroup, groupExercises]) => {
+                    return recalculateWeeklySets(groupExercises, muscleGroup);
+                }
+            );
+
+            return {
+                ...plan,
+                exercises: updatedExercises,
+            };
+        });
+    });
     const { addExercise, exercises, updateExercise } = useExerciseContext();
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
-
-    const recalculateWeeklySets = (
-        exercises: (Exercise & { isSelected: boolean })[],
-        muscleGroup: string
-    ) => {
-        const activeExercises = exercises.filter(
-            (e) => e.muscleGroup === muscleGroup && e.priority > 0
-        );
-        const totalPriority = activeExercises.reduce((sum, e) => sum + e.priority, 0);
-        const totalVolume = weeklyVolumePerMuscleGroup[muscleGroup] || 12;
-
-        return exercises.map((exercise) => ({
-            ...exercise,
-            weeklySets:
-                exercise.priority > 0 && totalPriority > 0
-                    ? Math.round((exercise.priority / totalPriority) * totalVolume)
-                    : 0,
-        }));
-    };
-
     const handleNext = () => {
         plans.forEach((plan) => {
             const exercisesByMuscleGroup = plan.exercises.reduce((acc, exercise) => {

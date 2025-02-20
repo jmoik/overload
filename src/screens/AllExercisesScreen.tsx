@@ -20,6 +20,19 @@ import { StackNavigationProp } from "@react-navigation/stack";
 
 type CategoryFilter = "all" | "strength" | "mobility" | "endurance";
 
+const getCategoryTitle = (filter: CategoryFilter): string => {
+    switch (filter) {
+        case "all":
+            return "All Exercises";
+        case "strength":
+            return "Strength Exercises";
+        case "mobility":
+            return "Mobility Exercises";
+        case "endurance":
+            return "Endurance Exercises";
+    }
+};
+
 const AllExercisesScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
@@ -57,26 +70,6 @@ const AllExercisesScreen = () => {
     const handleExercisePress = (exerciseId: string) => {
         navigation.navigate("ExerciseHistory", { exerciseId });
     };
-
-    const handleDeleteExercise = useCallback(
-        (exerciseId: string, exerciseName: string) => {
-            Alert.alert("Delete Exercise", `Are you sure you want to delete ${exerciseName}?`, [
-                {
-                    text: "Cancel",
-                    style: "cancel",
-                },
-                {
-                    text: "Delete",
-                    onPress: () => {
-                        deleteExercise(exerciseId);
-                        swipeableRefs.current.forEach((ref) => ref?.close());
-                    },
-                    style: "destructive",
-                },
-            ]);
-        },
-        [deleteExercise]
-    );
 
     const handleEditExercise = useCallback(
         (exerciseId: string) => {
@@ -264,33 +257,55 @@ const AllExercisesScreen = () => {
     );
 
     const navigateToPreview = useCallback(() => {
-        // Group exercises by muscle group to create suggested plans
-        const exercisesByMuscle = exercises.reduce((acc, exercise) => {
-            if (!acc[exercise.muscleGroup]) {
-                acc[exercise.muscleGroup] = [];
-            }
-            acc[exercise.muscleGroup].push(exercise);
-            return acc;
-        }, {} as Record<string, Exercise[]>);
+        if (exercises.length !== 0) {
+            // filter exercise by category
+            const filteredExercises = exercises.filter((exercise) => {
+                if (categoryFilter === "all") {
+                    return true;
+                }
+                return exercise.category === categoryFilter;
+            });
 
-        // Create a plan for each muscle group
-        const suggestedPlans = Object.entries(exercisesByMuscle).map(
-            ([muscleGroup, exercises]) => ({
-                name: `${muscleGroup.charAt(0).toUpperCase() + muscleGroup.slice(1)} Plan`,
-                exercises: exercises.map((exercise) => ({
-                    ...exercise,
-                    priority: exercise.priority,
-                })),
-            })
-        );
+            // Create a single plan with all exercises grouped by muscle
+            const exercisesByMuscle = filteredExercises.reduce((acc, exercise) => {
+                if (!acc[exercise.muscleGroup]) {
+                    acc[exercise.muscleGroup] = [];
+                }
+                acc[exercise.muscleGroup].push(exercise);
+                return acc;
+            }, {} as Record<string, Exercise[]>);
 
-        navigation.navigate("PlanPreview", {
-            plans: suggestedPlans,
-        });
-    }, [navigation, exercises]);
+            // Create a single plan with all exercises
+            const combinedPlan = {
+                name: categoryFilter,
+                exercises: Object.entries(exercisesByMuscle).flatMap(([muscleGroup, exercises]) =>
+                    exercises.map((exercise) => ({
+                        ...exercise,
+                        priority: exercise.priority,
+                    }))
+                ),
+            };
+
+            navigation.navigate("PlanPreview", {
+                plans: [combinedPlan], // Pass as an array with single plan
+                categoryFilter: categoryFilter,
+            });
+        } else {
+            // Import suggestedPlans
+            const { suggestedPlans } = require("../data/suggestedPlans");
+
+            // Convert the object to an array
+            const plansArray = Object.values(suggestedPlans);
+
+            navigation.navigate("PlanPreview", {
+                plans: plansArray,
+            });
+        }
+    }, [navigation, exercises, categoryFilter]);
 
     useLayoutEffect(() => {
         navigation.setOptions({
+            title: getCategoryTitle(categoryFilter),
             headerLeft: () => (
                 <View style={styles.headerButtons}>
                     <TouchableOpacity
@@ -371,20 +386,24 @@ const AllExercisesScreen = () => {
     }, []);
 
     const groupedAndSortedExercises = React.useMemo(() => {
-        let filteredExercises = exercises;
+        // First filter out exercises with 0 weekly sets
+        let filteredExercises = exercises.filter((exercise) => exercise.weeklySets > 0);
 
+        // Then apply category filter
         if (categoryFilter !== "all") {
-            filteredExercises = exercises.filter(
+            filteredExercises = filteredExercises.filter(
                 (exercise) => exercise.category === categoryFilter
             );
         }
 
+        // Apply completed filter
         if (hideCompleted) {
             filteredExercises = filteredExercises.filter(
                 (exercise) => calculateRemainingSets(exercise) > 0
             );
         }
 
+        // Group the filtered exercises
         const grouped = filteredExercises.reduce((acc, exercise) => {
             const key = exercise.muscleGroup;
             if (!acc[key]) {
@@ -394,6 +413,7 @@ const AllExercisesScreen = () => {
             return acc;
         }, {} as Record<string, Exercise[]>);
 
+        // Sort exercises within each group
         Object.keys(grouped).forEach((key) => {
             grouped[key].sort((a, b) => {
                 if (sortBySetsLeft) {
@@ -404,6 +424,7 @@ const AllExercisesScreen = () => {
             });
         });
 
+        // Create sections with total sets calculation
         const sections = Object.keys(grouped)
             .sort()
             .map((muscleGroup) => {
