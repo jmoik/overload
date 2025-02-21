@@ -257,51 +257,10 @@ const AllExercisesScreen = () => {
     );
 
     const navigateToPreview = useCallback(() => {
-        if (exercises.length !== 0) {
-            // filter exercise by category
-            const filteredExercises = exercises.filter((exercise) => {
-                if (categoryFilter === "all") {
-                    return true;
-                }
-                return exercise.category === categoryFilter;
-            });
-
-            // Create a single plan with all exercises grouped by muscle
-            const exercisesByMuscle = filteredExercises.reduce((acc, exercise) => {
-                if (!acc[exercise.muscleGroup]) {
-                    acc[exercise.muscleGroup] = [];
-                }
-                acc[exercise.muscleGroup].push(exercise);
-                return acc;
-            }, {} as Record<string, Exercise[]>);
-
-            // Create a single plan with all exercises
-            const combinedPlan = {
-                name: categoryFilter,
-                exercises: Object.entries(exercisesByMuscle).flatMap(([muscleGroup, exercises]) =>
-                    exercises.map((exercise) => ({
-                        ...exercise,
-                        priority: exercise.priority,
-                    }))
-                ),
-            };
-
-            navigation.navigate("PlanPreview", {
-                plans: [combinedPlan], // Pass as an array with single plan
-                categoryFilter: categoryFilter,
-            });
-        } else {
-            // Import suggestedPlans
-            const { suggestedPlans } = require("../data/suggestedPlans");
-
-            // Convert the object to an array
-            const plansArray = Object.values(suggestedPlans);
-
-            navigation.navigate("PlanPreview", {
-                plans: plansArray,
-            });
-        }
-    }, [navigation, exercises, categoryFilter]);
+        navigation.navigate("PlanPreview", {
+            category: categoryFilter,
+        });
+    }, [navigation, categoryFilter]);
 
     useLayoutEffect(() => {
         navigation.setOptions({

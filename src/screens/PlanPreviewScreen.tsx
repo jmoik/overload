@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Switch } from "react-native";
 import { useNavigation, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -7,7 +7,10 @@ import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme } from "../../styles/globalStyles";
 import { Exercise } from "../contexts/Exercise";
-import { recalculateWeeklySets, weeklyVolumePerMuscleGroup } from "../data/suggestedPlans";
+import {
+    recalculateWeeklySets,
+    weeklyVolumePerMuscleGroupPerCategory,
+} from "../data/suggestedPlans";
 
 type PlanPreviewScreenRouteProp = RouteProp<RootStackParamList, "PlanPreview">;
 type PlanPreviewScreenNavigationProp = StackNavigationProp<RootStackParamList, "PlanPreview">;
@@ -19,6 +22,7 @@ type Props = {
 
 type PlanItem = {
     name: string;
+    category: string;
     exercises: (Exercise & { isSelected: boolean })[];
 };
 
@@ -64,20 +68,61 @@ const PrioritySelector = ({
     </View>
 );
 
-const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
-    const { plans: initialPlans } = route.params;
-    const [plans, setPlans] = useState<PlanItem[]>(() => {
-        // Initialize plans with recalculated weekly sets for each muscle group
-        return initialPlans.map((plan) => {
-            // First map exercises with isSelected property
-            const exercisesWithSelection = plan.exercises.map((exercise) => ({
-                ...exercise,
-                isSelected: true,
-                priority: exercise.priority,
-            }));
+const PlanPreviewScreen: React.FC<{
+    route: RouteProp<RootStackParamList, "PlanPreview">;
+    navigation: StackNavigationProp<RootStackParamList, "PlanPreview">;
+}> = ({ route, navigation }) => {
+    const { category } = route.params;
+    const { addExercise, exercises, updateExercise } = useExerciseContext();
+    const { theme } = useTheme();
+    const currentTheme = theme === "light" ? lightTheme : darkTheme;
 
-            // Group exercises by muscle group
-            const exercisesByMuscleGroup = exercisesWithSelection.reduce((acc, exercise) => {
+    const [plans, setPlans] = useState<PlanItem[]>(() => {
+        if (exercises.length !== 0) {
+            const filteredExercises = exercises.filter((exercise) => {
+                if (category === "all") return true;
+                return exercise.category === category;
+            });
+
+            const exercisesByMuscle = filteredExercises.reduce((acc, exercise) => {
+                if (!acc[exercise.muscleGroup]) {
+                    acc[exercise.muscleGroup] = [];
+                }
+                acc[exercise.muscleGroup].push(exercise);
+                return acc;
+            }, {} as Record<string, Exercise[]>);
+
+            const combinedPlan = {
+                name: category.charAt(0).toUpperCase() + category.slice(1),
+                category: category,
+                exercises: Object.entries(exercisesByMuscle).flatMap(([muscleGroup, exercises]) =>
+                    exercises.map((exercise) => ({
+                        ...exercise,
+                        isSelected: true,
+                        priority: exercise.priority || 1,
+                    }))
+                ),
+            };
+            return [combinedPlan];
+        } else {
+            const { suggestedPlans } = require("../data/suggestedPlans");
+            const plansArray = Object.entries(suggestedPlans).map(([key, plan]) => ({
+                name: plan.name,
+                category: key,
+                exercises: plan.exercises.map((exercise) => ({
+                    ...exercise,
+                    isSelected: true,
+                    priority: exercise.priority || 1,
+                })),
+            }));
+            return plansArray;
+        }
+    });
+
+    // Initial calculation of weekly sets on mount
+    useEffect(() => {
+        const newPlans = plans.map((plan) => {
+            const exercisesByMuscleGroup = plan.exercises.reduce((acc, exercise) => {
                 if (!acc[exercise.muscleGroup]) {
                     acc[exercise.muscleGroup] = [];
                 }
@@ -85,22 +130,26 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                 return acc;
             }, {} as Record<string, (Exercise & { isSelected: boolean })[]>);
 
-            // Recalculate weekly sets for each muscle group
-            const updatedExercises = Object.entries(exercisesByMuscleGroup).flatMap(
-                ([muscleGroup, groupExercises]) => {
-                    return recalculateWeeklySets(groupExercises, muscleGroup);
-                }
-            );
+            let updatedExercises = [...plan.exercises];
+            Object.entries(exercisesByMuscleGroup).forEach(([muscleGroup, groupExercises]) => {
+                const recalculated = recalculateWeeklySets(
+                    groupExercises,
+                    muscleGroup,
+                    plan.category
+                );
+                recalculated.forEach((recalcEx) => {
+                    const idx = updatedExercises.findIndex((e) => e.id === recalcEx.id);
+                    if (idx !== -1) {
+                        updatedExercises[idx] = recalcEx;
+                    }
+                });
+            });
 
-            return {
-                ...plan,
-                exercises: updatedExercises,
-            };
+            return { ...plan, exercises: updatedExercises };
         });
-    });
-    const { addExercise, exercises, updateExercise } = useExerciseContext();
-    const { theme } = useTheme();
-    const currentTheme = theme === "light" ? lightTheme : darkTheme;
+        setPlans(newPlans);
+    }, []); // Empty dependency array ensures this runs only on mount
+
     const handleNext = () => {
         plans.forEach((plan) => {
             const exercisesByMuscleGroup = plan.exercises.reduce((acc, exercise) => {
@@ -112,18 +161,20 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
             }, {} as Record<string, (Exercise & { isSelected: boolean })[]>);
 
             Object.entries(exercisesByMuscleGroup).forEach(([muscleGroup, groupExercises]) => {
-                const updatedExercises = recalculateWeeklySets(groupExercises, muscleGroup);
+                const updatedExercises = recalculateWeeklySets(
+                    groupExercises,
+                    muscleGroup,
+                    plan.category
+                );
 
                 updatedExercises
                     .filter((exercise) => exercise.isSelected)
                     .forEach((exercise) => {
                         const exerciseExists = exercises.some((e) => e.id === exercise.id);
                         if (exerciseExists) {
-                            // Update existing exercise with new priority and weeklySets
                             const { id, isSelected, ...exerciseData } = exercise;
                             updateExercise(id, exerciseData);
                         } else {
-                            // Add new exercise
                             const { isSelected, ...newExercise } = exercise;
                             addExercise(newExercise);
                         }
@@ -132,6 +183,9 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         });
         navigation.navigate("Home");
     };
+
+    // Remove the second useEffect that redundantly updates plans based on exercises
+    // This was causing inconsistent state updates
 
     const handlePriorityChange = (
         newPriority: number,
@@ -147,7 +201,15 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
             priority: newPriority,
         };
 
-        const updatedExercises = recalculateWeeklySets(plan.exercises, exercise.muscleGroup);
+        const muscleGroupExercises = plan.exercises.filter(
+            (ex) => ex.muscleGroup === exercise.muscleGroup
+        );
+        const updatedExercises = recalculateWeeklySets(
+            muscleGroupExercises,
+            exercise.muscleGroup,
+            plan.category
+        );
+
         updatedExercises.forEach((updatedEx) => {
             const idx = plan.exercises.findIndex((e) => e.id === updatedEx.id);
             if (idx !== -1) {
@@ -158,13 +220,23 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         setPlans(newPlans);
     };
 
-    const handleVolumeChange = (newVolume: number, muscleGroup: string, planIndex: number) => {
-        weeklyVolumePerMuscleGroup[muscleGroup] = newVolume;
+    const handleVolumeChange = (
+        newVolume: number,
+        muscleGroup: string,
+        category: string,
+        planIndex: number
+    ) => {
+        if (!weeklyVolumePerMuscleGroupPerCategory[category]) {
+            weeklyVolumePerMuscleGroupPerCategory[category] = {};
+        }
+        weeklyVolumePerMuscleGroupPerCategory[category][muscleGroup] = newVolume;
 
         const newPlans = [...plans];
         const plan = newPlans[planIndex];
 
-        const updatedExercises = recalculateWeeklySets(plan.exercises, muscleGroup);
+        const muscleGroupExercises = plan.exercises.filter((ex) => ex.muscleGroup === muscleGroup);
+        const updatedExercises = recalculateWeeklySets(muscleGroupExercises, muscleGroup, category);
+
         updatedExercises.forEach((updatedEx) => {
             const idx = plan.exercises.findIndex((e) => e.id === updatedEx.id);
             if (idx !== -1) {
@@ -192,10 +264,15 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                     isSelected: plan.exercises[exerciseIndex].isSelected,
                 };
 
-                const updatedExercises = recalculateWeeklySets(
-                    plan.exercises,
-                    updatedExercise.muscleGroup
+                const muscleGroupExercises = plan.exercises.filter(
+                    (ex) => ex.muscleGroup === updatedExercise.muscleGroup
                 );
+                const updatedExercises = recalculateWeeklySets(
+                    muscleGroupExercises,
+                    updatedExercise.muscleGroup,
+                    plan.category
+                );
+
                 updatedExercises.forEach((updatedEx) => {
                     const idx = plan.exercises.findIndex((e) => e.id === updatedEx.id);
                     if (idx !== -1) {
@@ -234,9 +311,7 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                     {item.name}
                 </Text>
                 <Text style={[styles.exerciseDetails, { color: currentTheme.colors.text }]}>
-                    {item.category === "endurance"
-                        ? `${item.distance} km/week`
-                        : `${item.weeklySets} sets/week`}
+                    {`${item.weeklySets} sets/week`}
                 </Text>
             </TouchableOpacity>
             <PrioritySelector
@@ -258,7 +333,8 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         onVolumeChange: (newVolume: number) => void;
         theme: typeof lightTheme;
     }) => {
-        const totalVolume = weeklyVolumePerMuscleGroup[muscleGroup] || 12;
+        const category = exercises[0]?.category || "strength";
+        const totalVolume = weeklyVolumePerMuscleGroupPerCategory[category]?.[muscleGroup] || 12;
 
         return (
             <View style={styles.muscleGroupHeader}>
@@ -290,6 +366,37 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         );
     };
 
+    const handleAddNewExercise = (muscleGroup: string, planIndex: number) => {
+        navigation.navigate("AddExercise", {
+            muscleGroup,
+            category: plans[planIndex].category,
+            onSave: (newExercise) => {
+                const newPlans = [...plans];
+                const plan = newPlans[planIndex];
+                const newExerciseWithSelection = { ...newExercise, isSelected: true };
+                plan.exercises.push(newExerciseWithSelection);
+
+                const muscleGroupExercises = plan.exercises.filter(
+                    (ex) => ex.muscleGroup === muscleGroup
+                );
+                const updatedExercises = recalculateWeeklySets(
+                    muscleGroupExercises,
+                    muscleGroup,
+                    plan.category
+                );
+
+                updatedExercises.forEach((updatedEx) => {
+                    const idx = plan.exercises.findIndex((e) => e.id === updatedEx.id);
+                    if (idx !== -1) {
+                        plan.exercises[idx] = updatedEx;
+                    }
+                });
+
+                setPlans(newPlans);
+            },
+        });
+    };
+
     const renderMuscleGroupItem = (
         { item }: { item: [string, (Exercise & { isSelected: boolean })[]] },
         planIndex: number
@@ -302,11 +409,28 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                     muscleGroup={muscleGroup}
                     exercises={exercises}
                     onVolumeChange={(newVolume) =>
-                        handleVolumeChange(newVolume, muscleGroup, planIndex)
+                        handleVolumeChange(
+                            newVolume,
+                            muscleGroup,
+                            plans[planIndex].category,
+                            planIndex
+                        )
                     }
                     theme={currentTheme}
                 />
                 {exercises.map((exercise) => renderExerciseItem({ item: exercise }, planIndex))}
+                <TouchableOpacity
+                    style={[
+                        styles.exerciseItem,
+                        styles.addExerciseButton,
+                        { borderColor: currentTheme.colors.border },
+                    ]}
+                    onPress={() => handleAddNewExercise(muscleGroup, planIndex)}
+                >
+                    <Text style={[styles.exerciseName, { color: currentTheme.colors.text }]}>
+                        Add Exercise
+                    </Text>
+                </TouchableOpacity>
             </View>
         );
     };
@@ -317,16 +441,23 @@ const PlanPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
     }: {
         item: PlanItem & { groupedExercises: GroupedExercises };
         index: number;
-    }) => (
-        <View style={styles.planContainer}>
-            <Text style={[styles.title, { color: currentTheme.colors.text }]}>{item.name}</Text>
-            <FlatList
-                data={Object.entries(item.groupedExercises)}
-                renderItem={({ item }) => renderMuscleGroupItem({ item }, index)}
-                keyExtractor={(item) => item[0]}
-            />
-        </View>
-    );
+    }) => {
+        // Sort the muscle groups alphabetically by their names
+        const sortedMuscleGroups = Object.entries(item.groupedExercises).sort(([a], [b]) =>
+            a.localeCompare(b)
+        );
+
+        return (
+            <View style={styles.planContainer}>
+                <Text style={[styles.title, { color: currentTheme.colors.text }]}>{item.name}</Text>
+                <FlatList
+                    data={sortedMuscleGroups}
+                    renderItem={({ item }) => renderMuscleGroupItem({ item }, index)}
+                    keyExtractor={(item) => item[0]}
+                />
+            </View>
+        );
+    };
 
     return (
         <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
@@ -457,5 +588,10 @@ const styles = StyleSheet.create({
         minWidth: 80,
         textAlign: "center",
     },
+    addExerciseButton: {
+        justifyContent: "center",
+        alignItems: "center",
+    },
 });
+
 export default PlanPreviewScreen;

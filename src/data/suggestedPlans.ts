@@ -2,34 +2,47 @@
 
 import { Exercise } from "../contexts/Exercise";
 import { generateExerciseId } from "../utils/utils";
-import { Set } from "../contexts/Exercise";
 
-export const weeklyVolumePerMuscleGroup: { [key: string]: number } = {
-    Arms: 12,
-    Back: 20,
-    Chest: 20,
-    Core: 12,
-    Legs: 20,
-    Shoulders: 12,
-    LowerLegs: 12,
+// src/data/suggestedPlans.ts
+
+export const weeklyVolumePerMuscleGroupPerCategory: {
+    [category: string]: { [muscleGroup: string]: number };
+} = {
+    strength: {
+        Arms: 12,
+        Back: 20,
+        Chest: 20,
+        Core: 12,
+        Legs: 20,
+        Shoulders: 12,
+        LowerLegs: 12,
+    },
+    mobility: {
+        Shoulders: 12,
+        Hips: 12,
+        Legs: 12,
+    },
+    endurance: {
+        Legs: 20,
+    },
 };
 
 export const recalculateWeeklySets = (
     exercises: (Exercise & { isSelected: boolean })[],
-    muscleGroup: string
+    muscleGroup: string,
+    category: string
 ) => {
-    // Filter exercises for the current muscle group and that are selected
-    const activeExercises = exercises.filter((e) => e.muscleGroup === muscleGroup && e.isSelected);
+    const activeExercises = exercises.filter(
+        (e) => e.muscleGroup === muscleGroup && e.category === category && e.isSelected
+    );
 
-    // Calculate total priority only from exercises with priority > 0
     const totalPriority = activeExercises.reduce(
         (sum, e) => sum + (e.priority > 0 ? e.priority : 0),
         0
     );
 
-    const totalVolume = weeklyVolumePerMuscleGroup[muscleGroup] || 12;
+    const totalVolume = weeklyVolumePerMuscleGroupPerCategory[category]?.[muscleGroup] || 12;
 
-    // Return all exercises with 0 weekly sets if no active exercises with priority
     if (totalPriority === 0) {
         return exercises.map((e) => ({
             ...e,
@@ -37,18 +50,16 @@ export const recalculateWeeklySets = (
         }));
     }
 
-    // Update weekly sets
     const updatedExercises = exercises.map((e) => ({
         ...e,
         weeklySets:
-            e.isSelected && e.muscleGroup === muscleGroup
+            e.isSelected && e.muscleGroup === muscleGroup && e.category === category
                 ? e.priority > 0
                     ? Math.floor((e.priority / totalPriority) * totalVolume)
-                    : 0 // Explicitly set to 0 if priority is 0
+                    : 0
                 : e.weeklySets || 0,
     }));
 
-    // Calculate remaining sets to distribute
     const remainingSets =
         totalVolume -
         activeExercises.reduce(
@@ -56,10 +67,9 @@ export const recalculateWeeklySets = (
             0
         );
 
-    // Distribute remaining sets only to exercises with priority > 0
     if (remainingSets > 0) {
         activeExercises
-            .filter((e) => e.priority > 0) // Only consider exercises with priority > 0
+            .filter((e) => e.priority > 0)
             .map((e) => ({
                 id: e.id,
                 fraction:
@@ -80,6 +90,7 @@ export const recalculateWeeklySets = (
 };
 export interface Plan {
     name: string;
+    category: string;
     exercises: Exercise[];
 }
 
@@ -99,6 +110,7 @@ function createExercise(
 export const suggestedPlans: { [key: string]: Plan } = {
     strength: {
         name: "Strength",
+        category: "strength",
         exercises: (() => {
             const exerciseDataList = [
                 {
@@ -219,6 +231,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
     },
     mobility: {
         name: "Mobility",
+        category: "mobility",
         exercises: (() => {
             const exerciseDataList = [
                 {
@@ -276,6 +289,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
     },
     cardio: {
         name: "Cardio",
+        category: "endurance",
         exercises: (() => {
             const exerciseDataList = [
                 {
