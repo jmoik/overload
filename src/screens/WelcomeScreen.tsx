@@ -118,9 +118,7 @@ const WelcomeScreen = () => {
                     }}
                 >
                     <Text style={[styles.buttonText, { color: currentTheme.colors.background }]}>
-                        {currentIntroStep === HealthKitIntroSteps.length - 1
-                            ? "Enable HealthKit"
-                            : "Next"}
+                        {"Continue"}
                     </Text>
                 </TouchableOpacity>
             </View>
