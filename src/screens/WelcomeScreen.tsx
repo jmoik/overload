@@ -56,16 +56,6 @@ const WelcomeScreen = () => {
                 } else {
                     console.log("HealthKit initialized successfully");
                     setIsHealthKitAuthorized(true);
-
-                    // // Import suggestedPlans
-                    // const { suggestedPlans } = require("../data/suggestedPlans");
-
-                    // // Convert the object to an array
-                    // const plansArray = Object.values(suggestedPlans);
-
-                    // navigation.navigate("PlanPreview", {
-                    //     plans: plansArray,
-                    // });
                     navigation.navigate("Home");
                 }
             });

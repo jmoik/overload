@@ -32,16 +32,6 @@ const Home = () => (
                 tabBarIcon: ({ color, size }) => <Icon name="list" color={color} size={size} />,
             }}
         />
-        {/* <Tab.Screen
-            name="Routines"
-            component={RoutinesScreen}
-            options={{
-                title: "Routines",
-                tabBarIcon: ({ color, size }) => (
-                    <Icon name="list-circle" color={color} size={size} />
-                ),
-            }}
-        /> */}
         <Tab.Screen
             name="Stats"
             component={StatsScreen}
@@ -52,14 +42,6 @@ const Home = () => (
                 ),
             }}
         />
-        {/* <Tab.Screen
-            name="Today"
-            component={SuggestedWorkoutScreen}
-            options={{
-                title: "Today",
-                tabBarIcon: ({ color, size }) => <Icon name="today" color={color} size={size} />,
-            }}
-        /> */}
         <Tab.Screen
             name="Settings"
             component={SettingsScreen}
@@ -131,19 +113,6 @@ const AppContent = () => {
                     component={PlanPreviewScreen}
                     options={{ title: "Plan Preview" }}
                 />
-                {/* <Stack.Screen
-                    name="RoutineDetail"
-                    component={RoutineDetailScreen}
-                    options={{ title: "Routine Details" }}
-                /> */}
-                {/* <Stack.Screen
-                    name="AddRoutine"
-                    component={AddRoutineScreen}
-                    options={{
-                        presentation: "modal",
-                        title: "Add Routine",
-                    }}
-                /> */}
             </Stack.Navigator>
         </NavigationContainer>
     );

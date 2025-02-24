@@ -3,8 +3,6 @@
 import { Exercise } from "../contexts/Exercise";
 import { generateExerciseId } from "../utils/utils";
 
-// src/data/suggestedPlans.ts
-
 export const weeklyVolumePerMuscleGroupPerCategory: {
     [category: string]: { [muscleGroup: string]: number };
 } = {

@@ -9,7 +9,6 @@ import {
     KeyboardAvoidingView,
     ScrollView,
     Keyboard,
-    TouchableWithoutFeedback,
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";

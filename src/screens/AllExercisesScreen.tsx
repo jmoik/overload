@@ -217,9 +217,6 @@ const AllExercisesScreen = () => {
                             const ref = swipeableRefs.current.get(item.id);
                             if (ref) {
                                 ref.close();
-                                // requestAnimationFrame(() => {
-                                //     ref?.close();
-                                // });
                             }
                         } catch (error) {
                             console.error("Error closing swipeable:", error);

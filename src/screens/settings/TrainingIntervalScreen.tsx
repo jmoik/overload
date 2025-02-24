@@ -19,19 +19,9 @@ const TrainingIntervalScreen = () => {
     const navigation = useNavigation<TrainingIntervalScreenNavigationProp>();
     const { trainingInterval, setTrainingInterval } = useExerciseContext();
     const [selectedInterval, setSelectedInterval] = useState(trainingInterval);
-    const [isSetup, setIsSetup] = useState(false);
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createTrainingIntervalStyles(currentTheme);
-
-    useEffect(() => {
-        checkIfSetup();
-    }, []);
-
-    const checkIfSetup = async () => {
-        const alreadySetup = await AsyncStorage.getItem("alreadySetup");
-        setIsSetup(alreadySetup !== "true");
-    };
 
     const generatePickerItems = () => {
         const items = [];
@@ -50,12 +40,7 @@ const TrainingIntervalScreen = () => {
 
     const handleSave = async () => {
         setTrainingInterval(selectedInterval);
-        if (isSetup) {
-            await AsyncStorage.setItem("alreadySetup", "true");
-            navigation.navigate("Home");
-        } else {
-            navigation.goBack();
-        }
+        navigation.goBack();
     };
 
     return (
@@ -72,7 +57,7 @@ const TrainingIntervalScreen = () => {
                 </Picker>
             </View>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>{isSetup ? "Next" : "Save"}</Text>
+                <Text style={styles.saveButtonText}>{"Save"}</Text>
             </TouchableOpacity>
         </View>
     );
