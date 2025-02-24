@@ -39,7 +39,14 @@ export const recalculateWeeklySets = (
         0
     );
 
-    const totalVolume = weeklyVolumePerMuscleGroupPerCategory[category]?.[muscleGroup] || 12;
+    // Calculate total volume based on existing exercises
+    const existingTotalSets = activeExercises.reduce((sum, e) => sum + (e.weeklySets || 0), 0);
+
+    // Use existing total if available, otherwise fall back to default values
+    const totalVolume =
+        existingTotalSets > 0
+            ? existingTotalSets
+            : weeklyVolumePerMuscleGroupPerCategory[category]?.[muscleGroup] || 12;
 
     if (totalPriority === 0) {
         return exercises.map((e) => ({

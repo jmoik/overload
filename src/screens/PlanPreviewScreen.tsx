@@ -226,6 +226,7 @@ const PlanPreviewScreen: React.FC<{
         category: string,
         planIndex: number
     ) => {
+        // Update the global volume reference
         if (!weeklyVolumePerMuscleGroupPerCategory[category]) {
             weeklyVolumePerMuscleGroupPerCategory[category] = {};
         }
@@ -234,15 +235,82 @@ const PlanPreviewScreen: React.FC<{
         const newPlans = [...plans];
         const plan = newPlans[planIndex];
 
-        const muscleGroupExercises = plan.exercises.filter((ex) => ex.muscleGroup === muscleGroup);
-        const updatedExercises = recalculateWeeklySets(muscleGroupExercises, muscleGroup, category);
+        // Get all exercises for this muscle group and category
+        const muscleGroupExercises = plan.exercises.filter(
+            (ex) => ex.muscleGroup === muscleGroup && ex.category === category
+        );
 
-        updatedExercises.forEach((updatedEx) => {
-            const idx = plan.exercises.findIndex((e) => e.id === updatedEx.id);
-            if (idx !== -1) {
-                plan.exercises[idx] = updatedEx;
+        // Get only selected exercises
+        const selectedExercises = muscleGroupExercises.filter((ex) => ex.isSelected);
+
+        if (selectedExercises.length > 0) {
+            // Calculate total priority of selected exercises
+            const totalPriority = selectedExercises.reduce(
+                (sum, ex) => sum + (ex.priority > 0 ? ex.priority : 0),
+                0
+            );
+
+            if (totalPriority > 0) {
+                // Distribute the new volume according to priorities
+                selectedExercises.forEach((ex) => {
+                    const idx = plan.exercises.findIndex((e) => e.id === ex.id);
+                    if (idx !== -1 && ex.priority > 0) {
+                        // Calculate new weekly sets based on priority ratio
+                        const newSets = Math.max(
+                            1,
+                            Math.floor((ex.priority / totalPriority) * newVolume)
+                        );
+                        plan.exercises[idx] = {
+                            ...plan.exercises[idx],
+                            weeklySets: newSets,
+                        };
+                    }
+                });
+
+                // Distribute any remaining sets
+                const distributableSets = selectedExercises.reduce((sum, ex) => {
+                    const newSets = Math.floor((ex.priority / totalPriority) * newVolume);
+                    return sum + newSets;
+                }, 0);
+
+                const remainingSets = newVolume - distributableSets;
+
+                if (remainingSets > 0) {
+                    // Sort by fraction to distribute remaining sets
+                    const sortedByFraction = selectedExercises
+                        .filter((ex) => ex.priority > 0)
+                        .map((ex) => ({
+                            id: ex.id,
+                            fraction:
+                                (ex.priority / totalPriority) * newVolume -
+                                Math.floor((ex.priority / totalPriority) * newVolume),
+                        }))
+                        .sort((a, b) => b.fraction - a.fraction)
+                        .slice(0, remainingSets);
+
+                    sortedByFraction.forEach(({ id }) => {
+                        const idx = plan.exercises.findIndex((e) => e.id === id);
+                        if (idx !== -1) {
+                            plan.exercises[idx].weeklySets++;
+                        }
+                    });
+                }
+            } else {
+                // If no priorities, distribute evenly
+                const setsPerExercise = Math.floor(newVolume / selectedExercises.length);
+                const remainder = newVolume % selectedExercises.length;
+
+                selectedExercises.forEach((ex, i) => {
+                    const idx = plan.exercises.findIndex((e) => e.id === ex.id);
+                    if (idx !== -1) {
+                        plan.exercises[idx] = {
+                            ...plan.exercises[idx],
+                            weeklySets: setsPerExercise + (i < remainder ? 1 : 0),
+                        };
+                    }
+                });
             }
-        });
+        }
 
         setPlans(newPlans);
     };
@@ -334,7 +402,15 @@ const PlanPreviewScreen: React.FC<{
         theme: typeof lightTheme;
     }) => {
         const category = exercises[0]?.category || "strength";
-        const totalVolume = weeklyVolumePerMuscleGroupPerCategory[category]?.[muscleGroup] || 12;
+
+        // Calculate actual total volume from exercises
+        const actualTotalVolume = exercises.reduce((sum, ex) => sum + (ex.weeklySets || 0), 0);
+
+        // Use actual volume if available, otherwise fallback to default
+        const totalVolume =
+            actualTotalVolume > 0
+                ? actualTotalVolume
+                : weeklyVolumePerMuscleGroupPerCategory[category]?.[muscleGroup] || 12;
 
         return (
             <View style={styles.muscleGroupHeader}>
