@@ -16,22 +16,8 @@ import { subDays, isAfter } from "date-fns";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createAllExercisesStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../utils/utils";
-import { StackNavigationProp } from "@react-navigation/stack";
 
-type CategoryFilter = "all" | "strength" | "mobility" | "endurance";
-
-const getCategoryTitle = (filter: CategoryFilter): string => {
-    switch (filter) {
-        case "all":
-            return "All Exercises";
-        case "strength":
-            return "Strength Exercises";
-        case "mobility":
-            return "Mobility Exercises";
-        case "endurance":
-            return "Endurance Exercises";
-    }
-};
+type CategoryFilter = "strength" | "mobility" | "endurance";
 
 const AllExercisesScreen = () => {
     const { theme } = useTheme();
@@ -43,7 +29,7 @@ const AllExercisesScreen = () => {
     const swipeableRefs = useRef(new Map<string, Swipeable | null>());
     const isFocused = useIsFocused();
     const [sortBySetsLeft, setSortBySetsLeft] = useState(true);
-    const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+    const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("strength");
     const [hideCompleted, setHideCompleted] = useState(false);
 
     useEffect(() => {
@@ -54,8 +40,6 @@ const AllExercisesScreen = () => {
 
     const getFilterIcon = (filter: CategoryFilter) => {
         switch (filter) {
-            case "all":
-                return "funnel-outline";
             case "strength":
                 return "barbell";
             case "mobility":
@@ -261,23 +245,21 @@ const AllExercisesScreen = () => {
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: getCategoryTitle(categoryFilter),
+            title: categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1),
             headerLeft: () => (
                 <View style={styles.headerButtons}>
                     <TouchableOpacity
                         onPress={() =>
                             setCategoryFilter((prev) => {
                                 switch (prev) {
-                                    case "all":
-                                        return "strength";
                                     case "strength":
                                         return "mobility";
                                     case "mobility":
                                         return "endurance";
                                     case "endurance":
-                                        return "all";
+                                        return "strength";
                                     default:
-                                        return "all";
+                                        return "strength";
                                 }
                             })
                         }
@@ -345,12 +327,9 @@ const AllExercisesScreen = () => {
         // First filter out exercises with 0 weekly sets
         let filteredExercises = exercises.filter((exercise) => exercise.weeklySets > 0);
 
-        // Then apply category filter
-        if (categoryFilter !== "all") {
-            filteredExercises = filteredExercises.filter(
-                (exercise) => exercise.category === categoryFilter
-            );
-        }
+        filteredExercises = filteredExercises.filter(
+            (exercise) => exercise.category === categoryFilter
+        );
 
         // Apply completed filter
         if (hideCompleted) {
