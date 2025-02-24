@@ -193,7 +193,10 @@ const MobilityHistoryScreen: React.FC<MobilityHistoryScreenProps> = ({ exerciseI
     };
 
     const fillFromLastWorkout = useCallback(() => {
-        const history = exerciseHistory[exerciseId] || [];
+        const unsortedHistory = exerciseHistory[exerciseId] || [];
+        const history = [...unsortedHistory].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
         if (history.length > 0) {
             const lastWorkout = history[0] as MobilityExerciseHistoryEntry;
             setSets(lastWorkout.sets.toString());

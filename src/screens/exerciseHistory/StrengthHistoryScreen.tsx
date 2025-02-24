@@ -206,7 +206,10 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
     };
 
     const fillFromLastWorkout = useCallback(() => {
-        const history = exerciseHistory[exerciseId] || [];
+        const unsortedHistory = exerciseHistory[exerciseId] || [];
+        const history = [...unsortedHistory].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
         if (history.length > 0) {
             const lastWorkout = history[0] as StrengthExerciseHistoryEntry;
             setSets(lastWorkout.sets.toString());
