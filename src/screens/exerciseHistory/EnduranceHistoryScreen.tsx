@@ -70,17 +70,23 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     const exerciseName = exercise ? exercise.name : "Endurance";
 
     useEffect(() => {
-        if (Platform.OS === "ios" && isHealthKitAuthorized) {
-            checkForNewWorkouts();
-        }
-    }, [isHealthKitAuthorized]);
-
-    useEffect(() => {
         if (exercise) {
-            navigation.setOptions({ title: exercise.name });
+            // Set up the navigation header with title and import button
+            navigation.setOptions({
+                title: exercise.name,
+                headerRight: () => (
+                    <TouchableOpacity onPress={checkForNewWorkouts} style={{ marginRight: 15 }}>
+                        <Icon
+                            name="cloud-download-outline"
+                            size={24}
+                            color={currentTheme.colors.text}
+                        />
+                    </TouchableOpacity>
+                ),
+            });
         }
         fillFromLastWorkout();
-    }, [exercise]);
+    }, [exercise, theme]);
 
     const onDateChange = (event: any, selectedDate?: Date) => {
         if (selectedDate) {
@@ -338,7 +344,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     };
 
     const checkForNewWorkouts = () => {
-        if (Platform.OS === "ios") {
+        if (Platform.OS === "ios" && isHealthKitAuthorized) {
             const options: HealthInputOptions = {
                 startDate: new Date(new Date().getTime() - 365 * 24 * 60 * 60 * 1000).toISOString(),
                 endDate: new Date().toISOString(),
@@ -351,6 +357,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             AppleHealthKit.getAnchoredWorkouts(options, (err, results) => {
                 if (err) {
                     console.log("Error fetching workouts:", JSON.stringify(err));
+                    Alert.alert("Error", "Could not access Health data");
                     return;
                 }
 
@@ -416,8 +423,16 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                             },
                         ]
                     );
+                } else {
+                    Alert.alert("No New Workouts", "No new workouts found to import.");
                 }
             });
+        } else if (Platform.OS === "ios" && !isHealthKitAuthorized) {
+            Alert.alert(
+                "Health Access Required",
+                "Please enable Health access in your device settings to import workouts.",
+                [{ text: "OK" }]
+            );
         }
     };
 
