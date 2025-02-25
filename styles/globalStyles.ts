@@ -185,6 +185,30 @@ const createAllExercisesScreenStyles = (theme: typeof lightTheme | typeof darkTh
         },
         headerButtons: { flexDirection: "row", alignItems: "center" },
         headerButton: { marginLeft: 20, marginRight: 20 },
+        emptyContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
+        },
+        emptyText: {
+            fontSize: 18,
+            textAlign: "center",
+            marginVertical: 20,
+            color: theme.colors.text,
+        },
+        button: {
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            borderRadius: 8,
+            marginTop: 10,
+            backgroundColor: theme.colors.primary,
+        },
+        buttonText: {
+            fontSize: 16,
+            fontWeight: "bold",
+            color: theme.colors.background,
+        },
     });
 
 // AddExerciseScreen specific styles

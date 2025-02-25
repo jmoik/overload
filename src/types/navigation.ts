@@ -5,7 +5,15 @@ import { Exercise } from "../../src/contexts/Exercise";
 
 export type RootStackParamList = {
     Home: undefined;
+    Today: undefined;
     RoutineList: undefined;
+    AllExercises:
+        | {
+              filterCategory?: "strength" | "mobility" | "endurance";
+              filterMuscleGroups?: string[];
+              workoutName?: string;
+          }
+        | undefined;
     AddExercise:
         | {
               exerciseId?: string;
@@ -19,7 +27,7 @@ export type RootStackParamList = {
     TrainingInterval: undefined;
     DefaultRpe: undefined;
     Welcome: undefined;
-    PlanPreview: { plans: Array<{ name: string; exercises: Exercise[] }> };
+    PlanPreview: { category: string };
     AppInfo: undefined;
     ImportWorkouts: undefined;
     RoutineDetail: { routineId: string };
@@ -40,3 +48,4 @@ export type RoutineScreenNavigationProp = StackNavigationProp<RootStackParamList
 export type AddExerciseScreenRouteProp = RouteProp<RootStackParamList, "AddExercise">;
 export type ExerciseHistoryScreenRouteProp = RouteProp<RootStackParamList, "ExerciseHistory">;
 export type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+export type AllExercisesScreenRouteProp = RouteProp<RootStackParamList, "AllExercises">;

@@ -1,10 +1,11 @@
-import React, { useLayoutEffect, useCallback, useRef, useEffect, useState } from "react";
+// src/screens/WorkoutDetailScreen.tsx
+import React, { useLayoutEffect, useCallback, useRef, useState } from "react";
 import { View, Text, SectionList, TouchableOpacity, Alert } from "react-native";
-import { useNavigation, useIsFocused } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Swipeable } from "react-native-gesture-handler";
 import { useExerciseContext } from "../contexts/ExerciseContext";
-import { RoutineScreenNavigationProp } from "../types/navigation";
+import { RootStackParamList } from "../types/navigation";
 import {
     EnduranceExerciseHistoryEntry,
     Exercise,
@@ -16,57 +17,43 @@ import { subDays, isAfter } from "date-fns";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createAllExercisesStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../utils/utils";
-import { useRoute, RouteProp } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 
-// Add this type inside the component or at the top level
-type AllExercisesScreenRouteProp = RouteProp<
-    {
-        params?: {
-            filterCategory?: "strength" | "mobility" | "endurance";
-            filterMuscleGroups?: string[];
-            workoutName?: string;
-        };
-    },
-    "params"
->;
+type WorkoutDetailScreenRouteProp = RouteProp<RootStackParamList, "WorkoutDetail">;
+type WorkoutDetailScreenNavigationProp = StackNavigationProp<RootStackParamList, "WorkoutDetail">;
 
-type CategoryFilter = "strength" | "mobility" | "endurance";
-
-const AllExercisesScreen = () => {
+const WorkoutDetailScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createAllExercisesStyles(currentTheme);
-    const { exercises, addExerciseToHistory, deleteExercise, exerciseHistory, trainingInterval } =
+    const { exercises, addExerciseToHistory, exerciseHistory, trainingInterval } =
         useExerciseContext();
-    const navigation = useNavigation<RoutineScreenNavigationProp>();
+    const navigation = useNavigation<WorkoutDetailScreenNavigationProp>();
+    const route = useRoute<WorkoutDetailScreenRouteProp>();
     const swipeableRefs = useRef(new Map<string, Swipeable | null>());
-    const isFocused = useIsFocused();
     const [sortBySetsLeft, setSortBySetsLeft] = useState(true);
-    const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("strength");
-    const [hideCompleted, setHideCompleted] = useState(false);
-    const route = useRoute<AllExercisesScreenRouteProp>();
-    const filterCategory = route.params?.filterCategory;
-    const filterMuscleGroups = route.params?.filterMuscleGroups;
-    const workoutName = route.params?.workoutName;
 
-    useEffect(() => {
-        if (isFocused) {
-            swipeableRefs.current.forEach((ref) => ref?.close());
-        }
-    }, [isFocused]);
+    // Extract workout details from route params
+    const { workoutName, category, muscleGroups } = route.params;
 
-    const getFilterIcon = (filter: CategoryFilter) => {
-        switch (filter) {
-            case "strength":
-                return "barbell";
-            case "mobility":
-                return "body";
-            case "endurance":
-                return "bicycle";
-            default:
-                return "fitness";
-        }
-    };
+    // Set navigation title
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            title: workoutName,
+            headerRight: () => (
+                <TouchableOpacity
+                    onPress={() => setSortBySetsLeft(!sortBySetsLeft)}
+                    style={{ marginRight: 15 }}
+                >
+                    <Icon
+                        name={sortBySetsLeft ? "arrow-up" : "list"}
+                        size={24}
+                        color={currentTheme.colors.primary}
+                    />
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation, workoutName, sortBySetsLeft, currentTheme.colors.primary]);
 
     const handleExercisePress = (exerciseId: string) => {
         navigation.navigate("ExerciseHistory", { exerciseId });
@@ -89,7 +76,7 @@ const AllExercisesScreen = () => {
                 <Icon name="create-outline" size={24} color="#FFFFFF" />
             </View>
         );
-    }, []);
+    }, [styles.editButton]);
 
     const handleLogSet = useCallback(
         (exercise: Exercise) => {
@@ -151,7 +138,7 @@ const AllExercisesScreen = () => {
                 <Text style={{ color: "#FFFFFF" }}>Log Set</Text>
             </TouchableOpacity>
         );
-    }, [handleLogSet]);
+    }, [styles.editButton]);
 
     const calculateRemainingSets = useCallback(
         (exercise: Exercise) => {
@@ -251,93 +238,15 @@ const AllExercisesScreen = () => {
             renderLeftActions,
             handleEditExercise,
             calculateRemainingSets,
+            styles.exerciseItem,
+            styles.exerciseItemLeft,
+            styles.exerciseName,
+            styles.exerciseDescription,
+            styles.exerciseSetsPerWeek,
+            styles.exerciseItemRight,
+            styles.remainingSets,
         ]
     );
-
-    const navigateToPreview = useCallback(() => {
-        navigation.navigate("PlanPreview", {
-            category: categoryFilter,
-        });
-    }, [navigation, categoryFilter]);
-
-    useLayoutEffect(() => {
-        if (workoutName) {
-            navigation.setOptions({
-                title: workoutName,
-            });
-        } else {
-            navigation.setOptions({
-                title: categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1),
-                headerLeft: () => (
-                    <View style={styles.headerButtons}>
-                        <TouchableOpacity
-                            onPress={() =>
-                                setCategoryFilter((prev) => {
-                                    switch (prev) {
-                                        case "strength":
-                                            return "mobility";
-                                        case "mobility":
-                                            return "endurance";
-                                        case "endurance":
-                                            return "strength";
-                                        default:
-                                            return "strength";
-                                    }
-                                })
-                            }
-                            style={styles.headerButton}
-                        >
-                            <Icon
-                                name={getFilterIcon(categoryFilter)}
-                                size={styles.icon.fontSize}
-                                color={currentTheme.colors.primary}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => setHideCompleted(!hideCompleted)}
-                            style={styles.headerButton}
-                        >
-                            <Icon
-                                name={hideCompleted ? "eye-off" : "eye"}
-                                size={styles.icon.fontSize}
-                                color={currentTheme.colors.primary}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                ),
-                headerRight: () => (
-                    <View style={styles.headerButtons}>
-                        <TouchableOpacity
-                            onPress={() => setSortBySetsLeft(!sortBySetsLeft)}
-                            style={styles.headerButton}
-                        >
-                            <Icon
-                                name={sortBySetsLeft ? "arrow-up" : "list"}
-                                size={styles.icon.fontSize}
-                                color={currentTheme.colors.primary}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={navigateToPreview} style={styles.headerButton}>
-                            <Icon
-                                name="add-circle"
-                                size={styles.icon.fontSize}
-                                color={currentTheme.colors.primary}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                ),
-            });
-        }
-    }, [
-        navigation,
-        sortBySetsLeft,
-        categoryFilter,
-        hideCompleted,
-        currentTheme.colors.primary,
-        navigateToPreview,
-        categoryFilter,
-        workoutName,
-    ]);
 
     const calculateTotalSetsForGroup = useCallback((exercises: Exercise[]) => {
         return exercises.reduce((total, exercise) => {
@@ -349,30 +258,28 @@ const AllExercisesScreen = () => {
     }, []);
 
     const groupedAndSortedExercises = React.useMemo(() => {
-        // First filter out exercises with 0 weekly sets
-        let filteredExercises = exercises.filter((exercise) => exercise.weeklySets > 0);
+        // Filter exercises first by category and muscle groups
+        let filteredExercises = exercises.filter((exercise) => {
+            // Skip exercises with 0 weekly sets
+            if (exercise.weeklySets <= 0) return false;
 
-        // Apply category filter from props or state
-        const effectiveCategory = filterCategory || categoryFilter;
+            // Filter by category
+            if (exercise.category !== category) return false;
+
+            // Filter by muscle groups if specified
+            if (muscleGroups && muscleGroups.length > 0) {
+                return muscleGroups.includes(exercise.muscleGroup);
+            }
+
+            return true;
+        });
+
+        // Only show exercises with sets remaining if we're on a workout detail
         filteredExercises = filteredExercises.filter(
-            (exercise) => exercise.category === effectiveCategory
+            (exercise) => calculateRemainingSets(exercise) > 0
         );
 
-        // Apply muscle group filter if provided
-        if (filterMuscleGroups && filterMuscleGroups.length > 0) {
-            filteredExercises = filteredExercises.filter((exercise) =>
-                filterMuscleGroups.includes(exercise.muscleGroup)
-            );
-        }
-
-        // Apply completed filter
-        if (hideCompleted) {
-            filteredExercises = filteredExercises.filter(
-                (exercise) => calculateRemainingSets(exercise) > 0
-            );
-        }
-
-        // Group the filtered exercises
+        // Group the filtered exercises by muscle group
         const grouped = filteredExercises.reduce((acc, exercise) => {
             const key = exercise.muscleGroup;
             if (!acc[key]) {
@@ -415,12 +322,10 @@ const AllExercisesScreen = () => {
         return sections;
     }, [
         exercises,
-        categoryFilter,
-        filterCategory,
-        filterMuscleGroups,
+        category,
+        muscleGroups,
         sortBySetsLeft,
         calculateRemainingSets,
-        hideCompleted,
         calculateTotalSetsForGroup,
     ]);
 
@@ -435,14 +340,35 @@ const AllExercisesScreen = () => {
 
     return (
         <View style={styles.container}>
-            <SectionList
-                sections={groupedAndSortedExercises}
-                keyExtractor={(item, index) => `${item.id}-${index}`}
-                renderItem={renderExerciseItem}
-                renderSectionHeader={renderSectionHeader}
-            />
+            {groupedAndSortedExercises.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Icon name="checkmark-circle" size={64} color={currentTheme.colors.primary} />
+                    <Text style={[styles.emptyText, { color: currentTheme.colors.text }]}>
+                        All exercises in this workout are completed!
+                    </Text>
+                    <TouchableOpacity
+                        style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
+                        onPress={() => navigation.goBack()}
+                    >
+                        <Text
+                            style={[styles.buttonText, { color: currentTheme.colors.background }]}
+                        >
+                            Return to Today
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <SectionList
+                    sections={groupedAndSortedExercises}
+                    keyExtractor={(item, index) => `${item.id}-${index}`}
+                    renderItem={renderExerciseItem}
+                    renderSectionHeader={renderSectionHeader}
+                />
+            )}
         </View>
     );
 };
 
-export default AllExercisesScreen;
+// No need for extra styles as they're now included in the global styles
+
+export default WorkoutDetailScreen;

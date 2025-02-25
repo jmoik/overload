@@ -17,6 +17,8 @@ import WelcomeScreen from "./src/screens/WelcomeScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PlanPreviewScreen from "./src/screens/PlanPreviewScreen";
 import StatsScreen from "./src/screens/StatsScreen";
+import TodayScreen from "./src/screens/TodayScreen";
+import WorkoutDetailScreen from "./src/screens/WorkoutDetailScreen";
 import { HealthKitProvider } from "./src/contexts/HealthKitContext";
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -24,6 +26,14 @@ const Tab = createBottomTabNavigator();
 
 const Home = () => (
     <Tab.Navigator>
+        <Tab.Screen
+            name="Today"
+            component={TodayScreen}
+            options={{
+                title: "Today's Workout",
+                tabBarIcon: ({ color, size }) => <Icon name="calendar" color={color} size={size} />,
+            }}
+        />
         <Tab.Screen
             name="AllExercises"
             component={AllExercisesScreen}
@@ -112,6 +122,11 @@ const AppContent = () => {
                     name="PlanPreview"
                     component={PlanPreviewScreen}
                     options={{ title: "Plan Preview" }}
+                />
+                <Stack.Screen
+                    name="WorkoutDetail"
+                    component={WorkoutDetailScreen}
+                    options={({ route }) => ({ title: route.params.workoutName })}
                 />
             </Stack.Navigator>
         </NavigationContainer>
