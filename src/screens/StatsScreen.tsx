@@ -169,6 +169,14 @@ const StatsScreen = () => {
             });
         });
 
+        const strengthPercentage = (actualStrengthSets / targetStrengthSets) * 100;
+        const endurancePercentage = (actualEnduranceLoad / targetEnduranceLoad) * 100;
+        const mobilityPercentage = (actualMobilitySets / targetMobilitySets) * 100;
+        const totalScoreAverage = Math.min(
+            100,
+            Math.round((strengthPercentage + endurancePercentage + mobilityPercentage) / 3)
+        );
+
         return {
             strengthLoadData: strengthLoadByDay.map((load) => Math.max(load, 0)),
             enduranceLoadData: enduranceLoadByDay.map((load) => Math.max(load, 0)),
@@ -187,9 +195,10 @@ const StatsScreen = () => {
             targetMobilitySets,
             actualMobilitySets,
             totalWeeklyEnduranceSets,
-            strengthPercentage: (actualStrengthSets / targetStrengthSets) * 100,
-            endurancePercentage: (actualEnduranceLoad / targetEnduranceLoad) * 100,
-            mobilityPercentage: (actualMobilitySets / targetMobilitySets) * 100,
+            strengthPercentage,
+            endurancePercentage,
+            mobilityPercentage,
+            totalScoreAverage,
         };
     };
 
@@ -352,6 +361,47 @@ const StatsScreen = () => {
     return (
         <ScrollView style={styles.container}>
             <View style={{ padding: 16 }}>
+                {/* Total Score Display */}
+                <View
+                    style={{
+                        alignItems: "center",
+                        marginBottom: 20,
+                        backgroundColor: currentTheme.colors.card,
+                        padding: 15,
+                        borderRadius: 10,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                        elevation: 3,
+                    }}
+                >
+                    <Text
+                        style={{
+                            fontSize: 18,
+                            color: currentTheme.colors.text,
+                            marginBottom: 5,
+                            fontWeight: "bold",
+                        }}
+                    >
+                        TRAINING LOAD
+                    </Text>
+                    <Text
+                        style={{
+                            fontSize: 48,
+                            fontWeight: "bold",
+                            color:
+                                stats.totalScoreAverage >= 85
+                                    ? "#4CAF50"
+                                    : stats.totalScoreAverage >= 70
+                                    ? "#FFC107"
+                                    : "#F44336",
+                        }}
+                    >
+                        {stats.totalScoreAverage}
+                    </Text>
+                </View>
+
                 <ProgressBar
                     percentage={stats.strengthPercentage}
                     color="#FF6B6B"
