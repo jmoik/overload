@@ -86,21 +86,65 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         setWeight(strengthEntry.weight > 0 ? strengthEntry.weight.toString() : "");
     };
 
+    // Round to nearest multiple of 2.5
+    const floorToNearestStep = (value: number): number => {
+        // Round to the nearest multiple of 2.5
+        return Math.floor(value / 2.5) * 2.5;
+    };
+    const ceilToNearestStep = (value: number): number => {
+        // Round to the nearest multiple of 2.5
+        return Math.ceil(value / 2.5) * 2.5;
+    };
+
     const incrementValue = (
         setter: React.Dispatch<React.SetStateAction<string>>,
-        value: string
+        value: string,
+        field: string
     ) => {
         const currentValue = value.trim() === "" ? 0 : parseFloat(value);
-        const newValue = isNaN(currentValue) ? 1 : currentValue + 1;
+        let newValue: number;
+
+        if (field === "weight") {
+            if (isNaN(currentValue)) {
+                newValue = 2.5;
+            } else {
+                // First round to the nearest 2.5 multiple, then add 2.5
+                const roundedValue = floorToNearestStep(currentValue);
+                newValue = roundedValue + 2.5;
+            }
+            // Format to handle potential floating point issues
+            newValue = Math.round(newValue * 10) / 10;
+        } else {
+            // For sets and reps, keep increment as 1
+            newValue = isNaN(currentValue) ? 1 : currentValue + 1;
+        }
+
         setter(newValue.toString());
     };
 
     const decrementValue = (
         setter: React.Dispatch<React.SetStateAction<string>>,
-        value: string
+        value: string,
+        field: string
     ) => {
-        const currentValue = value.trim() === "" ? 2 : parseFloat(value);
-        const newValue = isNaN(currentValue) ? 1 : Math.max(1, currentValue - 1);
+        const currentValue = value.trim() === "" ? 0 : parseFloat(value);
+        let newValue: number;
+
+        if (field === "weight") {
+            if (isNaN(currentValue) || currentValue <= 2.5) {
+                newValue = 0;
+            } else {
+                // First round to the nearest 2.5 multiple, then subtract 2.5
+                const roundedValue = ceilToNearestStep(currentValue);
+                newValue = Math.max(0, roundedValue - 2.5);
+            }
+            // Format to handle potential floating point issues
+            newValue = Math.round(newValue * 10) / 10;
+        } else {
+            // For sets and reps, keep decrement as 1 with minimum of 1
+            newValue = isNaN(currentValue) ? 1 : Math.max(1, currentValue - 1);
+        }
+
         setter(newValue.toString());
     };
 
@@ -113,7 +157,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         <View style={styles.container2}>
             <TouchableOpacity
                 style={styles.incrementButton}
-                onPress={() => decrementValue(setter, value)}
+                onPress={() => decrementValue(setter, value, placeholder.toLowerCase())}
             >
                 <Text style={styles.incrementButtonText}>-</Text>
             </TouchableOpacity>
@@ -129,7 +173,7 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
             />
             <TouchableOpacity
                 style={styles.incrementButton}
-                onPress={() => incrementValue(setter, value)}
+                onPress={() => incrementValue(setter, value, placeholder.toLowerCase())}
             >
                 <Text style={styles.incrementButtonText}>+</Text>
             </TouchableOpacity>
@@ -166,7 +210,14 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
 
         const parsedSets = parseInt(sets);
         const parsedReps = parseInt(reps);
-        const parsedWeight = weight.trim() ? parseFloat(weight.replace(",", ".")) : 0;
+        let parsedWeight = weight.trim() ? parseFloat(weight.replace(",", ".")) : 0;
+
+        // Round weight to nearest 2.5
+        if (parsedWeight > 0) {
+            parsedWeight = Math.round(parsedWeight / 2.5) * 2.5;
+            // Update the weight value in the UI to show the rounded value
+            setWeight(parsedWeight.toString());
+        }
 
         if (isNaN(parsedSets) || isNaN(parsedReps) || isNaN(parsedWeight)) {
             Alert.alert(
