@@ -111,7 +111,7 @@ const TodayScreen = () => {
             },
             {
                 id: "run",
-                name: "Running",
+                name: "Endurance",
                 category: "endurance",
                 muscleGroups: ["Legs"],
                 icon: "walk",
@@ -119,26 +119,10 @@ const TodayScreen = () => {
             },
             {
                 id: "mobility",
-                name: "Mobility & Stretching",
+                name: "Mobility",
                 category: "mobility",
                 muscleGroups: ["Shoulders", "Hips", "Legs"],
                 icon: "body-outline",
-                recommended: 0,
-            },
-            {
-                id: "core",
-                name: "Core Workout",
-                category: "strength",
-                muscleGroups: ["Core"],
-                icon: "barbell",
-                recommended: 0,
-            },
-            {
-                id: "legs_core",
-                name: "Legs & Core",
-                category: "strength",
-                muscleGroups: ["Legs", "Lower Legs", "Core"],
-                icon: "barbell",
                 recommended: 0,
             },
         ];
