@@ -183,7 +183,7 @@ const SettingsScreen = () => {
     };
 
     const handleEmailPress = () => {
-        Linking.openURL("mailto:@opals.poet0m@icloud.com?subject=Feedback");
+        Linking.openURL("mailto:@overload_training@proton.me?subject=Feedback");
     };
 
     const handleAppStoreRating = () => {
