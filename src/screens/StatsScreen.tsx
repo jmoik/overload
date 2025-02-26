@@ -1,6 +1,6 @@
 // screens/StatsScreen.tsx
-import React from "react";
-import { View, Text, ScrollView, Dimensions } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text, ScrollView, Dimensions, ActivityIndicator, Platform } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -13,6 +13,9 @@ import {
     MobilityExerciseHistoryEntry,
     StrengthExerciseHistoryEntry,
 } from "../contexts/Exercise";
+import { useHealthKit } from "../contexts/HealthKitContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
 const calculateMovingAverage = (data: number[], windowSize: number): number[] => {
     let result = data.map((_, index, array) => {
@@ -60,6 +63,95 @@ const StatsScreen = () => {
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createStatsStyles(currentTheme);
     const { exercises, exerciseHistory, trainingInterval } = useExerciseContext();
+    const { isHealthKitAuthorized, getStepsForInterval } = useHealthKit();
+
+    const [stepGoal, setStepGoal] = useState<number>(10000);
+    const [stepData, setStepData] = useState<{ date: string; steps: number }[]>([]);
+    const [totalSteps, setTotalSteps] = useState<number>(0);
+    const [loadingSteps, setLoadingSteps] = useState<boolean>(false);
+    const [stepPercentage, setStepPercentage] = useState<number>(0);
+    const [stepsByDay, setStepsByDay] = useState<number[]>(Array(trainingInterval).fill(0));
+
+    // Load step goal and step data
+    useFocusEffect(
+        useCallback(() => {
+            const loadStepGoal = async () => {
+                try {
+                    const savedStepGoal = await AsyncStorage.getItem("dailyStepGoal");
+                    if (savedStepGoal) {
+                        const parsedGoal = parseInt(savedStepGoal, 10);
+                        setStepGoal(parsedGoal);
+
+                        // Recalculate step percentage when step goal changes
+                        if (stepData.length > 0) {
+                            const total = stepData.reduce((sum, day) => sum + day.steps, 0);
+                            const percent = (total / (parsedGoal * trainingInterval)) * 100;
+                            setStepPercentage(percent);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error loading step goal:", error);
+                }
+            };
+
+            loadStepGoal();
+
+            // No cleanup needed for this effect
+        }, [trainingInterval, stepData])
+    );
+
+    // Fetch step data for the current interval
+    useEffect(() => {
+        const fetchStepData = async () => {
+            if (Platform.OS === "ios" && isHealthKitAuthorized) {
+                setLoadingSteps(true);
+                try {
+                    const today = new Date();
+                    today.setHours(23, 59, 59, 999); // End of today
+                    const startDate = subDays(today, trainingInterval);
+                    startDate.setHours(0, 0, 0, 0); // Start of the first day
+
+                    const steps = await getStepsForInterval(startDate, today);
+                    setStepData(steps);
+
+                    // Calculate total steps
+                    const total = steps.reduce((sum, day) => sum + day.steps, 0);
+                    setTotalSteps(total);
+
+                    // Calculate percentage of goal achieved on average
+                    const percent = (total / (stepGoal * trainingInterval)) * 100;
+                    setStepPercentage(percent);
+
+                    // Create an array of steps for each day in the interval
+                    const stepsArray = Array(trainingInterval).fill(0);
+                    const intervalDates = [];
+
+                    // Generate dates for the interval
+                    for (let i = 0; i < trainingInterval; i++) {
+                        const date = new Date(today);
+                        date.setDate(date.getDate() - i);
+                        intervalDates.unshift(date.toISOString().split("T")[0]);
+                    }
+
+                    // Fill the array with steps data
+                    intervalDates.forEach((date, index) => {
+                        const dayData = steps.find((d) => d.date === date);
+                        if (dayData) {
+                            stepsArray[index] = dayData.steps;
+                        }
+                    });
+
+                    setStepsByDay(stepsArray);
+                } catch (error) {
+                    console.error("Error fetching step data:", error);
+                } finally {
+                    setLoadingSteps(false);
+                }
+            }
+        };
+
+        fetchStepData();
+    }, [isHealthKitAuthorized, trainingInterval, stepGoal, getStepsForInterval]);
 
     const calculateStats = () => {
         const today = new Date();
@@ -174,7 +266,9 @@ const StatsScreen = () => {
         const mobilityPercentage = (actualMobilitySets / targetMobilitySets) * 100;
         const totalScoreAverage = Math.min(
             100,
-            Math.round((strengthPercentage + endurancePercentage + mobilityPercentage) / 3)
+            Math.round(
+                (strengthPercentage + endurancePercentage + mobilityPercentage + stepPercentage) / 4
+            )
         );
 
         return {
@@ -203,6 +297,52 @@ const StatsScreen = () => {
     };
 
     const stats = calculateStats();
+
+    // Create data specifically for steps chart
+    const createStepsChartData = (stepsData: number[], dailyGoal: number) => {
+        // Normalize data to percentages
+        const normalizedStepsData = stepsData.map((steps) => (steps / dailyGoal) * 100);
+
+        // Calculate moving average for steps data
+        const movingAverage = calculateMovingAverage(
+            normalizedStepsData,
+            Math.min(7, stepsData.length)
+        );
+
+        const lastValue = normalizedStepsData[normalizedStepsData.length - 1];
+        const lastMA = movingAverage[movingAverage.length - 1];
+
+        return {
+            labels: Array.from(
+                { length: stepsData.length },
+                (_, i) => `${i === stepsData.length - 1 ? "Today" : -stepsData.length + i + 1}`
+            ),
+            datasets: [
+                {
+                    data: normalizedStepsData,
+                    color: (opacity = 1) => "#FF9800", // Orange color for steps
+                    strokeWidth: 2,
+                    withDots: true,
+                },
+                {
+                    data: movingAverage,
+                    color: (opacity = 1) => "rgba(255, 152, 0, 0.5)", // Lighter orange
+                    strokeWidth: 2,
+                    withDots: false,
+                },
+                {
+                    data: Array(stepsData.length).fill(100),
+                    color: (opacity = 1) => "rgba(255, 0, 0, 0.8)",
+                    strokeWidth: 2,
+                    withDots: false,
+                },
+            ],
+            legend: [
+                `Today: ${lastValue ? lastValue.toFixed(1) : 0}%`,
+                `Avg: ${lastMA ? lastMA.toFixed(1) : 0}%`,
+            ],
+        };
+    };
 
     const createChartData = (loadData: number[], dataForMA: number[], targetLoad: number) => {
         loadData = loadData.map((value) => (isNaN(value) ? 0 : value));
@@ -423,6 +563,25 @@ const StatsScreen = () => {
                     actualSets={stats.actualMobilityLoad}
                     targetSets={stats.targetMobilityLoad}
                 />
+
+                {Platform.OS === "ios" &&
+                    isHealthKitAuthorized &&
+                    (loadingSteps ? (
+                        <View style={{ marginTop: 10, alignItems: "center" }}>
+                            <ActivityIndicator size="small" color={currentTheme.colors.primary} />
+                            <Text style={{ color: currentTheme.colors.text, marginTop: 5 }}>
+                                Loading step data...
+                            </Text>
+                        </View>
+                    ) : (
+                        <ProgressBar
+                            percentage={stepPercentage}
+                            color="#FF9800"
+                            label="Steps"
+                            actualSets={totalSteps}
+                            targetSets={stepGoal * trainingInterval}
+                        />
+                    ))}
             </View>
 
             {renderChart(
@@ -468,6 +627,31 @@ const StatsScreen = () => {
                 "Mobility"
             )}
             {renderMobilityStats(stats.actualMobilitySets, stats.targetMobilitySets, "Mobility")}
+
+            {Platform.OS === "ios" && isHealthKitAuthorized && !loadingSteps && (
+                <>
+                    {renderSeparator()}
+
+                    {renderChart(createStepsChartData(stepsByDay, stepGoal), "Daily Steps")}
+
+                    <View style={styles.statsContainer}>
+                        <Text style={styles.statsTitle}>Step Statistics</Text>
+                        <Text style={styles.statLabel}>
+                            Average Daily Steps:{" "}
+                            {Math.round(totalSteps / trainingInterval).toLocaleString()}
+                        </Text>
+                        <Text style={styles.statLabel}>
+                            Total Steps: {totalSteps.toLocaleString()}
+                        </Text>
+                        <Text style={styles.statLabel}>
+                            Daily Goal: {stepGoal.toLocaleString()}
+                        </Text>
+                        <Text style={styles.statLabel}>
+                            Completion Rate: {stepPercentage.toFixed(1)}%
+                        </Text>
+                    </View>
+                </>
+            )}
         </ScrollView>
     );
 };

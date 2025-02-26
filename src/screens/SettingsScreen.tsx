@@ -1,7 +1,16 @@
-// screens/SettingsScreen.tsx
+// screens/SettingsScreen.tsx - updated with Platform import
 import React from "react";
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import { View, Text, FlatList, TouchableOpacity, Switch, Alert, Linking } from "react-native";
+import {
+    View,
+    Text,
+    FlatList,
+    TouchableOpacity,
+    Switch,
+    Alert,
+    Linking,
+    Platform,
+} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { SettingsScreenNavigationProp } from "../types/navigation";
 import { useExerciseContext } from "../contexts/ExerciseContext";
@@ -12,6 +21,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { generateRandomWorkoutData } from "../utils/dataGenerators";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import { useHealthKit } from "../contexts/HealthKitContext";
 
 type SettingItem = {
     id: string;
@@ -27,6 +37,7 @@ const SettingsScreen = () => {
     const styles = createSettingsStyles(currentTheme);
     const navigation = useNavigation<SettingsScreenNavigationProp>();
     const { exercises, exerciseHistory, setExercises, setExerciseHistory } = useExerciseContext();
+    const { isHealthKitAuthorized } = useHealthKit();
 
     const shareExportData = async () => {
         const exportData = {
@@ -123,8 +134,6 @@ const SettingsScreen = () => {
                 }
             });
             setExerciseHistory(newHistory);
-            Alert.alert("Success", "Data imported successfully");
-
             Alert.alert("Success", "Data imported successfully");
         } catch (error: any) {
             console.error("Error importing data:", error);
@@ -226,6 +235,11 @@ const SettingsScreen = () => {
             action: () => navigation.navigate("TrainingInterval"),
         },
         {
+            id: "6",
+            title: "Daily Step Goal",
+            action: () => navigation.navigate("DailyStepGoal"),
+        },
+        {
             id: "7",
             title: "Report Bug / Request Feature",
             action: handleEmailPress,
@@ -256,6 +270,24 @@ const SettingsScreen = () => {
               ]
             : []),
     ];
+
+    // Add health permissions settings only on iOS
+    if (Platform.OS === "ios") {
+        settingsOptions.splice(4, 0, {
+            id: "health_access",
+            title: `Health Access: ${isHealthKitAuthorized ? "Enabled" : "Disabled"}`,
+            action: () => {
+                if (!isHealthKitAuthorized) {
+                    navigation.navigate("Welcome");
+                } else {
+                    Alert.alert(
+                        "Health Access",
+                        "You've already granted health access. To revoke it, go to your device's Settings > Privacy > Health."
+                    );
+                }
+            },
+        });
+    }
 
     const renderItem = ({ item }: { item: SettingItem }) => (
         <TouchableOpacity style={[styles.settingItem]} onPress={item.action}>

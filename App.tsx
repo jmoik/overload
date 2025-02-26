@@ -13,6 +13,7 @@ import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext";
 import { RootStackParamList } from "./src/types/navigation";
 import { navigationTheme } from "./styles/globalStyles";
 import TrainingIntervalScreen from "./src/screens/settings/TrainingIntervalScreen";
+import DailyStepGoalScreen from "./src/screens/settings/DailyStepGoalScreen";
 import WelcomeScreen from "./src/screens/WelcomeScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PlanPreviewScreen from "./src/screens/PlanPreviewScreen";
@@ -117,6 +118,11 @@ const AppContent = () => {
                     name="TrainingInterval"
                     component={TrainingIntervalScreen}
                     options={{ title: "Training Interval" }}
+                />
+                <Stack.Screen
+                    name="DailyStepGoal"
+                    component={DailyStepGoalScreen}
+                    options={{ title: "Daily Step Goal" }}
                 />
                 <Stack.Screen
                     name="PlanPreview"

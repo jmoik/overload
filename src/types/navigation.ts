@@ -25,6 +25,7 @@ export type RootStackParamList = {
     OneRepMaxFormula: undefined;
     RestTimer: undefined;
     TrainingInterval: undefined;
+    DailyStepGoal: undefined; // Added this
     DefaultRpe: undefined;
     Welcome: undefined;
     PlanPreview: { category: string };
@@ -32,6 +33,11 @@ export type RootStackParamList = {
     ImportWorkouts: undefined;
     RoutineDetail: { routineId: string };
     AddRoutine: { routineId?: string };
+    WorkoutDetail: {
+        category: string;
+        muscleGroups: string[];
+        workoutName: string;
+    };
 };
 
 export type AddExerciseScreenNavigationProp = StackNavigationProp<
