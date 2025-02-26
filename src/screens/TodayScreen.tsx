@@ -98,7 +98,7 @@ const TodayScreen = () => {
                 name: "Lower Body",
                 category: "strength",
                 muscleGroups: ["Legs", "Lower Legs"],
-                icon: "body",
+                icon: "barbell",
                 recommended: 0,
             },
             {
@@ -106,7 +106,7 @@ const TodayScreen = () => {
                 name: "Full Body Strength",
                 category: "strength",
                 muscleGroups: ["Arms", "Back", "Chest", "Shoulders", "Legs", "Lower Legs", "Core"],
-                icon: "fitness",
+                icon: "barbell",
                 recommended: 0,
             },
             {
@@ -130,7 +130,15 @@ const TodayScreen = () => {
                 name: "Core Workout",
                 category: "strength",
                 muscleGroups: ["Core"],
-                icon: "fitness-outline",
+                icon: "barbell",
+                recommended: 0,
+            },
+            {
+                id: "legs_core",
+                name: "Legs & Core",
+                category: "strength",
+                muscleGroups: ["Legs", "Lower Legs", "Core"],
+                icon: "barbell",
                 recommended: 0,
             },
         ];
@@ -144,9 +152,6 @@ const TodayScreen = () => {
                     score += muscleGroupScores[workout.category][muscleGroup];
                 }
             });
-
-            // Adjust score based on number of muscle groups
-            score = score * (1 + workout.muscleGroups.length / 10);
 
             return {
                 ...workout,
@@ -169,10 +174,11 @@ const TodayScreen = () => {
     };
 
     const getRecommendationText = (recommended: number) => {
-        if (recommended === 0) return "All done!";
-        if (recommended < 5) return "Low priority";
-        if (recommended < 15) return "Recommended";
-        return "Highly recommended";
+        const formattedScore = Math.round(recommended);
+        if (recommended === 0) return "All done! (0)";
+        if (recommended < 5) return `Low priority (${formattedScore})`;
+        if (recommended < 15) return `Recommended (${formattedScore})`;
+        return `Highly recommended (${formattedScore})`;
     };
 
     const getRecommendationColor = (recommended: number) => {
