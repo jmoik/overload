@@ -11,6 +11,7 @@ import { healthKitPermissions } from "../utils/healthKitPermissions";
 import { useHealthKit } from "../contexts/HealthKitContext";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { suggestedPlans } from "../data/suggestedPlans";
+import { AsyncStorage } from "react-native";
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Welcome">;
 
@@ -46,7 +47,7 @@ const WelcomeScreen = () => {
 
     const initializeHealthKit = () => {
         if (Platform.OS === "ios") {
-            AppleHealthKit.initHealthKit(healthKitPermissions, (error: string) => {
+            AppleHealthKit.initHealthKit(healthKitPermissions, async (error: string) => {
                 if (error) {
                     console.log("[ERROR] Cannot initialize HealthKit:", error);
                     Alert.alert(
@@ -56,9 +57,27 @@ const WelcomeScreen = () => {
                 } else {
                     console.log("HealthKit initialized successfully");
                     setIsHealthKitAuthorized(true);
+
+                    // Set alreadySetup to true in AsyncStorage
+                    try {
+                        await AsyncStorage.setItem("alreadySetup", "true");
+                        console.log("App setup completed and saved to AsyncStorage");
+                    } catch (storageError) {
+                        console.error("Error saving setup state:", storageError);
+                    }
+
                     navigation.navigate("Home");
                 }
             });
+        } else {
+            // For non-iOS platforms, still mark setup as complete
+            try {
+                AsyncStorage.setItem("alreadySetup", "true");
+                navigation.navigate("Home");
+            } catch (storageError) {
+                console.error("Error saving setup state:", storageError);
+                navigation.navigate("Home");
+            }
         }
     };
 
