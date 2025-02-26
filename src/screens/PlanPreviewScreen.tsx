@@ -49,7 +49,7 @@ const PrioritySelector = ({
                         {
                             backgroundColor:
                                 priority === p ? theme.colors.primary : theme.colors.border,
-                            opacity: p === 0 ? 0.3 : 1,
+                            opacity: p === 0 ? 0.15 : p / 3,
                         },
                     ]}
                     onPress={() => onPriorityChange(p)}
@@ -76,6 +76,7 @@ const PlanPreviewScreen: React.FC<{
     const { addExercise, exercises, updateExercise } = useExerciseContext();
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
+    const [showIntroPopup, setShowIntroPopup] = useState(exercises.length === 0);
 
     const [plans, setPlans] = useState<PlanItem[]>(() => {
         if (exercises.length !== 0) {
@@ -99,7 +100,7 @@ const PlanPreviewScreen: React.FC<{
                     exercises.map((exercise) => ({
                         ...exercise,
                         isSelected: true,
-                        priority: exercise.priority || 1,
+                        priority: exercise.priority !== undefined ? exercise.priority : 1,
                     }))
                 ),
             };
@@ -112,7 +113,7 @@ const PlanPreviewScreen: React.FC<{
                 exercises: plan.exercises.map((exercise) => ({
                     ...exercise,
                     isSelected: true,
-                    priority: exercise.priority || 1,
+                    priority: exercise.priority !== undefined ? exercise.priority : 1,
                 })),
             }));
             return plansArray;
@@ -315,44 +316,6 @@ const PlanPreviewScreen: React.FC<{
         setPlans(newPlans);
     };
 
-    const handleEditExercise = (
-        exercise: Exercise & { isSelected: boolean },
-        planIndex: number
-    ) => {
-        navigation.navigate("EditExercise", {
-            exercise,
-            planIndex,
-            onSave: (updatedExercise) => {
-                const newPlans = [...plans];
-                const plan = newPlans[planIndex];
-                const exerciseIndex = plan.exercises.findIndex((e) => e.id === exercise.id);
-
-                plan.exercises[exerciseIndex] = {
-                    ...updatedExercise,
-                    isSelected: plan.exercises[exerciseIndex].isSelected,
-                };
-
-                const muscleGroupExercises = plan.exercises.filter(
-                    (ex) => ex.muscleGroup === updatedExercise.muscleGroup
-                );
-                const updatedExercises = recalculateWeeklySets(
-                    muscleGroupExercises,
-                    updatedExercise.muscleGroup,
-                    plan.category
-                );
-
-                updatedExercises.forEach((updatedEx) => {
-                    const idx = plan.exercises.findIndex((e) => e.id === updatedEx.id);
-                    if (idx !== -1) {
-                        plan.exercises[idx] = updatedEx;
-                    }
-                });
-
-                setPlans(newPlans);
-            },
-        });
-    };
-
     const groupedPlans = useMemo(() => {
         return plans.map((plan) => ({
             ...plan,
@@ -366,6 +329,7 @@ const PlanPreviewScreen: React.FC<{
         }));
     }, [plans]);
 
+    // First, update the renderExerciseItem function to conditionally show the PrioritySelector
     const renderExerciseItem = (
         { item }: { item: Exercise & { isSelected: boolean } },
         planIndex: number
@@ -382,13 +346,67 @@ const PlanPreviewScreen: React.FC<{
                     {`${item.weeklySets} sets/week`}
                 </Text>
             </TouchableOpacity>
-            <PrioritySelector
-                priority={item.priority}
-                onPriorityChange={(p) => handlePriorityChange(p, item, planIndex)}
-                theme={currentTheme}
-            />
+
+            {/* Only show priority selector if the exercise is selected */}
+            {item.isSelected && (
+                <PrioritySelector
+                    priority={item.priority}
+                    onPriorityChange={(p) => handlePriorityChange(p, item, planIndex)}
+                    theme={currentTheme}
+                />
+            )}
+
+            {/* Show toggle only for suggested plans (when exercises array is empty) */}
+            {exercises.length === 0 && (
+                <Switch
+                    value={item.isSelected}
+                    onValueChange={(value) => handleToggleExercise(item, value, planIndex)}
+                    trackColor={{
+                        false: currentTheme.colors.border,
+                        true: currentTheme.colors.primary,
+                    }}
+                />
+            )}
         </View>
     );
+
+    // Update the handleToggleExercise function to set priority to 0 when deselected
+    const handleToggleExercise = (
+        exercise: Exercise & { isSelected: boolean },
+        isSelected: boolean,
+        planIndex: number
+    ) => {
+        const newPlans = [...plans];
+        const plan = newPlans[planIndex];
+        const exerciseIndex = plan.exercises.findIndex((e) => e.id === exercise.id);
+
+        if (exerciseIndex !== -1) {
+            plan.exercises[exerciseIndex] = {
+                ...plan.exercises[exerciseIndex],
+                isSelected: isSelected,
+                // When deselecting, automatically set priority to 0
+                priority: isSelected ? plan.exercises[exerciseIndex].priority : 0,
+            };
+
+            const muscleGroupExercises = plan.exercises.filter(
+                (ex) => ex.muscleGroup === exercise.muscleGroup
+            );
+            const updatedExercises = recalculateWeeklySets(
+                muscleGroupExercises,
+                exercise.muscleGroup,
+                plan.category
+            );
+
+            updatedExercises.forEach((updatedEx) => {
+                const idx = plan.exercises.findIndex((e) => e.id === updatedEx.id);
+                if (idx !== -1) {
+                    plan.exercises[idx] = updatedEx;
+                }
+            });
+
+            setPlans(newPlans);
+        }
+    };
 
     const MuscleGroupHeader = ({
         muscleGroup,
@@ -442,6 +460,7 @@ const PlanPreviewScreen: React.FC<{
         );
     };
 
+    // Updated handleAddNewExercise in PlanPreviewScreen to pass muscle group and category
     const handleAddNewExercise = (muscleGroup: string, planIndex: number) => {
         navigation.navigate("AddExercise", {
             muscleGroup,
@@ -458,6 +477,50 @@ const PlanPreviewScreen: React.FC<{
                 const updatedExercises = recalculateWeeklySets(
                     muscleGroupExercises,
                     muscleGroup,
+                    plan.category
+                );
+
+                updatedExercises.forEach((updatedEx) => {
+                    const idx = plan.exercises.findIndex((e) => e.id === updatedEx.id);
+                    if (idx !== -1) {
+                        plan.exercises[idx] = updatedEx;
+                    }
+                });
+
+                setPlans(newPlans);
+            },
+        });
+    };
+
+    // Updated handleEditExercise in PlanPreviewScreen to pass exerciseData
+    const handleEditExercise = (
+        exercise: Exercise & { isSelected: boolean },
+        planIndex: number
+    ) => {
+        // Remove isSelected property since AddExerciseScreen doesn't expect it
+        const { isSelected, ...exerciseData } = exercise;
+
+        navigation.navigate("AddExercise", {
+            exerciseData,
+            muscleGroup: exercise.muscleGroup,
+            category: exercise.category,
+            planIndex,
+            onSave: (updatedExercise) => {
+                const newPlans = [...plans];
+                const plan = newPlans[planIndex];
+                const exerciseIndex = plan.exercises.findIndex((e) => e.id === exercise.id);
+
+                plan.exercises[exerciseIndex] = {
+                    ...updatedExercise,
+                    isSelected: plan.exercises[exerciseIndex].isSelected,
+                };
+
+                const muscleGroupExercises = plan.exercises.filter(
+                    (ex) => ex.muscleGroup === updatedExercise.muscleGroup
+                );
+                const updatedExercises = recalculateWeeklySets(
+                    muscleGroupExercises,
+                    updatedExercise.muscleGroup,
                     plan.category
                 );
 
@@ -535,6 +598,72 @@ const PlanPreviewScreen: React.FC<{
         );
     };
 
+    const IntroPopup = () => (
+        <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowIntroPopup(false)}
+        >
+            <View
+                style={[styles.popupContainer, { backgroundColor: currentTheme.colors.background }]}
+            >
+                <Text style={[styles.popupTitle, { color: currentTheme.colors.text }]}>
+                    Welcome to Your Workout Plan
+                </Text>
+                <Text style={[styles.popupText, { color: currentTheme.colors.text }]}>
+                    Here's how to customize your workout:
+                </Text>
+                <View style={styles.instructionContainer}>
+                    <Text style={[styles.instructionPoint, { color: currentTheme.colors.text }]}>
+                        • Toggle switches to select/deselect exercises
+                    </Text>
+                    <Text style={[styles.instructionPoint, { color: currentTheme.colors.text }]}>
+                        • Set priority (0-3) for each exercise (0 = skip, 3 = highest priority)
+                    </Text>
+                    <Text style={[styles.instructionPoint, { color: currentTheme.colors.text }]}>
+                        • Adjust total weekly volume using +/- buttons
+                    </Text>
+                </View>
+                <TouchableOpacity
+                    style={[styles.closeButton, { backgroundColor: currentTheme.colors.primary }]}
+                    onPress={() => setShowIntroPopup(false)}
+                >
+                    <Text
+                        style={[styles.closeButtonText, { color: currentTheme.colors.background }]}
+                    >
+                        Got it
+                    </Text>
+                </TouchableOpacity>
+            </View>
+        </TouchableOpacity>
+    );
+
+    // Modify the return statement to include the popup when needed
+    return (
+        <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
+            <FlatList
+                data={groupedPlans}
+                renderItem={renderPlanItem}
+                keyExtractor={(item, index) => `${item.name}-${index}`}
+                ListFooterComponent={
+                    <TouchableOpacity
+                        style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
+                        onPress={handleNext}
+                    >
+                        <Text
+                            style={[styles.buttonText, { color: currentTheme.colors.background }]}
+                        >
+                            Save Plan
+                        </Text>
+                    </TouchableOpacity>
+                }
+            />
+
+            {/* Show intro popup only for suggested plans */}
+            {showIntroPopup && <IntroPopup />}
+        </View>
+    );
+
     return (
         <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
             <FlatList
@@ -606,16 +735,16 @@ const styles = StyleSheet.create({
     priorityContainer: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
+        marginRight: 12,
     },
     priorityButtons: {
         flexDirection: "row",
-        gap: 4,
+        gap: 6,
     },
     priorityButton: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
+        width: 26,
+        height: 26,
+        borderRadius: 99,
         alignItems: "center",
         justifyContent: "center",
     },
@@ -667,6 +796,55 @@ const styles = StyleSheet.create({
     addExerciseButton: {
         justifyContent: "center",
         alignItems: "center",
+    },
+    modalOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+    },
+    popupContainer: {
+        width: "85%",
+        padding: 20,
+        borderRadius: 10,
+        elevation: 5,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+    },
+    popupTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        marginBottom: 15,
+        textAlign: "center",
+    },
+    popupText: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    instructionContainer: {
+        marginVertical: 10,
+    },
+    instructionPoint: {
+        fontSize: 14,
+        marginBottom: 8,
+        lineHeight: 20,
+    },
+    closeButton: {
+        padding: 12,
+        borderRadius: 8,
+        alignItems: "center",
+        marginTop: 15,
+    },
+    closeButtonText: {
+        fontSize: 16,
+        fontWeight: "bold",
     },
 });
 

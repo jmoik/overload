@@ -20,11 +20,14 @@ const AddExerciseScreen = () => {
     const route = useRoute<AddExerciseScreenRouteProp>();
     const exerciseId = route.params?.exerciseId;
 
+    // Prefill muscle group and category if coming from PlanPreviewScreen
+    const prefillMuscleGroup = route.params?.muscleGroup || "";
+    const prefillCategory = route.params?.category || "strength";
+
     const [name, setName] = useState("");
-    const [weeklySets, setWeeklySets] = useState("");
-    const [category, setCategory] = useState("strength" as Exercise["category"]);
+    const [category, setCategory] = useState(prefillCategory as Exercise["category"]);
     const [description, setDescription] = useState("");
-    const [muscleGroup, setMuscleGroup] = useState("");
+    const [muscleGroup, setMuscleGroup] = useState(prefillMuscleGroup);
     const [distance, setDistance] = useState("");
     const [oneRepMax, setOneRepMax] = useState("");
     const [workout, setWorkout] = useState<Set[]>([]);
@@ -48,27 +51,6 @@ const AddExerciseScreen = () => {
                 setCategory(exercise.category);
                 setDescription(exercise.description);
                 setMuscleGroup(exercise.muscleGroup);
-                setWeeklySets(exercise.weeklySets.toString());
-                setDistance(exercise.distance?.toString() || "0");
-                if (exercise.category === "nsuns") {
-                    setOneRepMax(exercise.oneRepMax?.toString() || "");
-                    setWorkout(exercise.workout || []);
-                }
-            }
-        }
-    }, [exerciseId, exercises]);
-
-    useEffect(() => {
-        if (route.params?.exerciseData) {
-            handleEditExerciseFromPreview(route.params.exerciseData);
-        } else if (exerciseId) {
-            const exercise = exercises.find((e) => e.id === exerciseId);
-            if (exercise) {
-                setName(exercise.name);
-                setCategory(exercise.category);
-                setDescription(exercise.description);
-                setMuscleGroup(exercise.muscleGroup);
-                setWeeklySets(exercise.weeklySets.toString());
                 setDistance(exercise.distance?.toString() || "0");
                 if (exercise.category === "nsuns") {
                     setOneRepMax(exercise.oneRepMax?.toString() || "");
@@ -86,7 +68,8 @@ const AddExerciseScreen = () => {
 
         const exerciseData: Omit<Exercise, "id"> = {
             name,
-            weeklySets: category === "endurance" ? 1 : parseInt(weeklySets, 10),
+            // Default value for weeklySets based on category
+            weeklySets: category === "endurance" ? 1 : 10, // Default to 10 sets for non-endurance
             category,
             description,
             muscleGroup,
@@ -154,7 +137,6 @@ const AddExerciseScreen = () => {
 
     const handleEditExerciseFromPreview = (exerciseData: Exercise) => {
         setName(exerciseData.name);
-        setWeeklySets(exerciseData.weeklySets.toString());
         setCategory(exerciseData.category);
         setDescription(exerciseData.description);
         setMuscleGroup(exerciseData.muscleGroup);
@@ -215,16 +197,6 @@ const AddExerciseScreen = () => {
                     value={name}
                     onChangeText={setName}
                 />
-                {category !== "endurance" && (
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Weekly Sets"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={weeklySets}
-                        onChangeText={setWeeklySets}
-                        keyboardType="numeric"
-                    />
-                )}
 
                 <View style={styles.dropdownContainer}>
                     <DropDownPicker

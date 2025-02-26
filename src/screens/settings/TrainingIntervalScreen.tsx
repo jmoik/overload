@@ -6,7 +6,6 @@ import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../contexts/ThemeContext";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useExerciseContext } from "../../contexts/ExerciseContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../types/navigation";
 import { lightTheme, darkTheme, createTrainingIntervalStyles } from "../../../styles/globalStyles";
 
