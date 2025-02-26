@@ -10,8 +10,7 @@ import { lightTheme, darkTheme, createWelcomeStyles } from "../../styles/globalS
 import { healthKitPermissions } from "../utils/healthKitPermissions";
 import { useHealthKit } from "../contexts/HealthKitContext";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { suggestedPlans } from "../data/suggestedPlans";
-import { AsyncStorage } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type WelcomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Welcome">;
 
