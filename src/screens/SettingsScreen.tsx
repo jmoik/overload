@@ -187,29 +187,7 @@ const SettingsScreen = () => {
     };
 
     const handleAppStoreRating = () => {
-        // Replace 'your-app-id' with your actual App Store ID
-        Linking.openURL("https://apps.apple.com/app/id[your-app-id]?action=write-review");
-    };
-
-    const handleInfoPress = () => {
-        navigation.navigate("AppInfo");
-    };
-
-    const goToWelcomeScreen = async () => {
-        try {
-            await AsyncStorage.setItem("alreadySetup", "false");
-
-            // Reset the navigation to the Welcome screen
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: "Welcome" }],
-                })
-            );
-        } catch (error) {
-            console.error("Error resetting welcome screen:", error);
-            Alert.alert("Error", "Failed to reset welcome screen.");
-        }
+        Linking.openURL("https://apps.apple.com/app/id6741396898?action=write-review");
     };
 
     const populateRandomWorkoutData = () => {
@@ -248,11 +226,6 @@ const SettingsScreen = () => {
             id: "8",
             title: "Rate in App Store",
             action: handleAppStoreRating,
-        },
-        {
-            id: "9",
-            title: "Go to Setup Screen",
-            action: goToWelcomeScreen,
         },
         {
             id: "11",
