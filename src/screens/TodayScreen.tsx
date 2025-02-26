@@ -1,6 +1,4 @@
 // src/screens/TodayScreen.tsx
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../types/navigation";
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";

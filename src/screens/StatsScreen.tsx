@@ -110,12 +110,20 @@ const StatsScreen = () => {
                     today.setHours(23, 59, 59, 999); // End of today
                     const startDate = subDays(today, trainingInterval);
                     startDate.setHours(0, 0, 0, 0); // Start of the first day
-
                     const steps = await getStepsForInterval(startDate, today);
                     setStepData(steps);
 
+                    // Aggregate steps by date
+                    const stepsByDate: Record<string, number> = {};
+                    steps.forEach((entry) => {
+                        if (!stepsByDate[entry.date]) {
+                            stepsByDate[entry.date] = 0;
+                        }
+                        stepsByDate[entry.date] += entry.steps;
+                    });
+
                     // Calculate total steps
-                    const total = steps.reduce((sum, day) => sum + day.steps, 0);
+                    const total = Object.values(stepsByDate).reduce((sum, steps) => sum + steps, 0);
                     setTotalSteps(total);
 
                     // Calculate percentage of goal achieved on average
@@ -124,23 +132,19 @@ const StatsScreen = () => {
 
                     // Create an array of steps for each day in the interval
                     const stepsArray = Array(trainingInterval).fill(0);
-                    const intervalDates = [];
 
-                    // Generate dates for the interval
+                    // Fill the stepsArray with actual values
                     for (let i = 0; i < trainingInterval; i++) {
                         const date = new Date(today);
-                        date.setDate(date.getDate() - i);
-                        intervalDates.unshift(date.toISOString().split("T")[0]);
+                        date.setDate(today.getDate() - i);
+                        const dateString = date.toISOString().split("T")[0];
+
+                        // trainingInterval - i - 1 ensures the days are in chronological order
+                        // (oldest day at index 0, today at the last index)
+                        stepsArray[trainingInterval - i - 1] = stepsByDate[dateString] || 0;
                     }
 
-                    // Fill the array with steps data
-                    intervalDates.forEach((date, index) => {
-                        const dayData = steps.find((d) => d.date === date);
-                        if (dayData) {
-                            stepsArray[index] = dayData.steps;
-                        }
-                    });
-
+                    console.log("Steps by day:", stepsArray);
                     setStepsByDay(stepsArray);
                 } catch (error) {
                     console.error("Error fetching step data:", error);
@@ -303,14 +307,7 @@ const StatsScreen = () => {
         // Normalize data to percentages
         const normalizedStepsData = stepsData.map((steps) => (steps / dailyGoal) * 100);
 
-        // Calculate moving average for steps data
-        const movingAverage = calculateMovingAverage(
-            normalizedStepsData,
-            Math.min(7, stepsData.length)
-        );
-
         const lastValue = normalizedStepsData[normalizedStepsData.length - 1];
-        const lastMA = movingAverage[movingAverage.length - 1];
 
         return {
             labels: Array.from(
@@ -325,22 +322,13 @@ const StatsScreen = () => {
                     withDots: true,
                 },
                 {
-                    data: movingAverage,
-                    color: (opacity = 1) => "rgba(255, 152, 0, 0.5)", // Lighter orange
-                    strokeWidth: 2,
-                    withDots: false,
-                },
-                {
                     data: Array(stepsData.length).fill(100),
                     color: (opacity = 1) => "rgba(255, 0, 0, 0.8)",
                     strokeWidth: 2,
                     withDots: false,
                 },
             ],
-            legend: [
-                `Today: ${lastValue ? lastValue.toFixed(1) : 0}%`,
-                `Avg: ${lastMA ? lastMA.toFixed(1) : 0}%`,
-            ],
+            legend: [`Today: ${lastValue ? lastValue.toFixed(1) : 0}%`],
         };
     };
 
@@ -632,7 +620,7 @@ const StatsScreen = () => {
                 <>
                     {renderSeparator()}
 
-                    {renderChart(createStepsChartData(stepsByDay, stepGoal), "Daily Steps")}
+                    {renderChart(createStepsChartData(stepsByDay, stepGoal), "Steps")}
 
                     <View style={styles.statsContainer}>
                         <Text style={styles.statsTitle}>Step Statistics</Text>
