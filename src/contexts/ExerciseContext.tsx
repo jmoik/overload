@@ -9,10 +9,7 @@ import React, {
     useRef,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Vibration } from "react-native";
 import { Exercise, ExerciseHistoryEntry } from "./Exercise";
-
-export type OneRepMaxFormula = "brzycki" | "epley" | "lander";
 
 interface ExerciseContextType {
     exercises: Exercise[];
@@ -31,14 +28,6 @@ interface ExerciseContextType {
     ) => void;
     deleteExerciseHistoryEntry: (exerciseId: string, entryIndex: number) => void;
     updateExercise: (id: string, updatedExercise: Omit<Exercise, "id">) => void;
-    oneRepMaxFormula: OneRepMaxFormula;
-    setOneRepMaxFormula: (formula: OneRepMaxFormula) => void;
-    restTimerDuration: number;
-    setRestTimerDuration: (duration: number) => void;
-    timerRunning: boolean;
-    timeLeft: number;
-    startTimer: () => void;
-    stopTimer: () => void;
     trainingInterval: number;
     setTrainingInterval: (interval: number) => void;
 }
@@ -50,50 +39,7 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [exerciseHistory, setExerciseHistory] = useState<Record<string, ExerciseHistoryEntry[]>>(
         {}
     );
-    const [oneRepMaxFormula, setOneRepMaxFormula] = useState<OneRepMaxFormula>("brzycki");
-    const [restTimerDuration, setRestTimerDuration] = useState<number>(60);
-    const [timerRunning, setTimerRunning] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(restTimerDuration);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
     const [trainingInterval, setTrainingInterval] = useState<number>(7);
-
-    useEffect(() => {
-        if (!timerRunning) {
-            setTimeLeft(restTimerDuration);
-        }
-    }, [restTimerDuration, timerRunning]);
-
-    useEffect(() => {
-        return () => {
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-            }
-        };
-    }, []);
-
-    const startTimer = useCallback(() => {
-        setTimerRunning(true);
-        setTimeLeft(restTimerDuration);
-        timerRef.current = setInterval(() => {
-            setTimeLeft((prevTime) => {
-                if (prevTime <= 1) {
-                    clearInterval(timerRef.current!);
-                    setTimerRunning(false);
-                    Vibration.vibrate([0, 500, 200, 500]);
-                    return restTimerDuration;
-                }
-                return prevTime - 1;
-            });
-        }, 1000);
-    }, [restTimerDuration]);
-
-    const stopTimer = useCallback(() => {
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
-        }
-        setTimerRunning(false);
-        setTimeLeft(restTimerDuration);
-    }, [restTimerDuration]);
 
     useEffect(() => {
         loadData();
@@ -101,14 +47,12 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     useEffect(() => {
         saveData();
-    }, [exercises, exerciseHistory, oneRepMaxFormula, restTimerDuration, trainingInterval]);
+    }, [exercises, exerciseHistory, trainingInterval]);
 
     const loadData = async () => {
         try {
             const storedExercises = await AsyncStorage.getItem("exercises");
             const storedHistory = await AsyncStorage.getItem("exerciseHistory");
-            const storedFormula = await AsyncStorage.getItem("oneRepMaxFormula");
-            const storedRestTimer = await AsyncStorage.getItem("restTimerDuration");
             const storedTrainingInterval = await AsyncStorage.getItem("trainingInterval");
             if (storedTrainingInterval) {
                 setTrainingInterval(parseInt(storedTrainingInterval, 10));
@@ -119,17 +63,6 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
             if (storedHistory) {
                 setExerciseHistory(JSON.parse(storedHistory));
             }
-            if (
-                storedFormula &&
-                (storedFormula === "brzycki" ||
-                    storedFormula === "epley" ||
-                    storedFormula === "lander")
-            ) {
-                setOneRepMaxFormula(storedFormula);
-            }
-            if (storedRestTimer) {
-                setRestTimerDuration(parseInt(storedRestTimer, 10));
-            }
         } catch (error) {
             console.error("Error loading data:", error);
         }
@@ -139,13 +72,11 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
         try {
             await AsyncStorage.setItem("exercises", JSON.stringify(exercises));
             await AsyncStorage.setItem("exerciseHistory", JSON.stringify(exerciseHistory));
-            await AsyncStorage.setItem("oneRepMaxFormula", oneRepMaxFormula);
-            await AsyncStorage.setItem("restTimerDuration", restTimerDuration.toString());
             await AsyncStorage.setItem("trainingInterval", trainingInterval.toString());
         } catch (error) {
             console.error("Error saving data:", error);
         }
-    }, [exercises, exerciseHistory, oneRepMaxFormula, restTimerDuration, trainingInterval]);
+    }, [exercises, exerciseHistory, trainingInterval]);
 
     const addExercise = useCallback((exercise: Exercise) => {
         setExercises((prevExercises) => [...prevExercises, exercise]);
@@ -204,14 +135,6 @@ export const ExerciseProvider: React.FC<{ children: ReactNode }> = ({ children }
                 updateExerciseHistoryEntry,
                 deleteExerciseHistoryEntry,
                 updateExercise,
-                oneRepMaxFormula,
-                setOneRepMaxFormula,
-                restTimerDuration,
-                setRestTimerDuration,
-                timerRunning,
-                timeLeft,
-                startTimer,
-                stopTimer,
                 trainingInterval,
                 setTrainingInterval,
             }}
