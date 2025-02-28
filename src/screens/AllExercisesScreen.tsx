@@ -175,7 +175,7 @@ const AllExercisesScreen = () => {
             let remainingSets = exercise.weeklySets - setsDoneInInterval;
 
             if (exercise.category === "endurance") {
-                remainingSets = exercise.weeklySets * (exercise.distance ?? 0) - setsDoneInInterval;
+                remainingSets = exercise.distance - setsDoneInInterval;
             }
             return remainingSets;
         },
@@ -198,7 +198,7 @@ const AllExercisesScreen = () => {
 
             const weeklySetsText =
                 item.category === "endurance"
-                    ? `${item.weeklySets * item.distance!} km / interval`
+                    ? `${item.distance} km / interval`
                     : `${item.weeklySets} sets / interval`;
 
             const setsLeftText =
@@ -342,7 +342,7 @@ const AllExercisesScreen = () => {
     const calculateTotalSetsForGroup = useCallback((exercises: Exercise[]) => {
         return exercises.reduce((total, exercise) => {
             if (exercise.category === "endurance") {
-                return total + exercise.weeklySets * (exercise.distance ?? 0);
+                return total + exercise.distance;
             }
             return total + exercise.weeklySets;
         }, 0);

@@ -1,4 +1,4 @@
-// screens/SettingsScreen.tsx - updated with Platform import
+// screens/SettingsScreen.tsx
 import React from "react";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import {
@@ -113,6 +113,7 @@ const SettingsScreen = () => {
                         distance: any;
                         workout: any;
                         oneRepMax: any;
+                        priority: any;
                     }) => ({
                         id: e.id,
                         name: e.name,
@@ -124,6 +125,7 @@ const SettingsScreen = () => {
                         distance: e.distance,
                         workout: e.workout,
                         oneRepMax: e.oneRepMax,
+                        priority: e.priority || 0,
                     })
                 )
             );

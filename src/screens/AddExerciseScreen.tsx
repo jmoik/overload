@@ -28,7 +28,6 @@ const AddExerciseScreen = () => {
     const [category, setCategory] = useState(prefillCategory as Exercise["category"]);
     const [description, setDescription] = useState("");
     const [muscleGroup, setMuscleGroup] = useState(prefillMuscleGroup);
-    const [distance, setDistance] = useState("");
     const [oneRepMax, setOneRepMax] = useState("");
     const [workout, setWorkout] = useState<Set[]>([]);
 
@@ -51,7 +50,6 @@ const AddExerciseScreen = () => {
                 setCategory(exercise.category);
                 setDescription(exercise.description);
                 setMuscleGroup(exercise.muscleGroup);
-                setDistance(exercise.distance?.toString() || "0");
                 if (exercise.category === "nsuns") {
                     setOneRepMax(exercise.oneRepMax?.toString() || "");
                     setWorkout(exercise.workout || []);
@@ -69,11 +67,10 @@ const AddExerciseScreen = () => {
         const exerciseData: Omit<Exercise, "id"> = {
             name,
             // Default value for weeklySets based on category
-            weeklySets: category === "endurance" ? 1 : 10, // Default to 10 sets for non-endurance
+            weeklySets: 10, // Default to 10 sets for non-endurance
             category,
             description,
             muscleGroup,
-            distance: category === "endurance" ? parseFloat(distance) : undefined,
             oneRepMax: category === "nsuns" ? parseFloat(oneRepMax) : undefined,
             workout: category === "nsuns" ? workout : undefined,
         };
@@ -140,7 +137,6 @@ const AddExerciseScreen = () => {
         setCategory(exerciseData.category);
         setDescription(exerciseData.description);
         setMuscleGroup(exerciseData.muscleGroup);
-        setDistance(exerciseData.distance?.toString() || "");
     };
 
     const handleRemoveSet = (index: number) => {
@@ -228,16 +224,6 @@ const AddExerciseScreen = () => {
                     value={muscleGroup}
                     onChangeText={setMuscleGroup}
                 />
-                {category === "endurance" && (
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Total Interval Distance (km)"
-                        placeholderTextColor={currentTheme.colors.placeholder}
-                        value={distance}
-                        onChangeText={setDistance}
-                        keyboardType="numeric"
-                    />
-                )}
                 <TextInput
                     style={styles.input}
                     placeholder="Description"

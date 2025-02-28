@@ -12,14 +12,6 @@ import {
     weeklyVolumePerMuscleGroupPerCategory,
 } from "../data/suggestedPlans";
 
-type PlanPreviewScreenRouteProp = RouteProp<RootStackParamList, "PlanPreview">;
-type PlanPreviewScreenNavigationProp = StackNavigationProp<RootStackParamList, "PlanPreview">;
-
-type Props = {
-    route: PlanPreviewScreenRouteProp;
-    navigation: PlanPreviewScreenNavigationProp;
-};
-
 type PlanItem = {
     name: string;
     category: string;
