@@ -31,7 +31,7 @@ const Home = () => (
             name="Today"
             component={TodayScreen}
             options={{
-                title: "Today's Workout",
+                title: "Today",
                 tabBarIcon: ({ color, size }) => <Icon name="calendar" color={color} size={size} />,
             }}
         />
@@ -39,7 +39,8 @@ const Home = () => (
             name="AllExercises"
             component={AllExercisesScreen}
             options={{
-                title: "All Exercises",
+                title: "Exercises",
+                tabBarLabel: "Exercises",
                 tabBarIcon: ({ color, size }) => <Icon name="list" color={color} size={size} />,
             }}
         />
