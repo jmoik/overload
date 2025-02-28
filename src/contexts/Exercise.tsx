@@ -15,7 +15,7 @@ export interface StrengthExerciseHistoryEntry extends BaseExerciseHistoryEntry {
 
 export interface EnduranceExerciseHistoryEntry extends BaseExerciseHistoryEntry {
     category: "endurance";
-    distance: number;
+    sets: number; // Represents distance in km (1 set = 1 km)
     time: number;
     avgHeartRate?: number;
 }
@@ -44,7 +44,6 @@ export interface Exercise {
     priority: number;
     weeklySets: number;
     muscleGroup: string;
-    distance?: number;
     workout?: Set[];
     oneRepMax?: number;
 }

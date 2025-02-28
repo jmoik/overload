@@ -6,7 +6,13 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useExerciseContext } from "../contexts/ExerciseContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme } from "../../styles/globalStyles";
-import { Exercise, ExerciseHistoryEntry } from "../contexts/Exercise";
+import {
+    EnduranceExerciseHistoryEntry,
+    Exercise,
+    ExerciseHistoryEntry,
+    MobilityExerciseHistoryEntry,
+    StrengthExerciseHistoryEntry,
+} from "../contexts/Exercise";
 import { subDays, isAfter } from "date-fns";
 
 type WorkoutType = {
@@ -37,23 +43,18 @@ const TodayScreen = () => {
         const setsDoneInInterval = history.reduce((total, entry: ExerciseHistoryEntry) => {
             if (isAfter(new Date(entry.date), intervalStart)) {
                 if (entry.category === "strength") {
-                    return total + (entry as any).sets;
+                    return total + (entry as StrengthExerciseHistoryEntry).sets;
                 } else if (entry.category === "mobility") {
-                    return total + (entry as any).sets;
+                    return total + (entry as MobilityExerciseHistoryEntry).sets;
                 } else if (entry.category === "endurance") {
-                    return total + (entry as any).distance;
+                    return total + (entry as EnduranceExerciseHistoryEntry).sets;
                 }
             }
             return total;
         }, 0);
 
-        let remainingSets = exercise.weeklySets - setsDoneInInterval;
-
-        if (exercise.category === "endurance") {
-            remainingSets = exercise.weeklySets * (exercise.distance ?? 0) - setsDoneInInterval;
-        }
-
-        return Math.max(0, remainingSets);
+        const remainingSets = exercise.weeklySets - setsDoneInInterval;
+        return remainingSets;
     };
 
     const calculateMuscleGroupScores = () => {

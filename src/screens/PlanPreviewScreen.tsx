@@ -112,7 +112,7 @@ const PlanPreviewScreen: React.FC<{
         }
     });
 
-    // Initial calculation of weekly sets on mount
+    // Update the useEffect for initial calculation to ensure it runs properly
     useEffect(() => {
         const newPlans = plans.map((plan) => {
             const exercisesByMuscleGroup = plan.exercises.reduce((acc, exercise) => {
@@ -124,12 +124,17 @@ const PlanPreviewScreen: React.FC<{
             }, {} as Record<string, (Exercise & { isSelected: boolean })[]>);
 
             let updatedExercises = [...plan.exercises];
+
+            // Process each muscle group separately
             Object.entries(exercisesByMuscleGroup).forEach(([muscleGroup, groupExercises]) => {
+                // Force run the recalculation for each group
                 const recalculated = recalculateWeeklySets(
                     groupExercises,
                     muscleGroup,
                     plan.category
                 );
+
+                // Update exercises with recalculated values
                 recalculated.forEach((recalcEx) => {
                     const idx = updatedExercises.findIndex((e) => e.id === recalcEx.id);
                     if (idx !== -1) {
@@ -140,8 +145,53 @@ const PlanPreviewScreen: React.FC<{
 
             return { ...plan, exercises: updatedExercises };
         });
+
+        // Important: Actually update the state with the new plans
         setPlans(newPlans);
     }, []); // Empty dependency array ensures this runs only on mount
+
+    // Update the renderExerciseItem function to correctly display endurance exercises
+    const renderExerciseItem = (
+        { item }: { item: Exercise & { isSelected: boolean } },
+        planIndex: number
+    ) => (
+        <View style={[styles.exerciseItem, { borderColor: currentTheme.colors.border }]}>
+            <TouchableOpacity
+                style={styles.exerciseContent}
+                onPress={() => handleEditExercise(item, planIndex)}
+            >
+                <Text style={[styles.exerciseName, { color: currentTheme.colors.text }]}>
+                    {item.name}
+                </Text>
+                <Text style={[styles.exerciseDetails, { color: currentTheme.colors.text }]}>
+                    {item.category === "endurance"
+                        ? `${item.weeklySets} km/week`
+                        : `${item.weeklySets} sets/week`}
+                </Text>
+            </TouchableOpacity>
+
+            {/* Only show priority selector if the exercise is selected */}
+            {item.isSelected && (
+                <PrioritySelector
+                    priority={item.priority}
+                    onPriorityChange={(p) => handlePriorityChange(p, item, planIndex)}
+                    theme={currentTheme}
+                />
+            )}
+
+            {/* Show toggle only for suggested plans (when exercises array is empty) */}
+            {exercises.length === 0 && (
+                <Switch
+                    value={item.isSelected}
+                    onValueChange={(value) => handleToggleExercise(item, value, planIndex)}
+                    trackColor={{
+                        false: currentTheme.colors.border,
+                        true: currentTheme.colors.primary,
+                    }}
+                />
+            )}
+        </View>
+    );
 
     const handleNext = () => {
         plans.forEach((plan) => {
@@ -321,47 +371,50 @@ const PlanPreviewScreen: React.FC<{
         }));
     }, [plans]);
 
-    // First, update the renderExerciseItem function to conditionally show the PrioritySelector
-    const renderExerciseItem = (
-        { item }: { item: Exercise & { isSelected: boolean } },
-        planIndex: number
-    ) => (
-        <View style={[styles.exerciseItem, { borderColor: currentTheme.colors.border }]}>
-            <TouchableOpacity
-                style={styles.exerciseContent}
-                onPress={() => handleEditExercise(item, planIndex)}
-            >
-                <Text style={[styles.exerciseName, { color: currentTheme.colors.text }]}>
-                    {item.name}
+    const MuscleGroupHeader = ({
+        muscleGroup,
+        exercises,
+        onVolumeChange,
+        theme,
+    }: {
+        muscleGroup: string;
+        exercises: (Exercise & { isSelected: boolean })[];
+        onVolumeChange: (newVolume: number) => void;
+        theme: typeof lightTheme;
+    }) => {
+        const category = exercises[0].category;
+        console.log(category);
+        const totalVolume = weeklyVolumePerMuscleGroupPerCategory[category][muscleGroup];
+        console.log(totalVolume);
+        return (
+            <View style={styles.muscleGroupHeader}>
+                <Text style={[styles.muscleGroupTitle, { color: theme.colors.text }]}>
+                    {muscleGroup}
                 </Text>
-                <Text style={[styles.exerciseDetails, { color: currentTheme.colors.text }]}>
-                    {`${item.weeklySets} sets/week`}
-                </Text>
-            </TouchableOpacity>
-
-            {/* Only show priority selector if the exercise is selected */}
-            {item.isSelected && (
-                <PrioritySelector
-                    priority={item.priority}
-                    onPriorityChange={(p) => handlePriorityChange(p, item, planIndex)}
-                    theme={currentTheme}
-                />
-            )}
-
-            {/* Show toggle only for suggested plans (when exercises array is empty) */}
-            {exercises.length === 0 && (
-                <Switch
-                    value={item.isSelected}
-                    onValueChange={(value) => handleToggleExercise(item, value, planIndex)}
-                    trackColor={{
-                        false: currentTheme.colors.border,
-                        true: currentTheme.colors.primary,
-                    }}
-                />
-            )}
-        </View>
-    );
-
+                <View style={styles.volumeControls}>
+                    <TouchableOpacity
+                        onPress={() => onVolumeChange(Math.max(1, totalVolume - 1))}
+                        style={[styles.volumeButton, { backgroundColor: theme.colors.border }]}
+                    >
+                        <Text style={[styles.volumeButtonText, { color: theme.colors.text }]}>
+                            -
+                        </Text>
+                    </TouchableOpacity>
+                    <Text style={[styles.volumeText, { color: theme.colors.text }]}>
+                        {totalVolume} {category === "endurance" ? "km" : "sets"}/week
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => onVolumeChange(totalVolume + 1)}
+                        style={[styles.volumeButton, { backgroundColor: theme.colors.border }]}
+                    >
+                        <Text style={[styles.volumeButtonText, { color: theme.colors.text }]}>
+                            +
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    };
     // Update the handleToggleExercise function to set priority to 0 when deselected
     const handleToggleExercise = (
         exercise: Exercise & { isSelected: boolean },
@@ -398,58 +451,6 @@ const PlanPreviewScreen: React.FC<{
 
             setPlans(newPlans);
         }
-    };
-
-    const MuscleGroupHeader = ({
-        muscleGroup,
-        exercises,
-        onVolumeChange,
-        theme,
-    }: {
-        muscleGroup: string;
-        exercises: (Exercise & { isSelected: boolean })[];
-        onVolumeChange: (newVolume: number) => void;
-        theme: typeof lightTheme;
-    }) => {
-        const category = exercises[0]?.category || "strength";
-
-        // Calculate actual total volume from exercises
-        const actualTotalVolume = exercises.reduce((sum, ex) => sum + (ex.weeklySets || 0), 0);
-
-        // Use actual volume if available, otherwise fallback to default
-        const totalVolume =
-            actualTotalVolume > 0
-                ? actualTotalVolume
-                : weeklyVolumePerMuscleGroupPerCategory[category]?.[muscleGroup] || 12;
-
-        return (
-            <View style={styles.muscleGroupHeader}>
-                <Text style={[styles.muscleGroupTitle, { color: theme.colors.text }]}>
-                    {muscleGroup}
-                </Text>
-                <View style={styles.volumeControls}>
-                    <TouchableOpacity
-                        onPress={() => onVolumeChange(Math.max(1, totalVolume - 1))}
-                        style={[styles.volumeButton, { backgroundColor: theme.colors.border }]}
-                    >
-                        <Text style={[styles.volumeButtonText, { color: theme.colors.text }]}>
-                            -
-                        </Text>
-                    </TouchableOpacity>
-                    <Text style={[styles.volumeText, { color: theme.colors.text }]}>
-                        {totalVolume} sets/week
-                    </Text>
-                    <TouchableOpacity
-                        onPress={() => onVolumeChange(totalVolume + 1)}
-                        style={[styles.volumeButton, { backgroundColor: theme.colors.border }]}
-                    >
-                        <Text style={[styles.volumeButtonText, { color: theme.colors.text }]}>
-                            +
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        );
     };
 
     // Updated handleAddNewExercise in PlanPreviewScreen to pass muscle group and category
@@ -630,7 +631,6 @@ const PlanPreviewScreen: React.FC<{
         </TouchableOpacity>
     );
 
-    // Modify the return statement to include the popup when needed
     return (
         <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
             <FlatList
@@ -653,28 +653,6 @@ const PlanPreviewScreen: React.FC<{
 
             {/* Show intro popup only for suggested plans */}
             {showIntroPopup && <IntroPopup />}
-        </View>
-    );
-
-    return (
-        <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
-            <FlatList
-                data={groupedPlans}
-                renderItem={renderPlanItem}
-                keyExtractor={(item, index) => `${item.name}-${index}`}
-                ListFooterComponent={
-                    <TouchableOpacity
-                        style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
-                        onPress={handleNext}
-                    >
-                        <Text
-                            style={[styles.buttonText, { color: currentTheme.colors.background }]}
-                        >
-                            Save Plan
-                        </Text>
-                    </TouchableOpacity>
-                }
-            />
         </View>
     );
 };

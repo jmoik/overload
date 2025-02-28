@@ -21,7 +21,7 @@ export const generateRandomWorkoutData = (exercise: Exercise): ExerciseHistoryEn
         if (exercise.category === "endurance") {
             entry = {
                 date: date,
-                distance: Math.floor(Math.random() * 5) + 1, // 1-6 km
+                sets: Math.floor(Math.random() * 5) + 1, // 1-6 km (as sets)
                 time: Math.floor(Math.random() * 60) + 20, // 20-80 min
                 avgHeartRate: Math.floor(Math.random() * 50) + 100, // 100-150 bpm
                 category: "endurance",

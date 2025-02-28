@@ -118,7 +118,7 @@ const AllExercisesScreen = () => {
                     entryWithoutId = {
                         date: new Date(),
                         category: "endurance" as const,
-                        distance: 1,
+                        sets: 1, // 1 km
                         time: 0,
                         notes: "auto logged",
                     };
@@ -151,7 +151,7 @@ const AllExercisesScreen = () => {
                 <Text style={{ color: "#FFFFFF" }}>Log Set</Text>
             </TouchableOpacity>
         );
-    }, [handleLogSet]);
+    }, []);
 
     const calculateRemainingSets = useCallback(
         (exercise: Exercise) => {
@@ -166,17 +166,13 @@ const AllExercisesScreen = () => {
                     } else if (entry.category === "mobility") {
                         return total + (entry as MobilityExerciseHistoryEntry).sets;
                     } else if (entry.category === "endurance") {
-                        return total + (entry as EnduranceExerciseHistoryEntry).distance;
+                        return total + (entry as EnduranceExerciseHistoryEntry).sets;
                     }
                 }
                 return total;
             }, 0);
 
-            let remainingSets = exercise.weeklySets - setsDoneInInterval;
-
-            if (exercise.category === "endurance") {
-                remainingSets = exercise.distance - setsDoneInInterval;
-            }
+            const remainingSets = exercise.weeklySets - setsDoneInInterval;
             return remainingSets;
         },
         [exerciseHistory, trainingInterval]
@@ -198,7 +194,7 @@ const AllExercisesScreen = () => {
 
             const weeklySetsText =
                 item.category === "endurance"
-                    ? `${item.distance} km / interval`
+                    ? `${item.weeklySets} km / interval`
                     : `${item.weeklySets} sets / interval`;
 
             const setsLeftText =
@@ -341,9 +337,6 @@ const AllExercisesScreen = () => {
 
     const calculateTotalSetsForGroup = useCallback((exercises: Exercise[]) => {
         return exercises.reduce((total, exercise) => {
-            if (exercise.category === "endurance") {
-                return total + exercise.distance;
-            }
             return total + exercise.weeklySets;
         }, 0);
     }, []);

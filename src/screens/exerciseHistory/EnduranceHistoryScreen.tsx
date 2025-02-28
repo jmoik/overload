@@ -99,7 +99,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         setEditingEntry(enduranceEntry);
         setDate(new Date(enduranceEntry.date));
         setNotes(enduranceEntry.notes || "");
-        setDistance(enduranceEntry.distance.toString());
+        setDistance(enduranceEntry.sets.toString());
         setTime(enduranceEntry.time.toString());
         setAvgHeartRate(enduranceEntry.avgHeartRate?.toString() || "");
     };
@@ -188,8 +188,8 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
     };
 
     const renderHistoryItem = (item: EnduranceExerciseHistoryEntry, index: number) => {
-        const paceMinutes = item.time > 0 ? Math.floor(item.time / item.distance).toFixed(0) : "0";
-        const paceSeconds = item.time > 0 ? ((item.time * 60) / item.distance) % 60 : 0;
+        const paceMinutes = item.time > 0 ? Math.floor(item.time / item.sets).toFixed(0) : "0";
+        const paceSeconds = item.time > 0 ? ((item.time * 60) / item.sets) % 60 : 0;
         const pace = `${paceMinutes}\'${paceSeconds < 10 ? "0" : ""}${Math.round(paceSeconds)}\"`;
 
         return (
@@ -208,7 +208,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             >
                 <TouchableOpacity style={styles.historyItem} onPress={() => handleEditEntry(item)}>
                     <Text style={styles.text}>
-                        {`${item.distance.toFixed(2)} km in ${item.time.toFixed(0)} min`}
+                        {`${item.sets.toFixed(2)} km in ${item.time.toFixed(0)} min`}
                         {item.avgHeartRate && ` @ ${item.avgHeartRate} bpm`}
                         {` @ ${pace}`}
                         {item.notes && (
@@ -244,7 +244,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
 
         const entryWithoutId: Omit<EnduranceExerciseHistoryEntry, "id"> = {
             date: date,
-            distance: parsedDistance,
+            sets: parsedDistance, // Store distance as sets (1 km = 1 set)
             time: parsedTime,
             avgHeartRate: parsedAvgHeartRate,
             notes: notes.trim(),
@@ -275,7 +275,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
         const history = exerciseHistory[exerciseId] || [];
         if (history.length > 0) {
             const lastWorkout = history[0] as EnduranceExerciseHistoryEntry;
-            setDistance(lastWorkout.distance.toString());
+            setDistance(lastWorkout.sets.toString());
             setTime(lastWorkout.time.toString());
             setAvgHeartRate(lastWorkout.avgHeartRate?.toString() || "");
             setNotes(lastWorkout.notes);
@@ -395,7 +395,7 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
                         return (
                             entryDate.getTime() === workoutDate.getTime() &&
                             Math.abs(
-                                (entry as EnduranceExerciseHistoryEntry).distance - workout.distance
+                                (entry as EnduranceExerciseHistoryEntry).sets - workout.distance
                             ) < 0.1
                         );
                     });
@@ -441,12 +441,12 @@ const EnduranceHistoryScreen: React.FC<EnduranceHistoryScreenProps> = ({ exercis
             const entry: EnduranceExerciseHistoryEntry = {
                 id: generateEntryId({
                     date: workout.startDate,
-                    distance: workout.distance,
+                    sets: workout.distance,
                     time: workout.duration / 60,
                     category: "endurance",
                 }),
                 date: workout.startDate,
-                distance: Number(workout.distance.toFixed(3)),
+                sets: Number(workout.distance.toFixed(3)), // Store distance as sets
                 time: Math.round(workout.duration / 60),
                 avgHeartRate: isNaN(workout.averageHeartRate)
                     ? undefined

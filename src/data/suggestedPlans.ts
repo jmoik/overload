@@ -13,7 +13,7 @@ export const weeklyVolumePerMuscleGroupPerCategory: {
         Core: 12,
         Legs: 20,
         Shoulders: 12,
-        LowerLegs: 12,
+        "Lower Legs": 12,
     },
     mobility: {
         Shoulders: 12,
@@ -21,7 +21,7 @@ export const weeklyVolumePerMuscleGroupPerCategory: {
         Legs: 12,
     },
     endurance: {
-        Legs: 20,
+        Legs: 60,
     },
 };
 
@@ -51,7 +51,7 @@ export const recalculateWeeklySets = (
     if (totalPriority === 0) {
         return exercises.map((e) => ({
             ...e,
-            weeklySets: 0,
+            weeklySets: e.weeklySets || 5,
         }));
     }
 
@@ -94,17 +94,14 @@ export const recalculateWeeklySets = (
     return updatedExercises;
 };
 export interface Plan {
-    name: string;
     category: string;
     exercises: Exercise[];
 }
 
-// Update createExercise to calculate weeklySets
-function createExercise(
-    exerciseData: Omit<Exercise, "id">,
-    allExercises: Omit<Exercise, "id">[]
-): Exercise {
-    const weeklySets = 0;
+// Update createExercise to properly initialize weeklySets
+function createExercise(exerciseData: Omit<Exercise, "id">): Exercise {
+    const weeklySets = 5;
+
     return {
         ...exerciseData,
         id: generateExerciseId(exerciseData),
@@ -114,7 +111,6 @@ function createExercise(
 
 export const suggestedPlans: { [key: string]: Plan } = {
     strength: {
-        name: "Strength",
         category: "strength",
         exercises: (() => {
             const exerciseDataList = [
@@ -235,7 +231,6 @@ export const suggestedPlans: { [key: string]: Plan } = {
         })(),
     },
     mobility: {
-        name: "Mobility",
         category: "mobility",
         exercises: (() => {
             const exerciseDataList = [
@@ -292,8 +287,8 @@ export const suggestedPlans: { [key: string]: Plan } = {
             return exerciseDataList.map((data) => createExercise(data, exerciseDataList));
         })(),
     },
-    cardio: {
-        name: "Cardio",
+
+    endurance: {
         category: "endurance",
         exercises: (() => {
             const exerciseDataList = [
@@ -303,7 +298,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                     priority: 3,
                     category: "endurance" as const,
                     muscleGroup: "Legs",
-                    distance: 60,
+                    weeklySets: 45, // Explicit initial value
                 },
                 {
                     name: "Cross Endurance",
@@ -311,7 +306,7 @@ export const suggestedPlans: { [key: string]: Plan } = {
                     priority: 1,
                     category: "endurance" as const,
                     muscleGroup: "Legs",
-                    distance: 0,
+                    weeklySets: 15, // Explicit initial value
                 },
             ];
             return exerciseDataList.map((data) => createExercise(data, exerciseDataList));

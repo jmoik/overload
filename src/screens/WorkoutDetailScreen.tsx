@@ -105,7 +105,7 @@ const WorkoutDetailScreen = () => {
                     entryWithoutId = {
                         date: new Date(),
                         category: "endurance" as const,
-                        distance: 1,
+                        sets: 1, // 1 km
                         time: 0,
                         notes: "auto logged",
                     };
@@ -153,17 +153,13 @@ const WorkoutDetailScreen = () => {
                     } else if (entry.category === "mobility") {
                         return total + (entry as MobilityExerciseHistoryEntry).sets;
                     } else if (entry.category === "endurance") {
-                        return total + (entry as EnduranceExerciseHistoryEntry).distance;
+                        return total + (entry as EnduranceExerciseHistoryEntry).sets;
                     }
                 }
                 return total;
             }, 0);
 
-            let remainingSets = exercise.weeklySets - setsDoneInInterval;
-
-            if (exercise.category === "endurance") {
-                remainingSets = exercise.weeklySets * (exercise.distance ?? 0) - setsDoneInInterval;
-            }
+            const remainingSets = exercise.weeklySets - setsDoneInInterval;
             return remainingSets;
         },
         [exerciseHistory, trainingInterval]
@@ -185,7 +181,7 @@ const WorkoutDetailScreen = () => {
 
             const weeklySetsText =
                 item.category === "endurance"
-                    ? `${item.weeklySets * item.distance!} km / interval`
+                    ? `${item.weeklySets} km / interval`
                     : `${item.weeklySets} sets / interval`;
 
             const setsLeftText =
@@ -250,9 +246,6 @@ const WorkoutDetailScreen = () => {
 
     const calculateTotalSetsForGroup = useCallback((exercises: Exercise[]) => {
         return exercises.reduce((total, exercise) => {
-            if (exercise.category === "endurance") {
-                return total + exercise.weeklySets * (exercise.distance ?? 0);
-            }
             return total + exercise.weeklySets;
         }, 0);
     }, []);

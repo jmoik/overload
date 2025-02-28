@@ -199,7 +199,7 @@ const StatsScreen = () => {
             const isNsuns = exercise.category === "nsuns";
 
             if (isEndurance) {
-                targetEnduranceLoad += exercise.weeklySets * (exercise.distance ?? 0);
+                targetEnduranceLoad += exercise.weeklySets;
                 totalWeeklyEnduranceSets += exercise.weeklySets;
             } else if (isMobility) {
                 targetMobilityLoad += exercise.weeklySets;
@@ -220,7 +220,7 @@ const StatsScreen = () => {
                 if (dayIndex >= 0 && dayIndex < trainingInterval) {
                     if (isEndurance) {
                         const enduranceEntry = entry as EnduranceExerciseHistoryEntry;
-                        const load = enduranceEntry.distance ?? 0;
+                        const load = enduranceEntry.sets ?? 0;
                         enduranceLoadByDay[dayIndex] += load;
                         actualEnduranceLoad += load;
                     } else if (isMobility) {
@@ -250,7 +250,7 @@ const StatsScreen = () => {
                 if (dayIndex >= 0 && dayIndex < trainingInterval * 2) {
                     if (isEndurance) {
                         const enduranceEntry = entry as EnduranceExerciseHistoryEntry;
-                        const load = enduranceEntry.distance ?? 0;
+                        const load = enduranceEntry.sets ?? 0;
                         enduranceLoadByDayForMA[dayIndex] += load;
                     } else if (isMobility) {
                         const mobilityEntry = entry as MobilityExerciseHistoryEntry;
