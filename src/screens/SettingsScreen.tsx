@@ -22,6 +22,7 @@ import { generateRandomWorkoutData } from "../utils/dataGenerators";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { useHealthKit } from "../contexts/HealthKitContext";
+import { ExerciseHistoryEntry } from "../contexts/Exercise";
 
 type SettingItem = {
     id: string;
@@ -129,10 +130,21 @@ const SettingsScreen = () => {
                     })
                 )
             );
-            const newHistory: { [key: string]: any[] } = {};
+            // Process history with backward compatibility for endurance exercises
+            const newHistory: { [key: string]: ExerciseHistoryEntry[] } = {};
             importedData.exercises.forEach((e: { history: any; id: string | number }) => {
                 if (Array.isArray(e.history)) {
-                    newHistory[e.id] = e.history;
+                    newHistory[e.id] = e.history.map((entry: any) => {
+                        // Handle old endurance format with distance
+                        if (entry.category === "endurance" && entry.distance && !entry.sets) {
+                            return {
+                                ...entry,
+                                sets: entry.distance, // Convert distance to sets
+                                distance: undefined, // Remove the old distance field
+                            };
+                        }
+                        return entry;
+                    });
                 }
             });
             setExerciseHistory(newHistory);
