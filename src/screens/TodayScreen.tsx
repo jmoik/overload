@@ -1,6 +1,5 @@
-// src/screens/TodayScreen.tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useExerciseContext } from "../contexts/ExerciseContext";
@@ -18,10 +17,10 @@ import { subDays, isAfter } from "date-fns";
 type WorkoutType = {
     id: string;
     name: string;
-    category: string; // 'strength', 'endurance', 'mobility'
+    category: string;
     muscleGroups: string[];
     icon: string;
-    recommended: number; // higher number = more recommended
+    recommended: number;
 };
 
 const TodayScreen = () => {
@@ -53,8 +52,7 @@ const TodayScreen = () => {
             return total;
         }, 0);
 
-        const remainingSets = exercise.weeklySets - setsDoneInInterval;
-        return remainingSets;
+        return exercise.weeklySets - setsDoneInInterval;
     };
 
     const calculateMuscleGroupScores = () => {
@@ -74,7 +72,6 @@ const TodayScreen = () => {
             if (!muscleGroupScores[category][muscleGroup]) {
                 muscleGroupScores[category][muscleGroup] = 0;
             }
-
             muscleGroupScores[category][muscleGroup] += remainingSets;
         });
 
@@ -83,8 +80,6 @@ const TodayScreen = () => {
 
     const generateWorkoutSuggestions = () => {
         const muscleGroupScores = calculateMuscleGroupScores();
-
-        // Define workout templates
         const workoutTemplates: WorkoutType[] = [
             {
                 id: "upper_body",
@@ -128,29 +123,20 @@ const TodayScreen = () => {
             },
         ];
 
-        // Calculate recommendation scores for each workout
         const updatedWorkouts = workoutTemplates.map((workout) => {
             let score = 0;
-
             workout.muscleGroups.forEach((muscleGroup) => {
                 if (muscleGroupScores[workout.category][muscleGroup]) {
                     score += muscleGroupScores[workout.category][muscleGroup];
                 }
             });
-
-            return {
-                ...workout,
-                recommended: score,
-            };
+            return { ...workout, recommended: score };
         });
 
-        // Sort workouts by recommendation score
-        const sortedWorkouts = updatedWorkouts.sort((a, b) => b.recommended - a.recommended);
-        setSuggestedWorkouts(sortedWorkouts);
+        setSuggestedWorkouts(updatedWorkouts.sort((a, b) => b.recommended - a.recommended));
     };
 
     const handleWorkoutSelect = (workout: WorkoutType) => {
-        // Navigate to WorkoutDetailScreen with filter
         navigation.navigate("WorkoutDetail", {
             category: workout.category,
             muscleGroups: workout.muscleGroups,
@@ -159,70 +145,77 @@ const TodayScreen = () => {
     };
 
     const getRecommendationText = (recommended: number) => {
-        const formattedScore = Math.round(recommended);
-        if (recommended === 0) return "All done! (0)";
-        if (recommended < 5) return `Low priority (${formattedScore})`;
-        if (recommended < 15) return `Recommended (${formattedScore})`;
-        return `Highly recommended (${formattedScore})`;
+        const score = Math.round(recommended);
+        if (score === 0) return "Completed";
+        if (score < 5) return "Low";
+        if (score < 15) return "Moderate";
+        return "High";
     };
 
     const getRecommendationColor = (recommended: number) => {
-        if (recommended === 0) return "#888888";
-        if (recommended < 5) return "#FFA500";
-        if (recommended < 15) return "#32CD32";
-        return "#FF4500";
+        if (recommended === 0) return "#4CAF50";
+        if (recommended < 5) return "#FFB300";
+        if (recommended < 15) return "#2196F3";
+        return "#F44336";
     };
 
-    const renderWorkoutItem = ({ item }: { item: WorkoutType }) => (
-        <TouchableOpacity
-            style={[
-                styles.workoutCard,
-                {
-                    backgroundColor: currentTheme.colors.card,
-                    borderColor: currentTheme.colors.border,
-                },
-            ]}
-            onPress={() => handleWorkoutSelect(item)}
-        >
-            <View style={styles.workoutHeader}>
-                <Icon name={item.icon} size={32} color={currentTheme.colors.primary} />
-                <Text style={[styles.workoutName, { color: currentTheme.colors.text }]}>
-                    {item.name}
+    const renderWorkoutItem = ({ item }: { item: WorkoutType }) => {
+        return (
+            <TouchableOpacity
+                style={[
+                    styles.workoutCard,
+                    {
+                        backgroundColor: currentTheme.colors.card,
+                        borderColor: currentTheme.colors.border,
+                    },
+                ]}
+                onPress={() => handleWorkoutSelect(item)}
+            >
+                <View style={styles.workoutHeader}>
+                    <Icon name={item.icon} size={28} color={currentTheme.colors.primary} />
+                    <Text style={[styles.workoutName, { color: currentTheme.colors.text }]}>
+                        {item.name}
+                    </Text>
+                    <View
+                        style={[
+                            styles.recommendationDot,
+                            { backgroundColor: getRecommendationColor(item.recommended) },
+                        ]}
+                    />
+                </View>
+                <Text style={[styles.muscleGroups, { color: currentTheme.colors.text }]}>
+                    {item.muscleGroups.join(" • ")}
                 </Text>
-            </View>
-            <View style={styles.workoutDetails}>
-                <Text style={[styles.workoutCategory, { color: currentTheme.colors.text }]}>
-                    {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
-                </Text>
-                <Text
-                    style={[
-                        styles.recommendationTag,
-                        { backgroundColor: getRecommendationColor(item.recommended) },
-                    ]}
-                >
-                    {getRecommendationText(item.recommended)}
-                </Text>
-            </View>
-            <Text style={[styles.muscleGroups, { color: currentTheme.colors.text }]}>
-                {item.muscleGroups.join(", ")}
-            </Text>
-        </TouchableOpacity>
-    );
+                <View style={styles.recommendationContainer}>
+                    <Text
+                        style={[
+                            styles.recommendationText,
+                            { color: getRecommendationColor(item.recommended) },
+                        ]}
+                    >
+                        {getRecommendationText(item.recommended)}
+                    </Text>
+                    <Text
+                        style={[
+                            styles.setsText,
+                            { color: getRecommendationColor(item.recommended) },
+                        ]}
+                    >
+                        {Math.round(item.recommended)} sets
+                    </Text>
+                </View>
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
-            <Text style={[styles.headerText, { color: currentTheme.colors.text }]}>
-                Today's Workout Suggestions
-            </Text>
-            <Text style={[styles.subText, { color: currentTheme.colors.text }]}>
-                Based on your remaining training sets
-            </Text>
-
             <FlatList
                 data={suggestedWorkouts}
                 renderItem={renderWorkoutItem}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContainer}
+                showsVerticalScrollIndicator={false}
             />
         </View>
     );
@@ -231,30 +224,34 @@ const TodayScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
+        paddingHorizontal: 20,
+        paddingTop: 20,
     },
     headerText: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 8,
+        fontSize: 32,
+        fontWeight: "800",
+        letterSpacing: -0.5,
+        marginBottom: 24,
     },
     subText: {
         fontSize: 16,
+        marginTop: 6,
         marginBottom: 24,
-        opacity: 0.8,
+        opacity: 0.6,
     },
     listContainer: {
-        paddingBottom: 20,
+        paddingBottom: 40,
     },
     workoutCard: {
-        borderRadius: 12,
-        padding: 16,
+        borderRadius: 16,
+        padding: 20,
         marginBottom: 16,
         borderWidth: 1,
-        elevation: 2,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        elevation: 3,
     },
     workoutHeader: {
         flexDirection: "row",
@@ -263,29 +260,33 @@ const styles = StyleSheet.create({
     },
     workoutName: {
         fontSize: 20,
-        fontWeight: "bold",
+        fontWeight: "700",
         marginLeft: 12,
+        flex: 1,
     },
-    workoutDetails: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 8,
-    },
-    workoutCategory: {
-        fontSize: 16,
-    },
-    recommendationTag: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 16,
-        fontSize: 14,
-        color: "white",
-        fontWeight: "bold",
+    recommendationDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
     },
     muscleGroups: {
         fontSize: 14,
-        opacity: 0.7,
+        opacity: 0.6,
+        marginBottom: 8,
+    },
+    recommendationContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    recommendationText: {
+        fontSize: 14,
+        fontWeight: "600",
+    },
+    setsText: {
+        fontSize: 14,
+        fontWeight: "600",
+        opacity: 0.8,
     },
 });
 
