@@ -9,6 +9,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createWelcomeStyles } from "../../styles/globalStyles";
 import { healthKitPermissions } from "../utils/healthKitPermissions";
 import { useHealthKit } from "../contexts/HealthKitContext";
+import { useExerciseContext } from "../contexts/ExerciseContext";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -39,6 +40,7 @@ const WelcomeScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createWelcomeStyles(currentTheme);
+    const { exercises } = useExerciseContext(); // Get exercises from context
 
     const [showHealthKitIntro, setShowHealthKitIntro] = useState(true);
     const [currentIntroStep, setCurrentIntroStep] = useState(0);
@@ -65,17 +67,34 @@ const WelcomeScreen = () => {
                         console.error("Error saving setup state:", storageError);
                     }
 
-                    navigation.navigate("Home");
+                    // Check if there are exercises in the context
+                    if (exercises && exercises.length > 0) {
+                        navigation.navigate("Home");
+                    } else {
+                        navigation.navigate("OnboardingWizard");
+                    }
                 }
             });
         } else {
             // For non-iOS platforms, still mark setup as complete
             try {
                 AsyncStorage.setItem("alreadySetup", "true");
-                navigation.navigate("Home");
+
+                // Check if there are exercises in the context
+                if (exercises && exercises.length > 0) {
+                    navigation.navigate("Home");
+                } else {
+                    navigation.navigate("OnboardingWizard");
+                }
             } catch (storageError) {
                 console.error("Error saving setup state:", storageError);
-                navigation.navigate("Home");
+
+                // Even with an error, we should still navigate based on exercises
+                if (exercises && exercises.length > 0) {
+                    navigation.navigate("Home");
+                } else {
+                    navigation.navigate("OnboardingWizard");
+                }
             }
         }
     };

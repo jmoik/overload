@@ -18,6 +18,9 @@ export type RootStackParamList = {
         | {
               exerciseId?: string;
               exerciseData?: Exercise;
+              muscleGroup?: string;
+              category?: string;
+              planIndex?: number;
               onSave?: (updatedExercise: Exercise) => void;
           }
         | undefined;
@@ -25,7 +28,7 @@ export type RootStackParamList = {
     OneRepMaxFormula: undefined;
     RestTimer: undefined;
     TrainingInterval: undefined;
-    DailyStepGoal: undefined; // Added this
+    DailyStepGoal: undefined;
     DefaultRpe: undefined;
     Welcome: undefined;
     PlanPreview: { category: string };
@@ -38,6 +41,7 @@ export type RootStackParamList = {
         muscleGroups: string[];
         workoutName: string;
     };
+    OnboardingWizard: undefined;
 };
 
 export type AddExerciseScreenNavigationProp = StackNavigationProp<
@@ -51,6 +55,17 @@ export type ExerciseHistoryScreenNavigationProp = StackNavigationProp<
 >;
 
 export type RoutineScreenNavigationProp = StackNavigationProp<RootStackParamList, "RoutineList">;
+
+export type OnboardingWizardNavigationProp = StackNavigationProp<
+    RootStackParamList,
+    "OnboardingWizard"
+>;
+
+export type PlanPreviewScreenNavigationProp = StackNavigationProp<
+    RootStackParamList,
+    "PlanPreview"
+>;
+
 export type AddExerciseScreenRouteProp = RouteProp<RootStackParamList, "AddExercise">;
 export type ExerciseHistoryScreenRouteProp = RouteProp<RootStackParamList, "ExerciseHistory">;
 export type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList>;

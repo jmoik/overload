@@ -21,12 +21,13 @@ import StatsScreen from "./src/screens/StatsScreen";
 import TodayScreen from "./src/screens/TodayScreen";
 import WorkoutDetailScreen from "./src/screens/WorkoutDetailScreen";
 import { HealthKitProvider } from "./src/contexts/HealthKitContext";
+import OnboardingWizard from "./src/screens/OnboardingWizard";
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const Home = () => (
-    <Tab.Navigator>
+    <Tab.Navigator initialRouteName="AllExercises">
         <Tab.Screen
             name="Today"
             component={TodayScreen}
@@ -134,6 +135,11 @@ const AppContent = () => {
                     name="WorkoutDetail"
                     component={WorkoutDetailScreen}
                     options={({ route }) => ({ title: route.params.workoutName })}
+                />
+                <Stack.Screen
+                    name="OnboardingWizard"
+                    component={OnboardingWizard}
+                    options={{ headerShown: false }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

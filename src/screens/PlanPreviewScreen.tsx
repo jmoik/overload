@@ -68,10 +68,10 @@ const PlanPreviewScreen: React.FC<{
     const { addExercise, exercises, updateExercise } = useExerciseContext();
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
-    const [showIntroPopup, setShowIntroPopup] = useState(exercises.length === 0);
 
     const [plans, setPlans] = useState<PlanItem[]>(() => {
         if (exercises.length !== 0) {
+            // Existing user flow - show their exercises
             const filteredExercises = exercises.filter((exercise) => {
                 if (category === "all") return true;
                 return exercise.category === category;
@@ -98,6 +98,7 @@ const PlanPreviewScreen: React.FC<{
             };
             return [combinedPlan];
         } else {
+            // New user flow - they should be redirected to the onboarding wizard
             const { suggestedPlans } = require("../data/suggestedPlans");
             const plansArray = Object.entries(suggestedPlans).map(([key, plan]) => ({
                 name: plan.name,
@@ -108,10 +109,17 @@ const PlanPreviewScreen: React.FC<{
                     priority: exercise.priority !== undefined ? exercise.priority : 1,
                 })),
             }));
+
+            // If this is a new user, redirect to the onboarding wizard
+            if (exercises.length === 0) {
+                setTimeout(() => {
+                    navigation.replace("OnboardingWizard");
+                }, 0);
+            }
+
             return plansArray;
         }
     });
-
     // Update the useEffect for initial calculation to ensure it runs properly
     useEffect(() => {
         const newPlans = plans.map((plan) => {
@@ -591,46 +599,6 @@ const PlanPreviewScreen: React.FC<{
         );
     };
 
-    const IntroPopup = () => (
-        <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowIntroPopup(false)}
-        >
-            <View
-                style={[styles.popupContainer, { backgroundColor: currentTheme.colors.background }]}
-            >
-                <Text style={[styles.popupTitle, { color: currentTheme.colors.text }]}>
-                    Welcome to Your Workout Plan
-                </Text>
-                <Text style={[styles.popupText, { color: currentTheme.colors.text }]}>
-                    Here's how to customize your workout:
-                </Text>
-                <View style={styles.instructionContainer}>
-                    <Text style={[styles.instructionPoint, { color: currentTheme.colors.text }]}>
-                        • Toggle switches to select/deselect exercises
-                    </Text>
-                    <Text style={[styles.instructionPoint, { color: currentTheme.colors.text }]}>
-                        • Set priority (0-3) for each exercise (0 = skip, 3 = highest priority)
-                    </Text>
-                    <Text style={[styles.instructionPoint, { color: currentTheme.colors.text }]}>
-                        • Adjust total weekly volume using +/- buttons
-                    </Text>
-                </View>
-                <TouchableOpacity
-                    style={[styles.closeButton, { backgroundColor: currentTheme.colors.primary }]}
-                    onPress={() => setShowIntroPopup(false)}
-                >
-                    <Text
-                        style={[styles.closeButtonText, { color: currentTheme.colors.background }]}
-                    >
-                        Got it
-                    </Text>
-                </TouchableOpacity>
-            </View>
-        </TouchableOpacity>
-    );
-
     return (
         <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
             <FlatList
@@ -650,9 +618,6 @@ const PlanPreviewScreen: React.FC<{
                     </TouchableOpacity>
                 }
             />
-
-            {/* Show intro popup only for suggested plans */}
-            {showIntroPopup && <IntroPopup />}
         </View>
     );
 };
