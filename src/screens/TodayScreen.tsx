@@ -146,10 +146,10 @@ const TodayScreen = () => {
 
     const getRecommendationText = (recommended: number) => {
         const score = Math.round(recommended);
-        if (score === 0) return "Completed";
-        if (score < 5) return "Low";
-        if (score < 15) return "Moderate";
-        return "High";
+        if (score === 0) return "completed";
+        if (score < 5) return "low priority";
+        if (score < 15) return "recommended";
+        return "highly recommended";
     };
 
     const getRecommendationColor = (recommended: number) => {
@@ -176,12 +176,6 @@ const TodayScreen = () => {
                     <Text style={[styles.workoutName, { color: currentTheme.colors.text }]}>
                         {item.name}
                     </Text>
-                    <View
-                        style={[
-                            styles.recommendationDot,
-                            { backgroundColor: getRecommendationColor(item.recommended) },
-                        ]}
-                    />
                 </View>
                 <Text style={[styles.muscleGroups, { color: currentTheme.colors.text }]}>
                     {item.muscleGroups.join(" • ")}
@@ -197,11 +191,11 @@ const TodayScreen = () => {
                     </Text>
                     <Text
                         style={[
-                            styles.setsText,
+                            styles.recommendationText,
                             { color: getRecommendationColor(item.recommended) },
                         ]}
                     >
-                        {Math.round(item.recommended)} sets
+                        {Math.round(item.recommended)} remaining sets
                     </Text>
                 </View>
             </TouchableOpacity>
@@ -259,18 +253,13 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     workoutName: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: "700",
         marginLeft: 12,
         flex: 1,
     },
-    recommendationDot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-    },
     muscleGroups: {
-        fontSize: 14,
+        fontSize: 16,
         opacity: 0.6,
         marginBottom: 8,
     },
@@ -280,13 +269,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     recommendationText: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: "600",
-    },
-    setsText: {
-        fontSize: 14,
-        fontWeight: "600",
-        opacity: 0.8,
     },
 });
 
