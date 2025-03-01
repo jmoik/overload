@@ -48,6 +48,12 @@ export const recalculateWeeklySets = (
             ? existingTotalSets
             : weeklyVolumePerMuscleGroupPerCategory[category]?.[muscleGroup] || 12;
 
+    // Always update the global state with the calculated total volume
+    if (!weeklyVolumePerMuscleGroupPerCategory[category]) {
+        weeklyVolumePerMuscleGroupPerCategory[category] = {};
+    }
+    weeklyVolumePerMuscleGroupPerCategory[category][muscleGroup] = totalVolume;
+
     if (totalPriority === 0) {
         return exercises.map((e) => ({
             ...e,
