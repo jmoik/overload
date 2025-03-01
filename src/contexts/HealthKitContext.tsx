@@ -26,6 +26,23 @@ export const HealthKitProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                     const authStatus = await AsyncStorage.getItem("healthKitAuthorized");
                     if (authStatus === "true") {
                         setIsHealthKitAuthorized(true);
+                    } else {
+                        AppleHealthKit.initHealthKit(
+                            {
+                                permissions: {
+                                    read: ["StepCount"],
+                                },
+                            },
+                            (error: string) => {
+                                if (error) {
+                                    console.error("Error initializing HealthKit:", error);
+                                } else {
+                                    console.log("HealthKit initialized successfully");
+                                    setIsHealthKitAuthorized(true);
+                                    AsyncStorage.setItem("healthKitAuthorized", "true");
+                                }
+                            }
+                        );
                     }
                 } catch (error) {
                     console.error("Error checking HealthKit auth status:", error);
