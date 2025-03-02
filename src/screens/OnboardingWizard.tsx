@@ -273,9 +273,9 @@ const OnboardingWizard: React.FC = () => {
                 </Text>
 
                 <Text style={[styles.description, { color: currentTheme.colors.text }]}>
-                    Your training interval defines how often your exercise schedule repeats. The
-                    default is 7 days (weekly), but you can customize it to match your preferred
-                    training cycle.
+                    Your training interval defines over how many days the training volume is spread
+                    out. The default is 7 days (weekly), but you can customize it to match your
+                    preferred training cycle.
                 </Text>
 
                 <View style={styles.pickerContainer}>
@@ -290,14 +290,10 @@ const OnboardingWizard: React.FC = () => {
                 </View>
 
                 <Text style={[styles.instruction, { color: currentTheme.colors.text }]}>
-                    Your exercise volumes will be distributed across this {trainingInterval}-day
-                    period.
-                </Text>
-
-                <Text style={[styles.description, { color: currentTheme.colors.text }]}>
-                    For example, if you set 10 sets per week for an exercise with a 10-day interval,
-                    you'll still do 10 sets total, but they'll be spread across 10 days instead of
-                    7.
+                    Your training volumes will be distributed across this {trainingInterval}-day
+                    period. When calculating your remaining sets for each exercise, we'll take the
+                    last {trainingInterval} days into account and recommend a specific workout based
+                    on what is missing in the current interval.
                 </Text>
             </View>
         );
@@ -503,7 +499,7 @@ const OnboardingWizard: React.FC = () => {
                 </TouchableOpacity>
 
                 <Text style={[styles.volumeText, { color: currentTheme.colors.text }]}>
-                    {currentVolume} {unit}/week
+                    {currentVolume} {unit}/interval
                 </Text>
 
                 <TouchableOpacity
@@ -874,8 +870,8 @@ const OnboardingWizard: React.FC = () => {
                 {(isVolumeStep(currentStep) || currentStep === WizardStep.REVIEW) && (
                     <Text style={[styles.exerciseDetails, { color: currentTheme.colors.text }]}>
                         {item.category === "endurance"
-                            ? `${item.weeklySets} km/week`
-                            : `${item.weeklySets} sets/week`}
+                            ? `${item.weeklySets} km/interval`
+                            : `${item.weeklySets} sets/interval`}
                     </Text>
                 )}
 
@@ -906,12 +902,13 @@ const OnboardingWizard: React.FC = () => {
     const renderIntroScreen = () => (
         <View style={styles.contentContainer}>
             <Text style={[styles.title, { color: currentTheme.colors.text }]}>
-                Welcome to Your Fitness Journey
+                Welcome to Your Volume based Training Plan!
             </Text>
 
             <Text style={[styles.description, { color: currentTheme.colors.text }]}>
-                Let's set up your personalized workout plan. This app will help you track progress
-                across three key fitness categories:
+                Overload will help you track progress and volume across three key categories.
+                Instead of defining a fixed weekly plan, you'll set volumes and priorities for each
+                muscle group and category and train based on your own schedule.
             </Text>
 
             <View style={styles.categoriesContainer}>
@@ -920,7 +917,7 @@ const OnboardingWizard: React.FC = () => {
                         Strength
                     </Text>
                     <Text style={[styles.categoryDescription, { color: currentTheme.colors.text }]}>
-                        Build muscle and increase power with resistance training
+                        Build muscle, strength and bone density with resistance training
                     </Text>
                 </View>
 
@@ -929,7 +926,7 @@ const OnboardingWizard: React.FC = () => {
                         Mobility
                     </Text>
                     <Text style={[styles.categoryDescription, { color: currentTheme.colors.text }]}>
-                        Improve flexibility, joint health, and range of motion
+                        Improve flexibility, balance, joint health, and range of motion
                     </Text>
                 </View>
 
@@ -949,7 +946,7 @@ const OnboardingWizard: React.FC = () => {
 
             <View style={styles.instructionList}>
                 <Text style={[styles.instructionItem, { color: currentTheme.colors.text }]}>
-                    • Set your training interval (can be different from a standard 7-day week)
+                    • Set your training interval
                 </Text>
                 <Text style={[styles.instructionItem, { color: currentTheme.colors.text }]}>
                     • Select exercises for each category
@@ -958,7 +955,7 @@ const OnboardingWizard: React.FC = () => {
                     • Set priorities for your selected exercises
                 </Text>
                 <Text style={[styles.instructionItem, { color: currentTheme.colors.text }]}>
-                    • Adjust training volume for your interval
+                    • Adjust training volume for all muscle groups and categoires
                 </Text>
             </View>
         </View>
@@ -1111,12 +1108,12 @@ const OnboardingWizard: React.FC = () => {
                 </Text>
 
                 <Text style={[styles.instruction, { color: currentTheme.colors.text }]}>
-                    Set your weekly training volume for {currentMuscleGroup.toLowerCase()}.
+                    Set your training volume for {currentMuscleGroup.toLowerCase()}.
                 </Text>
 
                 <View style={styles.volumeContainer}>
                     <Text style={[styles.volumeLabel, { color: currentTheme.colors.text }]}>
-                        Weekly {unit}:
+                        Interval {unit}:
                     </Text>
                     {renderVolumeControls()}
                 </View>
@@ -1178,7 +1175,7 @@ const OnboardingWizard: React.FC = () => {
                                         ]}
                                     >
                                         • {muscleGroup}: {volume}{" "}
-                                        {category === "endurance" ? "km" : "sets"}/week
+                                        {category === "endurance" ? "km" : "sets"}/interval
                                     </Text>
                                 ))}
                             </View>
