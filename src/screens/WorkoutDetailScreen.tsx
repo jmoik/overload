@@ -1,4 +1,3 @@
-// src/screens/WorkoutDetailScreen.tsx
 import React, { useLayoutEffect, useCallback, useRef, useState } from "react";
 import { View, Text, SectionList, TouchableOpacity, Alert } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -32,28 +31,38 @@ const WorkoutDetailScreen = () => {
     const route = useRoute<WorkoutDetailScreenRouteProp>();
     const swipeableRefs = useRef(new Map<string, Swipeable | null>());
     const [sortBySetsLeft, setSortBySetsLeft] = useState(true);
+    const [hideCompleted, setHideCompleted] = useState(true);
 
     // Extract workout details from route params
     const { workoutName, category, muscleGroups } = route.params;
 
-    // Set navigation title
+    // Set navigation title and header buttons
     useLayoutEffect(() => {
         navigation.setOptions({
             title: workoutName,
             headerRight: () => (
-                <TouchableOpacity
-                    onPress={() => setSortBySetsLeft(!sortBySetsLeft)}
-                    style={{ marginRight: 15 }}
-                >
-                    <Icon
-                        name={sortBySetsLeft ? "arrow-up" : "list"}
-                        size={24}
-                        color={currentTheme.colors.primary}
-                    />
-                </TouchableOpacity>
+                <View style={{ flexDirection: "row", marginRight: 15 }}>
+                    <TouchableOpacity
+                        onPress={() => setSortBySetsLeft(!sortBySetsLeft)}
+                        style={{ marginRight: 15 }}
+                    >
+                        <Icon
+                            name={sortBySetsLeft ? "arrow-up" : "list"}
+                            size={24}
+                            color={currentTheme.colors.primary}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setHideCompleted(!hideCompleted)}>
+                        <Icon
+                            name={hideCompleted ? "eye-off" : "eye"}
+                            size={24}
+                            color={currentTheme.colors.primary}
+                        />
+                    </TouchableOpacity>
+                </View>
             ),
         });
-    }, [navigation, workoutName, sortBySetsLeft, currentTheme.colors.primary]);
+    }, [navigation, workoutName, sortBySetsLeft, hideCompleted, currentTheme.colors.primary]);
 
     const handleExercisePress = (exerciseId: string) => {
         navigation.navigate("ExerciseHistory", { exerciseId });
@@ -105,7 +114,7 @@ const WorkoutDetailScreen = () => {
                     entryWithoutId = {
                         date: new Date(),
                         category: "endurance" as const,
-                        sets: 1, // 1 km
+                        sets: 1,
                         time: 0,
                         notes: "auto logged",
                     };
@@ -267,10 +276,12 @@ const WorkoutDetailScreen = () => {
             return true;
         });
 
-        // Only show exercises with sets remaining if we're on a workout detail
-        filteredExercises = filteredExercises.filter(
-            (exercise) => calculateRemainingSets(exercise) > 0
-        );
+        // Apply completed filter only when hideCompleted is true
+        if (hideCompleted) {
+            filteredExercises = filteredExercises.filter(
+                (exercise) => calculateRemainingSets(exercise) > 0
+            );
+        }
 
         // Group the filtered exercises by muscle group
         const grouped = filteredExercises.reduce((acc, exercise) => {
@@ -318,6 +329,7 @@ const WorkoutDetailScreen = () => {
         category,
         muscleGroups,
         sortBySetsLeft,
+        hideCompleted,
         calculateRemainingSets,
         calculateTotalSetsForGroup,
     ]);
@@ -361,7 +373,5 @@ const WorkoutDetailScreen = () => {
         </View>
     );
 };
-
-// No need for extra styles as they're now included in the global styles
 
 export default WorkoutDetailScreen;

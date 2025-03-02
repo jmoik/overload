@@ -18,7 +18,6 @@ import { lightTheme, darkTheme, createAllExercisesStyles } from "../../styles/gl
 import { generateEntryId } from "../utils/utils";
 import { useRoute, RouteProp } from "@react-navigation/native";
 
-// Add this type inside the component or at the top level
 type AllExercisesScreenRouteProp = RouteProp<
     {
         params?: {

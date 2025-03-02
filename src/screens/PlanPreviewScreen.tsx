@@ -391,9 +391,7 @@ const PlanPreviewScreen: React.FC<{
         theme: typeof lightTheme;
     }) => {
         const category = exercises[0].category;
-        console.log(category);
         const totalVolume = weeklyVolumePerMuscleGroupPerCategory[category][muscleGroup];
-        console.log(totalVolume);
         return (
             <View style={styles.muscleGroupHeader}>
                 <Text style={[styles.muscleGroupTitle, { color: theme.colors.text }]}>
