@@ -36,34 +36,31 @@ enum WizardStep {
     // Strength Category
     STRENGTH_OVERVIEW = 2,
     STRENGTH_SELECTION = 3,
-    STRENGTH_PRIORITY = 4,
-    STRENGTH_VOLUME = 5,
+    STRENGTH_ADJUSTMENT = 4, // Combined priority and volume step
 
     // Mobility Category
-    MOBILITY_OVERVIEW = 6,
-    MOBILITY_SELECTION = 7,
-    MOBILITY_PRIORITY = 8,
-    MOBILITY_VOLUME = 9,
+    MOBILITY_OVERVIEW = 5,
+    MOBILITY_SELECTION = 6,
+    MOBILITY_ADJUSTMENT = 7, // Combined priority and volume step
 
     // Endurance Category
-    ENDURANCE_OVERVIEW = 10,
-    ENDURANCE_SELECTION = 11,
-    ENDURANCE_PRIORITY = 12,
-    ENDURANCE_VOLUME = 13,
+    ENDURANCE_OVERVIEW = 8,
+    ENDURANCE_SELECTION = 9,
+    ENDURANCE_ADJUSTMENT = 10, // Combined priority and volume step
 
     // Final Review
-    REVIEW = 14,
+    REVIEW = 11,
 }
 
 // Updated function to get the current step category
 const getCurrentCategory = (step: WizardStep): CategoryType | null => {
     if (step === WizardStep.TRAINING_INTERVAL) {
         return null; // Training interval doesn't have a category
-    } else if (step >= WizardStep.STRENGTH_OVERVIEW && step <= WizardStep.STRENGTH_VOLUME) {
+    } else if (step >= WizardStep.STRENGTH_OVERVIEW && step <= WizardStep.STRENGTH_ADJUSTMENT) {
         return "strength";
-    } else if (step >= WizardStep.MOBILITY_OVERVIEW && step <= WizardStep.MOBILITY_VOLUME) {
+    } else if (step >= WizardStep.MOBILITY_OVERVIEW && step <= WizardStep.MOBILITY_ADJUSTMENT) {
         return "mobility";
-    } else if (step >= WizardStep.ENDURANCE_OVERVIEW && step <= WizardStep.ENDURANCE_VOLUME) {
+    } else if (step >= WizardStep.ENDURANCE_OVERVIEW && step <= WizardStep.ENDURANCE_ADJUSTMENT) {
         return "endurance";
     }
     return null; // For INTRO and REVIEW steps
@@ -78,19 +75,11 @@ const isSelectionStep = (step: WizardStep): boolean => {
     );
 };
 
-const isPriorityStep = (step: WizardStep): boolean => {
+const isAdjustmentStep = (step: WizardStep): boolean => {
     return (
-        step === WizardStep.STRENGTH_PRIORITY ||
-        step === WizardStep.MOBILITY_PRIORITY ||
-        step === WizardStep.ENDURANCE_PRIORITY
-    );
-};
-
-const isVolumeStep = (step: WizardStep): boolean => {
-    return (
-        step === WizardStep.STRENGTH_VOLUME ||
-        step === WizardStep.MOBILITY_VOLUME ||
-        step === WizardStep.ENDURANCE_VOLUME
+        step === WizardStep.STRENGTH_ADJUSTMENT ||
+        step === WizardStep.MOBILITY_ADJUSTMENT ||
+        step === WizardStep.ENDURANCE_ADJUSTMENT
     );
 };
 
@@ -127,7 +116,7 @@ const OnboardingWizard: React.FC = () => {
     // Add this useEffect to recalculate exercise sets when entering a volume step or changing muscle group
     useEffect(() => {
         // Only run this when in a volume step
-        if (isVolumeStep(currentStep)) {
+        if (isAdjustmentStep(currentStep)) {
             // Make sure the category exists in the volume tracking object
             if (!weeklyVolumePerMuscleGroupPerCategory[currentCategory]) {
                 weeklyVolumePerMuscleGroupPerCategory[currentCategory] = {};
@@ -249,6 +238,15 @@ const OnboardingWizard: React.FC = () => {
     // All exercises from suggested plans, with selection state
     const [allExercises, setAllExercises] = useState<(Exercise & { isSelected: boolean })[]>([]);
 
+    // Add state to track which categories are enabled
+    const [enabledCategories, setEnabledCategories] = useState<{
+        [key in CategoryType]: boolean;
+    }>({
+        strength: true,
+        mobility: true,
+        endurance: true,
+    });
+
     const renderTrainingIntervalScreen = () => {
         // Generate days options for the picker
         const generatePickerItems = () => {
@@ -361,9 +359,115 @@ const OnboardingWizard: React.FC = () => {
         exercise: Exercise & { isSelected: boolean },
         priority: number
     ) => {
+        // First update the priority in the allExercises array
         setAllExercises((prevExercises) =>
             prevExercises.map((ex) => (ex.id === exercise.id ? { ...ex, priority } : ex))
         );
+
+        // Get the current volume for this muscle group
+        const currentVolume =
+            weeklyVolumePerMuscleGroupPerCategory[currentCategory][currentMuscleGroup] ||
+            (currentCategory === "endurance" ? 20 : 12);
+
+        // Get all exercises for this muscle group and category
+        const muscleGroupExercises = allExercises.filter(
+            (ex) => ex.muscleGroup === currentMuscleGroup && ex.category === currentCategory
+        );
+
+        // Update the exercise with the new priority
+        const updatedMuscleGroupExercises = muscleGroupExercises.map((ex) =>
+            ex.id === exercise.id ? { ...ex, priority } : ex
+        );
+
+        // Get only selected exercises
+        const selectedExercises = updatedMuscleGroupExercises.filter((ex) => ex.isSelected);
+
+        if (selectedExercises.length > 0) {
+            // Calculate total priority of selected exercises
+            const totalPriority = selectedExercises.reduce(
+                (sum, ex) => sum + (ex.priority > 0 ? ex.priority : 0),
+                0
+            );
+
+            let updatedExercises = [...updatedMuscleGroupExercises];
+
+            if (totalPriority > 0) {
+                // Distribute the volume according to priorities
+                selectedExercises.forEach((ex) => {
+                    if (ex.priority > 0) {
+                        const idx = updatedExercises.findIndex((e) => e.id === ex.id);
+                        if (idx !== -1) {
+                            // Calculate sets based on priority ratio
+                            const newSets = Math.max(
+                                1,
+                                Math.floor((ex.priority / totalPriority) * currentVolume)
+                            );
+                            updatedExercises[idx] = {
+                                ...updatedExercises[idx],
+                                weeklySets: newSets,
+                            };
+                        }
+                    }
+                });
+
+                // Distribute any remaining sets
+                const distributableSets = selectedExercises.reduce((sum, ex) => {
+                    if (ex.priority > 0) {
+                        const newSets = Math.floor((ex.priority / totalPriority) * currentVolume);
+                        return sum + newSets;
+                    }
+                    return sum;
+                }, 0);
+
+                const remainingSets = currentVolume - distributableSets;
+
+                if (remainingSets > 0) {
+                    // Sort by fraction to distribute remaining sets
+                    const sortedByFraction = selectedExercises
+                        .filter((ex) => ex.priority > 0)
+                        .map((ex) => ({
+                            id: ex.id,
+                            fraction:
+                                (ex.priority / totalPriority) * currentVolume -
+                                Math.floor((ex.priority / totalPriority) * currentVolume),
+                        }))
+                        .sort((a, b) => b.fraction - a.fraction)
+                        .slice(0, remainingSets);
+
+                    sortedByFraction.forEach(({ id }) => {
+                        const idx = updatedExercises.findIndex((e) => e.id === id);
+                        if (idx !== -1) {
+                            updatedExercises[idx] = {
+                                ...updatedExercises[idx],
+                                weeklySets: updatedExercises[idx].weeklySets + 1,
+                            };
+                        }
+                    });
+                }
+            } else {
+                // If no priorities, distribute evenly
+                const setsPerExercise = Math.floor(currentVolume / selectedExercises.length);
+                const remainder = currentVolume % selectedExercises.length;
+
+                selectedExercises.forEach((ex, i) => {
+                    const idx = updatedExercises.findIndex((e) => e.id === ex.id);
+                    if (idx !== -1) {
+                        updatedExercises[idx] = {
+                            ...updatedExercises[idx],
+                            weeklySets: setsPerExercise + (i < remainder ? 1 : 0),
+                        };
+                    }
+                });
+            }
+
+            // Update the state with properly calculated exercises
+            setAllExercises((prevExercises) =>
+                prevExercises.map((ex) => {
+                    const updated = updatedExercises.find((u) => u.id === ex.id);
+                    return updated ? { ...updated } : ex;
+                })
+            );
+        }
     };
 
     const updateVolume = (newVolume: number) => {
@@ -541,23 +645,26 @@ const OnboardingWizard: React.FC = () => {
             // Move to the next muscle group within the same step
             setCurrentMuscleGroupIndex(currentMuscleGroupIndex + 1);
         } else if (
-            isPriorityStep(currentStep) &&
+            isAdjustmentStep(currentStep) &&
             currentMuscleGroupIndex < currentMuscleGroups.length - 1
         ) {
-            // Move to the next muscle group within priority setting
-            setCurrentMuscleGroupIndex(currentMuscleGroupIndex + 1);
-        } else if (
-            isVolumeStep(currentStep) &&
-            currentMuscleGroupIndex < currentMuscleGroups.length - 1
-        ) {
-            // Move to the next muscle group within volume adjustment
+            // Move to the next muscle group within adjustment step
             setCurrentMuscleGroupIndex(currentMuscleGroupIndex + 1);
         } else if (currentStep === WizardStep.INTRO) {
             // Move from intro to training interval selection
             setCurrentStep(WizardStep.TRAINING_INTERVAL);
         } else if (currentStep === WizardStep.TRAINING_INTERVAL) {
-            // Move from training interval to strength category overview
-            setCurrentStep(WizardStep.STRENGTH_OVERVIEW);
+            // Check if strength is enabled, otherwise skip to next enabled category
+            if (enabledCategories.strength) {
+                setCurrentStep(WizardStep.STRENGTH_OVERVIEW);
+            } else if (enabledCategories.mobility) {
+                setCurrentStep(WizardStep.MOBILITY_OVERVIEW);
+            } else if (enabledCategories.endurance) {
+                setCurrentStep(WizardStep.ENDURANCE_OVERVIEW);
+            } else {
+                // If no categories are enabled, go straight to review
+                setCurrentStep(WizardStep.REVIEW);
+            }
         } else if (currentStep === WizardStep.STRENGTH_OVERVIEW) {
             // Move from strength category overview to strength exercise selection
             setCurrentStep(WizardStep.STRENGTH_SELECTION);
@@ -566,22 +673,21 @@ const OnboardingWizard: React.FC = () => {
             currentStep === WizardStep.STRENGTH_SELECTION &&
             currentMuscleGroupIndex === currentMuscleGroups.length - 1
         ) {
-            // Move to priority setting for strength
+            // Move to combined adjustment for strength
             setCurrentMuscleGroupIndex(0);
-            setCurrentStep(WizardStep.STRENGTH_PRIORITY);
+            setCurrentStep(WizardStep.STRENGTH_ADJUSTMENT);
         } else if (
-            currentStep === WizardStep.STRENGTH_PRIORITY &&
+            currentStep === WizardStep.STRENGTH_ADJUSTMENT &&
             currentMuscleGroupIndex === currentMuscleGroups.length - 1
         ) {
-            // Move to volume adjustment for strength
-            setCurrentMuscleGroupIndex(0);
-            setCurrentStep(WizardStep.STRENGTH_VOLUME);
-        } else if (
-            currentStep === WizardStep.STRENGTH_VOLUME &&
-            currentMuscleGroupIndex === currentMuscleGroups.length - 1
-        ) {
-            // Move to mobility category
-            setCurrentStep(WizardStep.MOBILITY_OVERVIEW);
+            // Check if mobility is enabled, otherwise skip to next enabled category
+            if (enabledCategories.mobility) {
+                setCurrentStep(WizardStep.MOBILITY_OVERVIEW);
+            } else if (enabledCategories.endurance) {
+                setCurrentStep(WizardStep.ENDURANCE_OVERVIEW);
+            } else {
+                setCurrentStep(WizardStep.REVIEW);
+            }
         } else if (currentStep === WizardStep.MOBILITY_OVERVIEW) {
             // Move from mobility category overview to mobility exercise selection
             setCurrentStep(WizardStep.MOBILITY_SELECTION);
@@ -590,22 +696,19 @@ const OnboardingWizard: React.FC = () => {
             currentStep === WizardStep.MOBILITY_SELECTION &&
             currentMuscleGroupIndex === currentMuscleGroups.length - 1
         ) {
-            // Move to priority setting for mobility
+            // Move to combined adjustment for mobility
             setCurrentMuscleGroupIndex(0);
-            setCurrentStep(WizardStep.MOBILITY_PRIORITY);
+            setCurrentStep(WizardStep.MOBILITY_ADJUSTMENT);
         } else if (
-            currentStep === WizardStep.MOBILITY_PRIORITY &&
+            currentStep === WizardStep.MOBILITY_ADJUSTMENT &&
             currentMuscleGroupIndex === currentMuscleGroups.length - 1
         ) {
-            // Move to volume adjustment for mobility
-            setCurrentMuscleGroupIndex(0);
-            setCurrentStep(WizardStep.MOBILITY_VOLUME);
-        } else if (
-            currentStep === WizardStep.MOBILITY_VOLUME &&
-            currentMuscleGroupIndex === currentMuscleGroups.length - 1
-        ) {
-            // Move to endurance category
-            setCurrentStep(WizardStep.ENDURANCE_OVERVIEW);
+            // Check if endurance is enabled, otherwise skip to review
+            if (enabledCategories.endurance) {
+                setCurrentStep(WizardStep.ENDURANCE_OVERVIEW);
+            } else {
+                setCurrentStep(WizardStep.REVIEW);
+            }
         } else if (currentStep === WizardStep.ENDURANCE_OVERVIEW) {
             // Move from endurance category overview to endurance exercise selection
             setCurrentStep(WizardStep.ENDURANCE_SELECTION);
@@ -614,18 +717,11 @@ const OnboardingWizard: React.FC = () => {
             currentStep === WizardStep.ENDURANCE_SELECTION &&
             currentMuscleGroupIndex === currentMuscleGroups.length - 1
         ) {
-            // Move to priority setting for endurance
+            // Move to combined adjustment for endurance
             setCurrentMuscleGroupIndex(0);
-            setCurrentStep(WizardStep.ENDURANCE_PRIORITY);
+            setCurrentStep(WizardStep.ENDURANCE_ADJUSTMENT);
         } else if (
-            currentStep === WizardStep.ENDURANCE_PRIORITY &&
-            currentMuscleGroupIndex === currentMuscleGroups.length - 1
-        ) {
-            // Move to volume adjustment for endurance
-            setCurrentMuscleGroupIndex(0);
-            setCurrentStep(WizardStep.ENDURANCE_VOLUME);
-        } else if (
-            currentStep === WizardStep.ENDURANCE_VOLUME &&
+            currentStep === WizardStep.ENDURANCE_ADJUSTMENT &&
             currentMuscleGroupIndex === currentMuscleGroups.length - 1
         ) {
             // Move to review step
@@ -663,74 +759,106 @@ const OnboardingWizard: React.FC = () => {
                 setCurrentStep(WizardStep.STRENGTH_OVERVIEW);
                 break;
 
-            case WizardStep.STRENGTH_PRIORITY:
+            case WizardStep.STRENGTH_ADJUSTMENT:
                 setCurrentStep(WizardStep.STRENGTH_SELECTION);
                 // Go to the last muscle group of the selection step
                 setCurrentMuscleGroupIndex(muscleGroupsByCategory.strength.length - 1);
                 break;
 
-            case WizardStep.STRENGTH_VOLUME:
-                setCurrentStep(WizardStep.STRENGTH_PRIORITY);
-                // Go to the last muscle group of the priority step
-                setCurrentMuscleGroupIndex(muscleGroupsByCategory.strength.length - 1);
-                break;
-
             case WizardStep.MOBILITY_OVERVIEW:
-                setCurrentStep(WizardStep.STRENGTH_VOLUME);
-                // Go to the last muscle group of strength volume
-                setCurrentMuscleGroupIndex(muscleGroupsByCategory.strength.length - 1);
+                // Go back to strength adjustment if enabled, otherwise to training interval
+                if (enabledCategories.strength) {
+                    setCurrentStep(WizardStep.STRENGTH_ADJUSTMENT);
+                    setCurrentMuscleGroupIndex(muscleGroupsByCategory.strength.length - 1);
+                } else {
+                    setCurrentStep(WizardStep.TRAINING_INTERVAL);
+                }
                 break;
 
             case WizardStep.MOBILITY_SELECTION:
                 setCurrentStep(WizardStep.MOBILITY_OVERVIEW);
                 break;
 
-            case WizardStep.MOBILITY_PRIORITY:
+            case WizardStep.MOBILITY_ADJUSTMENT:
                 setCurrentStep(WizardStep.MOBILITY_SELECTION);
                 // Go to the last muscle group
                 setCurrentMuscleGroupIndex(muscleGroupsByCategory.mobility.length - 1);
                 break;
 
-            case WizardStep.MOBILITY_VOLUME:
-                setCurrentStep(WizardStep.MOBILITY_PRIORITY);
-                // Go to the last muscle group
-                setCurrentMuscleGroupIndex(muscleGroupsByCategory.mobility.length - 1);
-                break;
-
             case WizardStep.ENDURANCE_OVERVIEW:
-                setCurrentStep(WizardStep.MOBILITY_VOLUME);
-                // Go to the last muscle group
-                setCurrentMuscleGroupIndex(muscleGroupsByCategory.mobility.length - 1);
+                // Go back to mobility adjustment if enabled, otherwise to strength adjustment or training interval
+                if (enabledCategories.mobility) {
+                    setCurrentStep(WizardStep.MOBILITY_ADJUSTMENT);
+                    setCurrentMuscleGroupIndex(muscleGroupsByCategory.mobility.length - 1);
+                } else if (enabledCategories.strength) {
+                    setCurrentStep(WizardStep.STRENGTH_ADJUSTMENT);
+                    setCurrentMuscleGroupIndex(muscleGroupsByCategory.strength.length - 1);
+                } else {
+                    setCurrentStep(WizardStep.TRAINING_INTERVAL);
+                }
                 break;
 
             case WizardStep.ENDURANCE_SELECTION:
                 setCurrentStep(WizardStep.ENDURANCE_OVERVIEW);
                 break;
 
-            case WizardStep.ENDURANCE_PRIORITY:
+            case WizardStep.ENDURANCE_ADJUSTMENT:
                 setCurrentStep(WizardStep.ENDURANCE_SELECTION);
                 // Go to the last muscle group
                 setCurrentMuscleGroupIndex(muscleGroupsByCategory.endurance.length - 1);
                 break;
 
-            case WizardStep.ENDURANCE_VOLUME:
-                setCurrentStep(WizardStep.ENDURANCE_PRIORITY);
-                // Go to the last muscle group
-                setCurrentMuscleGroupIndex(muscleGroupsByCategory.endurance.length - 1);
-                break;
-
             case WizardStep.REVIEW:
-                setCurrentStep(WizardStep.ENDURANCE_VOLUME);
-                // Go to the last muscle group
-                setCurrentMuscleGroupIndex(muscleGroupsByCategory.endurance.length - 1);
+                // Go back to the last enabled category's adjustment step
+                if (enabledCategories.endurance) {
+                    setCurrentStep(WizardStep.ENDURANCE_ADJUSTMENT);
+                    setCurrentMuscleGroupIndex(muscleGroupsByCategory.endurance.length - 1);
+                } else if (enabledCategories.mobility) {
+                    setCurrentStep(WizardStep.MOBILITY_ADJUSTMENT);
+                    setCurrentMuscleGroupIndex(muscleGroupsByCategory.mobility.length - 1);
+                } else if (enabledCategories.strength) {
+                    setCurrentStep(WizardStep.STRENGTH_ADJUSTMENT);
+                    setCurrentMuscleGroupIndex(muscleGroupsByCategory.strength.length - 1);
+                } else {
+                    setCurrentStep(WizardStep.TRAINING_INTERVAL);
+                }
                 break;
         }
     };
 
-    // Update getProgressText to include the new step
+    // Update getProgressText to calculate total steps dynamically
     const getProgressText = () => {
-        const totalSteps = WizardStep.REVIEW + 1;
-        const currentStepNumber = currentStep + 1;
+        // Calculate total steps based on enabled categories
+        let totalSteps = 3; // INTRO, TRAINING_INTERVAL, REVIEW are always included
+
+        if (enabledCategories.strength) totalSteps += 3; // Add steps for strength category
+        if (enabledCategories.mobility) totalSteps += 3; // Add steps for mobility category
+        if (enabledCategories.endurance) totalSteps += 3; // Add steps for endurance category
+
+        // Calculate current step number
+        let currentStepNumber = 1; // Start with 1
+
+        if (currentStep >= WizardStep.TRAINING_INTERVAL) currentStepNumber++;
+
+        if (enabledCategories.strength) {
+            if (currentStep >= WizardStep.STRENGTH_OVERVIEW) currentStepNumber++;
+            if (currentStep >= WizardStep.STRENGTH_SELECTION) currentStepNumber++;
+            if (currentStep >= WizardStep.STRENGTH_ADJUSTMENT) currentStepNumber++;
+        }
+
+        if (enabledCategories.mobility) {
+            if (currentStep >= WizardStep.MOBILITY_OVERVIEW) currentStepNumber++;
+            if (currentStep >= WizardStep.MOBILITY_SELECTION) currentStepNumber++;
+            if (currentStep >= WizardStep.MOBILITY_ADJUSTMENT) currentStepNumber++;
+        }
+
+        if (enabledCategories.endurance) {
+            if (currentStep >= WizardStep.ENDURANCE_OVERVIEW) currentStepNumber++;
+            if (currentStep >= WizardStep.ENDURANCE_SELECTION) currentStepNumber++;
+            if (currentStep >= WizardStep.ENDURANCE_ADJUSTMENT) currentStepNumber++;
+        }
+
+        if (currentStep === WizardStep.REVIEW) currentStepNumber = totalSteps;
 
         // Simple step indicator
         if (currentStep === WizardStep.INTRO) {
@@ -755,16 +883,11 @@ const OnboardingWizard: React.FC = () => {
             return `Step ${currentStepNumber} of ${totalSteps}: ${categoryName} Overview`;
         }
 
-        // For selection, priority, and volume steps
-        if (
-            isSelectionStep(currentStep) ||
-            isPriorityStep(currentStep) ||
-            isVolumeStep(currentStep)
-        ) {
+        // For selection and adjustment steps
+        if (isSelectionStep(currentStep) || isAdjustmentStep(currentStep)) {
             let stepType = "";
             if (isSelectionStep(currentStep)) stepType = "Exercise Selection";
-            if (isPriorityStep(currentStep)) stepType = "Priority Setting";
-            if (isVolumeStep(currentStep)) stepType = "Volume Adjustment";
+            if (isAdjustmentStep(currentStep)) stepType = "Priority & Volume";
 
             let categoryName = "";
             if (currentCategory === "strength") categoryName = "Strength";
@@ -781,7 +904,11 @@ const OnboardingWizard: React.FC = () => {
 
     const completeWizard = () => {
         // Get the exercise context
-        const selectedExercises = allExercises.filter((exercise) => exercise.isSelected);
+        const selectedExercises = allExercises.filter(
+            (exercise) =>
+                exercise.isSelected && enabledCategories[exercise.category as CategoryType]
+        );
+
         console.log("completed wizard with exercises");
         selectedExercises.forEach(({ isSelected, ...exerciseData }) => {
             addExercise(exerciseData);
@@ -867,7 +994,7 @@ const OnboardingWizard: React.FC = () => {
                 </Text>
 
                 {/* Only show sets/week when in VOLUME_ADJUSTMENT or REVIEW step */}
-                {(isVolumeStep(currentStep) || currentStep === WizardStep.REVIEW) && (
+                {(isAdjustmentStep(currentStep) || currentStep === WizardStep.REVIEW) && (
                     <Text style={[styles.exerciseDetails, { color: currentTheme.colors.text }]}>
                         {item.category === "endurance"
                             ? `${item.weeklySets} km/interval`
@@ -876,12 +1003,11 @@ const OnboardingWizard: React.FC = () => {
                 )}
 
                 {/* Show description if available in earlier steps */}
-                {(isSelectionStep(currentStep) || isPriorityStep(currentStep)) &&
-                    item.description && (
-                        <Text style={[styles.exerciseDetails, { color: currentTheme.colors.text }]}>
-                            {item.description}
-                        </Text>
-                    )}
+                {isSelectionStep(currentStep) && item.description && (
+                    <Text style={[styles.exerciseDetails, { color: currentTheme.colors.text }]}>
+                        {item.description}
+                    </Text>
+                )}
             </TouchableOpacity>
 
             {isSelectionStep(currentStep) && (
@@ -895,7 +1021,9 @@ const OnboardingWizard: React.FC = () => {
                 />
             )}
 
-            {isPriorityStep(currentStep) && item.isSelected && <PrioritySelector exercise={item} />}
+            {isAdjustmentStep(currentStep) && item.isSelected && (
+                <PrioritySelector exercise={item} />
+            )}
         </View>
     );
 
@@ -911,36 +1039,97 @@ const OnboardingWizard: React.FC = () => {
                 muscle group and category and train based on your own schedule.
             </Text>
 
+            <Text style={[styles.subtitle, { color: currentTheme.colors.text, marginBottom: 12 }]}>
+                Select Training Categories:
+            </Text>
+
             <View style={styles.categoriesContainer}>
-                <View style={styles.categoryItem}>
-                    <Text style={[styles.categoryTitle, { color: currentTheme.colors.primary }]}>
-                        Strength
-                    </Text>
-                    <Text style={[styles.categoryDescription, { color: currentTheme.colors.text }]}>
-                        Build muscle, strength and bone density with resistance training
-                    </Text>
+                <View style={styles.categoryToggleItem}>
+                    <View style={styles.categoryInfo}>
+                        <Text
+                            style={[styles.categoryTitle, { color: currentTheme.colors.primary }]}
+                        >
+                            Strength
+                        </Text>
+                        <Text
+                            style={[
+                                styles.categoryDescription,
+                                { color: currentTheme.colors.text },
+                            ]}
+                        >
+                            Build muscle, strength and bone density with resistance training
+                        </Text>
+                    </View>
+                    <Switch
+                        value={enabledCategories.strength}
+                        onValueChange={(value) =>
+                            setEnabledCategories((prev) => ({ ...prev, strength: value }))
+                        }
+                        trackColor={{
+                            false: currentTheme.colors.border,
+                            true: currentTheme.colors.primary,
+                        }}
+                    />
                 </View>
 
-                <View style={styles.categoryItem}>
-                    <Text style={[styles.categoryTitle, { color: currentTheme.colors.primary }]}>
-                        Mobility
-                    </Text>
-                    <Text style={[styles.categoryDescription, { color: currentTheme.colors.text }]}>
-                        Improve flexibility, balance, joint health, and range of motion
-                    </Text>
+                <View style={styles.categoryToggleItem}>
+                    <View style={styles.categoryInfo}>
+                        <Text
+                            style={[styles.categoryTitle, { color: currentTheme.colors.primary }]}
+                        >
+                            Mobility
+                        </Text>
+                        <Text
+                            style={[
+                                styles.categoryDescription,
+                                { color: currentTheme.colors.text },
+                            ]}
+                        >
+                            Improve flexibility, balance, joint health, and range of motion
+                        </Text>
+                    </View>
+                    <Switch
+                        value={enabledCategories.mobility}
+                        onValueChange={(value) =>
+                            setEnabledCategories((prev) => ({ ...prev, mobility: value }))
+                        }
+                        trackColor={{
+                            false: currentTheme.colors.border,
+                            true: currentTheme.colors.primary,
+                        }}
+                    />
                 </View>
 
-                <View style={styles.categoryItem}>
-                    <Text style={[styles.categoryTitle, { color: currentTheme.colors.primary }]}>
-                        Endurance
-                    </Text>
-                    <Text style={[styles.categoryDescription, { color: currentTheme.colors.text }]}>
-                        Build cardiovascular health and stamina
-                    </Text>
+                <View style={styles.categoryToggleItem}>
+                    <View style={styles.categoryInfo}>
+                        <Text
+                            style={[styles.categoryTitle, { color: currentTheme.colors.primary }]}
+                        >
+                            Endurance
+                        </Text>
+                        <Text
+                            style={[
+                                styles.categoryDescription,
+                                { color: currentTheme.colors.text },
+                            ]}
+                        >
+                            Build cardiovascular health and stamina
+                        </Text>
+                    </View>
+                    <Switch
+                        value={enabledCategories.endurance}
+                        onValueChange={(value) =>
+                            setEnabledCategories((prev) => ({ ...prev, endurance: value }))
+                        }
+                        trackColor={{
+                            false: currentTheme.colors.border,
+                            true: currentTheme.colors.primary,
+                        }}
+                    />
                 </View>
             </View>
 
-            <Text style={[styles.instruction, { color: currentTheme.colors.text }]}>
+            <Text style={[styles.instruction, { color: currentTheme.colors.text, marginTop: 16 }]}>
                 In the next steps, you'll:
             </Text>
 
@@ -1024,109 +1213,141 @@ const OnboardingWizard: React.FC = () => {
         </View>
     );
 
-    const renderPrioritySetting = () => (
-        <View style={styles.contentContainer}>
-            <Text style={[styles.title, { color: currentTheme.colors.text }]}>
-                Set {currentMuscleGroup} Priorities
-            </Text>
-
-            <Text style={[styles.subtitle, { color: currentTheme.colors.text }]}>
-                {currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} Training
-            </Text>
-
-            <Text style={[styles.instruction, { color: currentTheme.colors.text }]}>
-                Set the priority level for each exercise (0 = skip, 3 = highest priority).
-            </Text>
-
-            <View style={styles.priorityLegend}>
-                <View style={styles.priorityLegendItem}>
-                    <View
-                        style={[
-                            styles.priorityDot,
-                            { opacity: 0.15, backgroundColor: currentTheme.colors.primary },
-                        ]}
-                    />
-                    <Text style={[styles.priorityLegendText, { color: currentTheme.colors.text }]}>
-                        0: Skip
-                    </Text>
-                </View>
-                <View style={styles.priorityLegendItem}>
-                    <View
-                        style={[
-                            styles.priorityDot,
-                            { opacity: 0.33, backgroundColor: currentTheme.colors.primary },
-                        ]}
-                    />
-                    <Text style={[styles.priorityLegendText, { color: currentTheme.colors.text }]}>
-                        1: Low
-                    </Text>
-                </View>
-                <View style={styles.priorityLegendItem}>
-                    <View
-                        style={[
-                            styles.priorityDot,
-                            { opacity: 0.66, backgroundColor: currentTheme.colors.primary },
-                        ]}
-                    />
-                    <Text style={[styles.priorityLegendText, { color: currentTheme.colors.text }]}>
-                        2: Medium
-                    </Text>
-                </View>
-                <View style={styles.priorityLegendItem}>
-                    <View
-                        style={[
-                            styles.priorityDot,
-                            { opacity: 1, backgroundColor: currentTheme.colors.primary },
-                        ]}
-                    />
-                    <Text style={[styles.priorityLegendText, { color: currentTheme.colors.text }]}>
-                        3: High
-                    </Text>
-                </View>
-            </View>
-
-            {/* Render selected exercises directly */}
-            <View style={styles.exerciseListContainer}>
-                {currentExercises
-                    .filter((ex) => ex.isSelected)
-                    .map((item) => renderExerciseItem({ item }))}
-            </View>
-        </View>
-    );
-
-    // Render the volume adjustment screen
-    const renderVolumeAdjustment = () => {
+    // Replace renderPrioritySetting and renderVolumeAdjustment with a combined function
+    const renderCombinedAdjustment = () => {
         const unit = currentCategory === "endurance" ? "km" : "sets";
+
+        // Ensure the category and muscle group entries exist
+        if (!weeklyVolumePerMuscleGroupPerCategory[currentCategory]) {
+            weeklyVolumePerMuscleGroupPerCategory[currentCategory] = {};
+        }
+
+        // Use a default value if the volume isn't set yet
+        const currentVolume =
+            weeklyVolumePerMuscleGroupPerCategory[currentCategory]?.[currentMuscleGroup] ||
+            (currentCategory === "endurance" ? 20 : 12);
+
         return (
             <View style={styles.contentContainer}>
                 <Text style={[styles.title, { color: currentTheme.colors.text }]}>
-                    Adjust {currentMuscleGroup} Volume
+                    Adjust {currentMuscleGroup} Training
                 </Text>
 
                 <Text style={[styles.subtitle, { color: currentTheme.colors.text }]}>
                     {currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} Training
                 </Text>
 
-                <Text style={[styles.instruction, { color: currentTheme.colors.text }]}>
-                    Set your training volume for {currentMuscleGroup.toLowerCase()}.
-                </Text>
-
                 <View style={styles.volumeContainer}>
                     <Text style={[styles.volumeLabel, { color: currentTheme.colors.text }]}>
                         Interval {unit}:
                     </Text>
-                    {renderVolumeControls()}
+                    <View style={styles.volumeControls}>
+                        <TouchableOpacity
+                            onPress={() => updateVolume(Math.max(1, currentVolume - 1))}
+                            style={[
+                                styles.volumeButton,
+                                { backgroundColor: currentTheme.colors.border },
+                            ]}
+                        >
+                            <Text
+                                style={[
+                                    styles.volumeButtonText,
+                                    { color: currentTheme.colors.text },
+                                ]}
+                            >
+                                -
+                            </Text>
+                        </TouchableOpacity>
+
+                        <Text style={[styles.volumeText, { color: currentTheme.colors.text }]}>
+                            {currentVolume} {unit}/interval
+                        </Text>
+
+                        <TouchableOpacity
+                            onPress={() => updateVolume(currentVolume + 1)}
+                            style={[
+                                styles.volumeButton,
+                                { backgroundColor: currentTheme.colors.border },
+                            ]}
+                        >
+                            <Text
+                                style={[
+                                    styles.volumeButtonText,
+                                    { color: currentTheme.colors.text },
+                                ]}
+                            >
+                                +
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <Text style={[styles.volumeExplanation, { color: currentTheme.colors.text }]}>
                     {currentCategory === "endurance"
-                        ? "This is the total distance you'll aim to cover each week. The volume will be distributed based on exercise priorities."
-                        : "This is the total number of sets you'll perform each week. Sets will be distributed according to your exercise priorities."}
+                        ? "This is the total distance you'll aim to cover each interval. The volume will be distributed based on exercise priorities."
+                        : "This is the total number of sets you'll perform each interval. Sets will be distributed according to your exercise priorities."}
                 </Text>
 
-                <Text style={[styles.subtitle, { color: currentTheme.colors.text, marginTop: 20 }]}>
-                    Selected Exercises:
+                <Text
+                    style={[styles.instruction, { color: currentTheme.colors.text, marginTop: 16 }]}
+                >
+                    Set the priority level for each exercise (0 = skip, 3 = highest priority).
                 </Text>
+
+                <View style={styles.priorityLegend}>
+                    <View style={styles.priorityLegendItem}>
+                        <View
+                            style={[
+                                styles.priorityDot,
+                                { opacity: 0.15, backgroundColor: currentTheme.colors.primary },
+                            ]}
+                        />
+                        <Text
+                            style={[styles.priorityLegendText, { color: currentTheme.colors.text }]}
+                        >
+                            0: Skip
+                        </Text>
+                    </View>
+                    <View style={styles.priorityLegendItem}>
+                        <View
+                            style={[
+                                styles.priorityDot,
+                                { opacity: 0.33, backgroundColor: currentTheme.colors.primary },
+                            ]}
+                        />
+                        <Text
+                            style={[styles.priorityLegendText, { color: currentTheme.colors.text }]}
+                        >
+                            1: Low
+                        </Text>
+                    </View>
+                    <View style={styles.priorityLegendItem}>
+                        <View
+                            style={[
+                                styles.priorityDot,
+                                { opacity: 0.66, backgroundColor: currentTheme.colors.primary },
+                            ]}
+                        />
+                        <Text
+                            style={[styles.priorityLegendText, { color: currentTheme.colors.text }]}
+                        >
+                            2: Medium
+                        </Text>
+                    </View>
+                    <View style={styles.priorityLegendItem}>
+                        <View
+                            style={[
+                                styles.priorityDot,
+                                { opacity: 1, backgroundColor: currentTheme.colors.primary },
+                            ]}
+                        />
+                        <Text
+                            style={[styles.priorityLegendText, { color: currentTheme.colors.text }]}
+                        >
+                            3: High
+                        </Text>
+                    </View>
+                </View>
 
                 {/* Render selected exercises directly */}
                 <View style={styles.exerciseListContainer}>
@@ -1208,15 +1429,10 @@ const OnboardingWizard: React.FC = () => {
             case WizardStep.ENDURANCE_SELECTION:
                 return renderExerciseSelection();
 
-            case WizardStep.STRENGTH_PRIORITY:
-            case WizardStep.MOBILITY_PRIORITY:
-            case WizardStep.ENDURANCE_PRIORITY:
-                return renderPrioritySetting();
-
-            case WizardStep.STRENGTH_VOLUME:
-            case WizardStep.MOBILITY_VOLUME:
-            case WizardStep.ENDURANCE_VOLUME:
-                return renderVolumeAdjustment();
+            case WizardStep.STRENGTH_ADJUSTMENT:
+            case WizardStep.MOBILITY_ADJUSTMENT:
+            case WizardStep.ENDURANCE_ADJUSTMENT:
+                return renderCombinedAdjustment();
 
             case WizardStep.REVIEW:
                 return renderReviewScreen();
@@ -1231,19 +1447,13 @@ const OnboardingWizard: React.FC = () => {
             return "Complete";
         }
 
-        if (
-            isSelectionStep(currentStep) ||
-            isPriorityStep(currentStep) ||
-            isVolumeStep(currentStep)
-        ) {
+        if (isSelectionStep(currentStep) || isAdjustmentStep(currentStep)) {
             const isLastMuscleGroup = currentMuscleGroupIndex === currentMuscleGroups.length - 1;
 
             if (isLastMuscleGroup) {
                 if (isSelectionStep(currentStep)) {
-                    return "Set Priorities";
-                } else if (isPriorityStep(currentStep)) {
-                    return "Adjust Volume";
-                } else if (currentStep === WizardStep.ENDURANCE_VOLUME) {
+                    return "Set Priority & Volume";
+                } else if (currentStep === WizardStep.ENDURANCE_ADJUSTMENT) {
                     return "Review Plan";
                 } else {
                     return "Next Category";
@@ -1468,7 +1678,8 @@ const styles = StyleSheet.create({
     volumeControls: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 12,
+        justifyContent: "center", // Added to center the controls
+        minWidth: 150, // Added minimum width to prevent shrinking
     },
     volumeButton: {
         width: 32,
@@ -1484,7 +1695,7 @@ const styles = StyleSheet.create({
     volumeText: {
         fontSize: 16,
         fontWeight: "500",
-        minWidth: 80,
+        width: 120, // Changed from minWidth to fixed width
         textAlign: "center",
     },
     volumeExplanation: {
@@ -1541,6 +1752,21 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginVertical: 16,
         // backgroundColor: currentTheme.colors.card,
+    },
+    categoryToggleItem: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 16,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: "#eee",
+    },
+    categoryInfo: {
+        flex: 1,
+        marginRight: 12,
     },
 });
 
