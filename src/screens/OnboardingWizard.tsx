@@ -949,7 +949,7 @@ const OnboardingWizard: React.FC = () => {
     const PrioritySelector = ({ exercise }: { exercise: Exercise & { isSelected: boolean } }) => (
         <View style={styles.priorityContainer}>
             <View style={styles.priorityButtons}>
-                {[0, 1, 2, 3].map((p) => (
+                {[1, 2, 3].map((p) => (
                     <TouchableOpacity
                         key={p}
                         style={[
@@ -959,7 +959,7 @@ const OnboardingWizard: React.FC = () => {
                                     exercise.priority === p
                                         ? currentTheme.colors.primary
                                         : currentTheme.colors.border,
-                                opacity: p === 0 ? 0.15 : p / 3,
+                                opacity: 0.4 + p * 0.2,
                             },
                         ]}
                         onPress={() => updateExercisePriority(exercise, p)}
@@ -1291,7 +1291,7 @@ const OnboardingWizard: React.FC = () => {
                 <Text
                     style={[styles.instruction, { color: currentTheme.colors.text, marginTop: 16 }]}
                 >
-                    Set the priority level for each exercise (0 = skip, 3 = highest priority).
+                    Set the priority level for each exercise (1 = low, 3 = highest priority).
                 </Text>
 
                 <View style={styles.priorityLegend}>
