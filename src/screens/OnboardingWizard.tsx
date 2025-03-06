@@ -1299,19 +1299,6 @@ const OnboardingWizard: React.FC = () => {
                         <View
                             style={[
                                 styles.priorityDot,
-                                { opacity: 0.15, backgroundColor: currentTheme.colors.primary },
-                            ]}
-                        />
-                        <Text
-                            style={[styles.priorityLegendText, { color: currentTheme.colors.text }]}
-                        >
-                            0: Skip
-                        </Text>
-                    </View>
-                    <View style={styles.priorityLegendItem}>
-                        <View
-                            style={[
-                                styles.priorityDot,
                                 { opacity: 0.33, backgroundColor: currentTheme.colors.primary },
                             ]}
                         />
@@ -1645,6 +1632,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         marginBottom: 16,
         flexWrap: "wrap",
+        marginHorizontal: 12,
     },
     priorityLegendItem: {
         flexDirection: "row",
