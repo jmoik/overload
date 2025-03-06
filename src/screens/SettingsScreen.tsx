@@ -38,7 +38,7 @@ const SettingsScreen = () => {
     const styles = createSettingsStyles(currentTheme);
     const navigation = useNavigation<SettingsScreenNavigationProp>();
     const { exercises, exerciseHistory, setExercises, setExerciseHistory } = useExerciseContext();
-    const { isHealthKitAuthorized } = useHealthKit();
+    const { isHealthKitAuthorized, setIsHealthKitAuthorized } = useHealthKit();
 
     const shareExportData = async () => {
         const exportData = {
@@ -177,6 +177,11 @@ const SettingsScreen = () => {
 
                             // Set alreadySetup to false
                             await AsyncStorage.setItem("alreadySetup", "false");
+
+                            // Reset HealthKit authorization status
+                            if (Platform.OS === "ios" && isHealthKitAuthorized) {
+                                setIsHealthKitAuthorized(false);
+                            }
 
                             // Reset the app to the Welcome screen
                             navigation.dispatch(

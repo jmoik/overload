@@ -1,5 +1,4 @@
-// screens/WelcomeScreen.tsx
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { View, Text, TouchableOpacity, SafeAreaView, Platform, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AppleHealthKit from "react-native-health";
@@ -40,64 +39,78 @@ const WelcomeScreen = () => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const styles = createWelcomeStyles(currentTheme);
-    const { exercises } = useExerciseContext(); // Get exercises from context
-
+    const { exercises } = useExerciseContext();
     const [showHealthKitIntro, setShowHealthKitIntro] = useState(true);
     const [currentIntroStep, setCurrentIntroStep] = useState(0);
     const { setIsHealthKitAuthorized } = useHealthKit();
+    const [isInitializing, setIsInitializing] = useState(false); // Prevent multiple calls
 
-    const initializeHealthKit = () => {
-        if (Platform.OS === "ios") {
-            AppleHealthKit.initHealthKit(healthKitPermissions, async (error: string) => {
-                if (error) {
-                    console.log("[ERROR] Cannot initialize HealthKit:", error);
-                    Alert.alert(
-                        "HealthKit Access",
-                        "We need access to HealthKit to import your workouts."
-                    );
-                } else {
-                    console.log("HealthKit initialized successfully");
-                    setIsHealthKitAuthorized(true);
-
-                    // Set alreadySetup to true in AsyncStorage
-                    try {
-                        await AsyncStorage.setItem("alreadySetup", "true");
-                        console.log("App setup completed and saved to AsyncStorage");
-                    } catch (storageError) {
-                        console.error("Error saving setup state:", storageError);
-                    }
-
-                    // Check if there are exercises in the context
-                    if (exercises && exercises.length > 0) {
-                        navigation.navigate("Home");
-                    } else {
-                        navigation.navigate("OnboardingWizard");
-                    }
-                }
-            });
+    const navigateBasedOnExercises = useCallback(() => {
+        if (exercises && exercises.length > 0) {
+            navigation.navigate("Home");
         } else {
-            // For non-iOS platforms, still mark setup as complete
-            try {
-                AsyncStorage.setItem("alreadySetup", "true");
-
-                // Check if there are exercises in the context
-                if (exercises && exercises.length > 0) {
-                    navigation.navigate("Home");
-                } else {
-                    navigation.navigate("OnboardingWizard");
-                }
-            } catch (storageError) {
-                console.error("Error saving setup state:", storageError);
-
-                // Even with an error, we should still navigate based on exercises
-                if (exercises && exercises.length > 0) {
-                    navigation.navigate("Home");
-                } else {
-                    navigation.navigate("OnboardingWizard");
-                }
-            }
+            navigation.navigate("OnboardingWizard");
         }
-    };
+    }, [exercises, navigation]);
+
+    const initializeHealthKit = useCallback(async () => {
+        if (isInitializing) {
+            console.log("HealthKit initialization already in progress, skipping...");
+            return;
+        }
+
+        setIsInitializing(true);
+        console.log("Initializing HealthKit...");
+
+        if (Platform.OS !== "ios") {
+            await AsyncStorage.setItem("alreadySetup", "true");
+            navigateBasedOnExercises();
+            setIsInitializing(false);
+            return;
+        }
+
+        try {
+            // Add a timeout to prevent hanging indefinitely
+            const healthKitPromise = new Promise<void>((resolve, reject) => {
+                AppleHealthKit.initHealthKit(healthKitPermissions, (error: string) => {
+                    if (error) {
+                        console.log("[ERROR] Cannot initialize HealthKit:", error);
+                        reject(new Error(error));
+                    } else {
+                        console.log("HealthKit initialized successfully");
+                        resolve();
+                    }
+                });
+            });
+
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("HealthKit initialization timed out")), 10000)
+            );
+
+            await Promise.race([healthKitPromise, timeoutPromise]);
+
+            setIsHealthKitAuthorized(true);
+            await AsyncStorage.setItem("alreadySetup", "true");
+            navigateBasedOnExercises();
+        } catch (error) {
+            console.error("HealthKit initialization failed or timed out:", error);
+            Alert.alert(
+                "HealthKit Issue",
+                "Unable to initialize HealthKit. You can still proceed, but workout data won’t be imported.",
+                [
+                    {
+                        text: "Continue",
+                        onPress: async () => {
+                            await AsyncStorage.setItem("alreadySetup", "true");
+                            navigateBasedOnExercises();
+                        },
+                    },
+                ]
+            );
+        } finally {
+            setIsInitializing(false);
+        }
+    }, [isInitializing, navigateBasedOnExercises, setIsHealthKitAuthorized]);
 
     const renderHealthKitIntro = () => {
         const step = HealthKitIntroSteps[currentIntroStep];
@@ -143,9 +156,10 @@ const WelcomeScreen = () => {
                             setCurrentIntroStep((prev) => prev + 1);
                         }
                     }}
+                    disabled={isInitializing} // Disable button during initialization
                 >
                     <Text style={[styles.buttonText, { color: currentTheme.colors.background }]}>
-                        {"Continue"}
+                        {isInitializing ? "Initializing..." : "Continue"}
                     </Text>
                 </TouchableOpacity>
             </View>

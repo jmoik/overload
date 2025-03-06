@@ -5,8 +5,6 @@ export const healthKitPermissions: HealthKitPermissions = {
         read: [
             AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
             AppleHealthKit.Constants.Permissions.Workout,
-            AppleHealthKit.Constants.Permissions.HeartRate,
-            AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
             AppleHealthKit.Constants.Permissions.StepCount,
         ],
         write: [],
