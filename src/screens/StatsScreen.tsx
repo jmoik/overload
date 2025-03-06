@@ -32,10 +32,26 @@ const calculateMovingAverage = (data: number[], windowSize: number): number[] =>
     return result;
 };
 
-const ProgressBar = ({ percentage, color, label, actualSets, targetSets }) => {
+const ProgressBar = ({
+    percentage,
+    color,
+    label,
+    actualSets,
+    targetSets,
+}: {
+    percentage: number;
+    color: string;
+    label: string;
+    actualSets: number;
+    targetSets: number;
+}) => {
     const { theme } = useTheme();
     const currentTheme = theme === "light" ? lightTheme : darkTheme;
     const barWidth = Math.min(percentage, 100); // Cap the visual bar at 100%
+
+    // Handle case when targetSets is 0 to avoid NaN
+    const displayPercentage = targetSets === 0 ? 0 : percentage;
+
     return (
         <View style={{ marginBottom: 10 }}>
             <Text style={{ marginBottom: 5, color: currentTheme.colors.text }}>
@@ -52,7 +68,7 @@ const ProgressBar = ({ percentage, color, label, actualSets, targetSets }) => {
                 />
             </View>
             <Text style={{ alignSelf: "flex-end", color: currentTheme.colors.text }}>
-                {percentage.toFixed(1)}%
+                {displayPercentage.toFixed(1)}%
             </Text>
         </View>
     );
@@ -195,8 +211,6 @@ const StatsScreen = () => {
             const history = exerciseHistory[exercise.id] || [];
             const isEndurance = exercise.category === "endurance";
             const isMobility = exercise.category === "mobility";
-            const isStrength = exercise.category === "strength";
-            const isNsuns = exercise.category === "nsuns";
 
             if (isEndurance) {
                 targetEnduranceLoad += exercise.weeklySets;
@@ -265,15 +279,30 @@ const StatsScreen = () => {
             });
         });
 
-        const strengthPercentage = (actualStrengthSets / targetStrengthSets) * 100;
-        const endurancePercentage = (actualEnduranceLoad / targetEnduranceLoad) * 100;
-        const mobilityPercentage = (actualMobilitySets / targetMobilitySets) * 100;
-        const totalScoreAverage = Math.min(
-            100,
-            Math.round(
-                (strengthPercentage + endurancePercentage + mobilityPercentage + stepPercentage) / 4
-            )
-        );
+        const strengthPercentage =
+            targetStrengthSets === 0 ? 0 : (actualStrengthSets / targetStrengthSets) * 100;
+        const endurancePercentage =
+            targetEnduranceLoad === 0 ? 0 : (actualEnduranceLoad / targetEnduranceLoad) * 100;
+        const mobilityPercentage =
+            targetMobilitySets === 0 ? 0 : (actualMobilitySets / targetMobilitySets) * 100;
+
+        // Only include categories with non-zero targets in the training load calculation
+        const validPercentages = [
+            targetStrengthSets > 0 ? strengthPercentage : null,
+            targetEnduranceLoad > 0 ? endurancePercentage : null,
+            targetMobilitySets > 0 ? mobilityPercentage : null,
+            stepPercentage && !isNaN(stepPercentage) ? stepPercentage : null,
+        ].filter((p) => p !== null) as number[];
+
+        const totalScoreAverage =
+            validPercentages.length === 0
+                ? 0
+                : Math.min(
+                      100,
+                      Math.round(
+                          validPercentages.reduce((sum, p) => sum + p, 0) / validPercentages.length
+                      )
+                  );
 
         return {
             strengthLoadData: strengthLoadByDay.map((load) => Math.max(load, 0)),
@@ -490,30 +519,8 @@ const StatsScreen = () => {
         <ScrollView style={styles.container}>
             <View style={{ padding: 16 }}>
                 {/* Total Score Display */}
-                <View
-                    style={{
-                        alignItems: "center",
-                        marginBottom: 20,
-                        backgroundColor: currentTheme.colors.card,
-                        padding: 15,
-                        borderRadius: 10,
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.1,
-                        shadowRadius: 4,
-                        elevation: 3,
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontSize: 18,
-                            color: currentTheme.colors.text,
-                            marginBottom: 5,
-                            fontWeight: "bold",
-                        }}
-                    >
-                        TRAINING LOAD
-                    </Text>
+                <View style={styles.scoreContainer}>
+                    <Text style={styles.scoreTitle}>TRAINING LOAD</Text>
                     <Text
                         style={{
                             fontSize: 48,
@@ -530,27 +537,36 @@ const StatsScreen = () => {
                     </Text>
                 </View>
 
-                <ProgressBar
-                    percentage={stats.strengthPercentage}
-                    color="#FF6B6B"
-                    label="Strength"
-                    actualSets={stats.actualStrengthLoad}
-                    targetSets={stats.targetStrengthLoad}
-                />
-                <ProgressBar
-                    percentage={stats.endurancePercentage}
-                    color="#4ECDC4"
-                    label="Endurance"
-                    actualSets={stats.actualEnduranceLoad}
-                    targetSets={stats.targetEnduranceLoad}
-                />
-                <ProgressBar
-                    percentage={stats.mobilityPercentage}
-                    color="#45B7D1"
-                    label="Mobility"
-                    actualSets={stats.actualMobilityLoad}
-                    targetSets={stats.targetMobilityLoad}
-                />
+                {/* Only show progress bars for categories with non-zero targets */}
+                {stats.targetStrengthSets > 0 && (
+                    <ProgressBar
+                        percentage={stats.strengthPercentage}
+                        color="#FF6B6B"
+                        label="Strength"
+                        actualSets={stats.actualStrengthLoad}
+                        targetSets={stats.targetStrengthLoad}
+                    />
+                )}
+
+                {stats.targetEnduranceLoad > 0 && (
+                    <ProgressBar
+                        percentage={stats.endurancePercentage}
+                        color="#4ECDC4"
+                        label="Endurance"
+                        actualSets={stats.actualEnduranceLoad}
+                        targetSets={stats.targetEnduranceLoad}
+                    />
+                )}
+
+                {stats.targetMobilityLoad > 0 && (
+                    <ProgressBar
+                        percentage={stats.mobilityPercentage}
+                        color="#45B7D1"
+                        label="Mobility"
+                        actualSets={stats.actualMobilityLoad}
+                        targetSets={stats.targetMobilityLoad}
+                    />
+                )}
 
                 {Platform.OS === "ios" &&
                     isHealthKitAuthorized &&
@@ -572,49 +588,65 @@ const StatsScreen = () => {
                     ))}
             </View>
 
-            {renderChart(
-                createChartData(
-                    stats.strengthLoadData,
-                    stats.strengthLoadDataForMA,
-                    stats.targetStrengthLoad / trainingInterval
-                ),
-                "Strength"
-            )}
-            {renderStrengthStats(
-                stats.actualStrengthLoad,
-                stats.targetStrengthLoad,
-                stats.actualStrengthSets,
-                stats.targetStrengthSets,
-                "Strength"
-            )}
-
-            {renderSeparator()}
-
-            {renderChart(
-                createChartData(
-                    stats.enduranceLoadData,
-                    stats.enduranceLoadDataForMA,
-                    stats.targetEnduranceLoad / trainingInterval
-                ),
-                "Endurance"
-            )}
-            {renderEnduranceStats(
-                stats.actualEnduranceLoad,
-                stats.targetEnduranceLoad,
-                "Endurance"
+            {/* Only show charts for categories with non-zero targets */}
+            {stats.targetStrengthSets > 0 && (
+                <>
+                    {renderChart(
+                        createChartData(
+                            stats.strengthLoadData,
+                            stats.strengthLoadDataForMA,
+                            stats.targetStrengthLoad / trainingInterval
+                        ),
+                        "Strength"
+                    )}
+                    {renderStrengthStats(
+                        stats.actualStrengthLoad,
+                        stats.targetStrengthLoad,
+                        stats.actualStrengthSets,
+                        stats.targetStrengthSets,
+                        "Strength"
+                    )}
+                    {renderSeparator()}
+                </>
             )}
 
-            {renderSeparator()}
-
-            {renderChart(
-                createChartData(
-                    stats.mobilityLoadData,
-                    stats.mobilityLoadDataForMA,
-                    stats.targetMobilityLoad / trainingInterval
-                ),
-                "Mobility"
+            {stats.targetEnduranceLoad > 0 && (
+                <>
+                    {renderChart(
+                        createChartData(
+                            stats.enduranceLoadData,
+                            stats.enduranceLoadDataForMA,
+                            stats.targetEnduranceLoad / trainingInterval
+                        ),
+                        "Endurance"
+                    )}
+                    {renderEnduranceStats(
+                        stats.actualEnduranceLoad,
+                        stats.targetEnduranceLoad,
+                        "Endurance"
+                    )}
+                    {renderSeparator()}
+                </>
             )}
-            {renderMobilityStats(stats.actualMobilitySets, stats.targetMobilitySets, "Mobility")}
+
+            {stats.targetMobilityLoad > 0 && (
+                <>
+                    {renderChart(
+                        createChartData(
+                            stats.mobilityLoadData,
+                            stats.mobilityLoadDataForMA,
+                            stats.targetMobilityLoad / trainingInterval
+                        ),
+                        "Mobility"
+                    )}
+                    {renderMobilityStats(
+                        stats.actualMobilitySets,
+                        stats.targetMobilitySets,
+                        "Mobility"
+                    )}
+                    {renderSeparator()}
+                </>
+            )}
 
             {Platform.OS === "ios" && isHealthKitAuthorized && !loadingSteps && (
                 <>
