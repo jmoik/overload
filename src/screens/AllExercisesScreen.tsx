@@ -17,6 +17,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { lightTheme, darkTheme, createAllExercisesStyles } from "../../styles/globalStyles";
 import { generateEntryId } from "../utils/utils";
 import { useRoute, RouteProp } from "@react-navigation/native";
+import { calculateRemainingSets } from "../utils/exerciseCalculations";
 
 type AllExercisesScreenRouteProp = RouteProp<
     {
@@ -152,27 +153,9 @@ const AllExercisesScreen = () => {
         );
     }, []);
 
-    const calculateRemainingSets = useCallback(
+    const calculateRemainingSetsForExercise = useCallback(
         (exercise: Exercise) => {
-            const today = new Date();
-            const intervalStart = subDays(today, trainingInterval);
-
-            const history = exerciseHistory[exercise.id] || [];
-            const setsDoneInInterval = history.reduce((total, entry: ExerciseHistoryEntry) => {
-                if (isAfter(new Date(entry.date), intervalStart)) {
-                    if (entry.category === "strength") {
-                        return total + (entry as StrengthExerciseHistoryEntry).sets;
-                    } else if (entry.category === "mobility") {
-                        return total + (entry as MobilityExerciseHistoryEntry).sets;
-                    } else if (entry.category === "endurance") {
-                        return total + (entry as EnduranceExerciseHistoryEntry).sets;
-                    }
-                }
-                return total;
-            }, 0);
-
-            const remainingSets = exercise.weeklySets - setsDoneInInterval;
-            return remainingSets;
+            return calculateRemainingSets(exercise, exerciseHistory, trainingInterval);
         },
         [exerciseHistory, trainingInterval]
     );
@@ -187,7 +170,7 @@ const AllExercisesScreen = () => {
             index: number;
             section: { title: string };
         }) => {
-            const remainingTrainingLoad = calculateRemainingSets(item);
+            const remainingTrainingLoad = calculateRemainingSetsForExercise(item);
             const setsLeft = remainingTrainingLoad;
             const setsLeftColor = setsLeft <= 0 ? "green" : "red";
 
@@ -245,7 +228,7 @@ const AllExercisesScreen = () => {
             renderRightActions,
             renderLeftActions,
             handleEditExercise,
-            calculateRemainingSets,
+            calculateRemainingSetsForExercise,
         ]
     );
 
@@ -360,7 +343,7 @@ const AllExercisesScreen = () => {
         // Apply completed filter
         if (hideCompleted) {
             filteredExercises = filteredExercises.filter(
-                (exercise) => calculateRemainingSets(exercise) > 0
+                (exercise) => calculateRemainingSetsForExercise(exercise) > 0
             );
         }
 
@@ -378,7 +361,9 @@ const AllExercisesScreen = () => {
         Object.keys(grouped).forEach((key) => {
             grouped[key].sort((a, b) => {
                 if (sortBySetsLeft) {
-                    return calculateRemainingSets(b) - calculateRemainingSets(a);
+                    return (
+                        calculateRemainingSetsForExercise(b) - calculateRemainingSetsForExercise(a)
+                    );
                 } else {
                     return a.name.localeCompare(b.name);
                 }
@@ -411,7 +396,7 @@ const AllExercisesScreen = () => {
         filterCategory,
         filterMuscleGroups,
         sortBySetsLeft,
-        calculateRemainingSets,
+        calculateRemainingSetsForExercise,
         hideCompleted,
         calculateTotalSetsForGroup,
     ]);

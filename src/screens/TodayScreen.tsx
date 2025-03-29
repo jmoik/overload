@@ -12,7 +12,7 @@ import {
     MobilityExerciseHistoryEntry,
     StrengthExerciseHistoryEntry,
 } from "../contexts/Exercise";
-import { subDays, isAfter } from "date-fns";
+import { calculateRemainingSets } from "../utils/exerciseCalculations";
 
 type WorkoutType = {
     id: string;
@@ -34,27 +34,6 @@ const TodayScreen = () => {
         generateWorkoutSuggestions();
     }, [exercises, exerciseHistory, trainingInterval]);
 
-    const calculateRemainingSets = (exercise: Exercise) => {
-        const today = new Date();
-        const intervalStart = subDays(today, trainingInterval);
-
-        const history = exerciseHistory[exercise.id] || [];
-        const setsDoneInInterval = history.reduce((total, entry: ExerciseHistoryEntry) => {
-            if (isAfter(new Date(entry.date), intervalStart)) {
-                if (entry.category === "strength") {
-                    return total + (entry as StrengthExerciseHistoryEntry).sets;
-                } else if (entry.category === "mobility") {
-                    return total + (entry as MobilityExerciseHistoryEntry).sets;
-                } else if (entry.category === "endurance") {
-                    return total + (entry as EnduranceExerciseHistoryEntry).sets;
-                }
-            }
-            return total;
-        }, 0);
-
-        return exercise.weeklySets - setsDoneInInterval;
-    };
-
     const calculateMuscleGroupScores = () => {
         const muscleGroupScores: { [key: string]: { [key: string]: number } } = {
             strength: {},
@@ -63,7 +42,11 @@ const TodayScreen = () => {
         };
 
         exercises.forEach((exercise) => {
-            const remainingSets = calculateRemainingSets(exercise);
+            const remainingSets = calculateRemainingSets(
+                exercise,
+                exerciseHistory,
+                trainingInterval
+            );
             if (remainingSets <= 0) return;
 
             const category = exercise.category;
