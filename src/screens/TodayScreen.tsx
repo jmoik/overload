@@ -93,7 +93,7 @@ const TodayScreen = () => {
                 id: "lower_body",
                 name: "Lower Body",
                 category: "strength",
-                muscleGroups: ["Legs", "Lower Legs"],
+                muscleGroups: ["Legs", "Lower Legs", "Core"],
                 icon: "barbell",
                 recommended: 0,
             },
