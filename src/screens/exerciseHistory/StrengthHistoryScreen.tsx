@@ -212,13 +212,6 @@ const StrengthHistoryScreen: React.FC<StrengthHistoryScreenProps> = ({ exerciseI
         const parsedReps = parseInt(reps);
         let parsedWeight = weight.trim() ? parseFloat(weight.replace(",", ".")) : 0;
 
-        // Round weight to nearest 2.5
-        if (parsedWeight > 0) {
-            parsedWeight = Math.round(parsedWeight / 2.5) * 2.5;
-            // Update the weight value in the UI to show the rounded value
-            setWeight(parsedWeight.toString());
-        }
-
         if (isNaN(parsedSets) || isNaN(parsedReps) || isNaN(parsedWeight)) {
             Alert.alert(
                 "Error",
